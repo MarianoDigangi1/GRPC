@@ -12,7 +12,7 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
     def CrearUsuario(self, request, context):
         print("Entró al método CrearUsuario del servicio gRPC")
         db: Session = self.db_session()
-        print(request.nombreUsuario)
+
         try:
             # Crear el objeto UsuarioCreate desde el request
             usuario_create = schemas.UsuarioCreate(
@@ -23,15 +23,26 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 email=request.email,
                 rol=request.rol
             )
-
             # Llamar a crud.crear_usuario con el objeto correcto
-            mensaje_crud = crud.crear_usuario(db, usuario_create)
+            usuarioResponse = crud.crear_usuario(db, usuario_create)
 
-            if mensaje_crud.startswith("Error"):
-                context.set_details(mensaje_crud)
-                context.set_code(grpc.StatusCode.ALREADY_EXISTS)
-            
-            return usuarios_pb2.UsuarioResponse(mensaje=mensaje_crud)
+            usuarioCreate = usuarios_pb2.CreateUserRequest(
+                nombreUsuario=usuarioResponse.nombreUsuario,
+                nombre=usuarioResponse.nombre,
+                apellido=usuarioResponse.apellido,
+                telefono=usuarioResponse.telefono,
+                email=usuarioResponse.email,
+                rol=usuarioResponse.rol
+            )
+    
+            usuarioResponse = usuarios_pb2.CreateUserResponse(
+                usuario=usuarioCreate,
+                mensaje=usuarioResponse.mensaje
+            )
+            print ("Usuario creado con éxito:")
+            print (usuarioResponse)
+
+            return usuarioResponse
         finally:
             db.close()
 
@@ -49,7 +60,7 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 nombre=request.nombre,
                 apellido=request.apellido,
                 telefono=request.telefono,
-                emailUnico=request.emailUnico,
+                email=request.email,
                 rol=request.rol,
                 estaActivo=estado_bool
             )
