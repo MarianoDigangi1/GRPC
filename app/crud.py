@@ -2,22 +2,9 @@ from typing import Optional
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from . import models, schemas, utils
-from app.schemas import LoginResultCode
+from app.schemas import LoginResultCode, UsuarioResponse
 
 
-########################################################################################################
-def usuariomodel_to_schema(usuario):
-    return {
-        "id": usuario.id,
-        "nombreUsuario": usuario.nombreUsuario,
-        "nombre": usuario.nombre,
-        "apellido": usuario.apellido,
-        "telefono": usuario.telefono,
-        "clave_hash": usuario.clave,
-        "email": usuario.emailUnico,
-        "rol": usuario.rol,
-        "activo": usuario.estaActivo
-    }
 
 ########################################################################################################
 ########################################################################################################
@@ -25,13 +12,36 @@ def usuariomodel_to_schema(usuario):
 ########################################################################################################
 ########################################################################################################
 def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
+    
     # Verificar si el nombreUsuario ya existe
     if db.query(models.Usuario).filter(models.Usuario.nombreUsuario == usuario.nombreUsuario).first():
-        return "Error al crear usuario, el nombre de usuario ya existe"
-    
+
+        print("El nombre de usuario ya existe en la base de datos")
+        return UsuarioResponse(
+            nombreUsuario=usuario.nombreUsuario,
+            nombre=usuario.nombre,
+            apellido=usuario.apellido,
+            telefono=usuario.telefono,
+            email=usuario.email,
+            rol=usuario.rol,
+            estaActivo=False,
+            generated_password= "" ,
+            mensaje="Error al crear usuario, el nombre de usuario ya existe"
+        )
+
     # Verificar si el email ya existe
     if db.query(models.Usuario).filter(models.Usuario.email == usuario.email).first():
-        return "Error al crear el usuario, el email ya está registrado"
+        return schemas.UsuarioResponse(
+            nombreUsuario=usuario.nombreUsuario,
+            nombre=usuario.nombre,
+            apellido=usuario.apellido,
+            telefono=usuario.telefono,
+            email=usuario.email,
+            rol=usuario.rol,
+            estaActivo=False,
+            generated_password= "" ,
+            mensaje="Error al crear usuario, el email ya está registrado"
+        )
 
     clave = utils.generar_clave()
     hashed_clave = utils.encriptar_clave(clave)
@@ -54,7 +64,17 @@ def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
     # Enviar email con la clave generada
     utils.enviar_email(usuario.email, clave)
 
-    return "Usuario creado correctamente"
+    return schemas.UsuarioResponse(
+        nombreUsuario=usuario.nombreUsuario,
+        nombre=usuario.nombre,
+        apellido=usuario.apellido,
+        telefono=usuario.telefono,
+        email=usuario.email,
+        rol=usuario.rol,
+        estaActivo=True,
+        generated_password=clave,
+        mensaje="Usuario creado correctamente"
+    )
 
 def obtener_usuarios(db: Session):
     return db.query(models.Usuario).all()

@@ -35,8 +35,9 @@ class UsuarioUpdate(UsuarioBase):
     estaActivo: bool
     
 class UsuarioResponse(UsuarioBase):
-    id: int
     estaActivo: bool
+    generated_password: Optional[str] 
+    mensaje: Optional[str] = None
 
     class Config:
         orm_mode = True

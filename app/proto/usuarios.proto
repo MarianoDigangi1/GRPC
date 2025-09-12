@@ -43,13 +43,12 @@ message BajaUsuarioRequest {
 // ---- Respuestas ----
 
 message CreateUserResponse {
-  Usuario usuario = 1;
-  string generated_password = 2;
-  string mensaje = 3;
+  CreateUserRequest usuario = 1;
+  string mensaje = 2;
 }
 
 message UpdateAndDeleteUserResponse {
-  Usuario usuario = 1;
+  CreateUserRequest usuario = 1;
   string mensaje = 2;
 }
 
