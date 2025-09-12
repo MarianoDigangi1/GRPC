@@ -2,9 +2,8 @@ from typing import Optional
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from . import models, schemas, utils
-from app.schemas import LoginResultCode, UsuarioResponse
-
-
+from app.schemas import LoginResultCode
+from app.mapper import SchemaMapper
 
 ########################################################################################################
 ########################################################################################################
@@ -12,36 +11,15 @@ from app.schemas import LoginResultCode, UsuarioResponse
 ########################################################################################################
 ########################################################################################################
 def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
-    
     # Verificar si el nombreUsuario ya existe
     if db.query(models.Usuario).filter(models.Usuario.nombreUsuario == usuario.nombreUsuario).first():
-
         print("El nombre de usuario ya existe en la base de datos")
-        return UsuarioResponse(
-            nombreUsuario=usuario.nombreUsuario,
-            nombre=usuario.nombre,
-            apellido=usuario.apellido,
-            telefono=usuario.telefono,
-            email=usuario.email,
-            rol=usuario.rol,
-            estaActivo=False,
-            generated_password= "" ,
-            mensaje="Error al crear usuario, el nombre de usuario ya existe"
-        )
+        return SchemaMapper.usuario_request_to_usuario_response(usuario, False, "", "Error al crear usuario, el nombre de usuario ya existe")
 
     # Verificar si el email ya existe
     if db.query(models.Usuario).filter(models.Usuario.email == usuario.email).first():
-        return schemas.UsuarioResponse(
-            nombreUsuario=usuario.nombreUsuario,
-            nombre=usuario.nombre,
-            apellido=usuario.apellido,
-            telefono=usuario.telefono,
-            email=usuario.email,
-            rol=usuario.rol,
-            estaActivo=False,
-            generated_password= "" ,
-            mensaje="Error al crear usuario, el email ya está registrado"
-        )
+        print("El email ya está registrado en la base de datos")
+        return SchemaMapper.usuario_request_to_usuario_response(usuario, False, "", "Error al crear usuario, el email ya está registrado")
 
     clave = utils.generar_clave()
     hashed_clave = utils.encriptar_clave(clave)
@@ -60,24 +38,9 @@ def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
-    
-    # Enviar email con la clave generada
+
     utils.enviar_email(usuario.email, clave)
-
-    return schemas.UsuarioResponse(
-        nombreUsuario=usuario.nombreUsuario,
-        nombre=usuario.nombre,
-        apellido=usuario.apellido,
-        telefono=usuario.telefono,
-        email=usuario.email,
-        rol=usuario.rol,
-        estaActivo=True,
-        generated_password=clave,
-        mensaje="Usuario creado correctamente"
-    )
-
-def obtener_usuarios(db: Session):
-    return db.query(models.Usuario).all()
+    return SchemaMapper.usuario_request_to_usuario_response(usuario, True, clave, "Usuario creado correctamente")
 
 ########################################################################################################
 ########################################################################################################
@@ -86,19 +49,43 @@ def obtener_usuarios(db: Session):
 ########################################################################################################
 def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
     usuario = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
-    print("Usuario a modificar:")
+    print("Estoy en clase crud - Usuario  modificar:")
     print(usuario)
+
+    if not usuario:
+        print("Estoy en clase crud - Usuario no encontrado")
+        return schemas.UsuarioDeleteAndUpdateResponse(
+            nombreUsuario="",
+            nombre="",
+            apellido="",
+            telefono=None,
+            email="",
+            rol=None,
+            mensaje="Usuario no encontrado"
+        )
+    #print(usuario)
+    
     if usuario:
+        print("Estoy en clase crud - Modificando usuario...")
         usuario.nombreUsuario = datos.nombreUsuario
         usuario.nombre = datos.nombre
         usuario.apellido = datos.apellido
         usuario.telefono = datos.telefono
-        usuario.email = datos.emailUnico
+        usuario.email = datos.email
         usuario.rol = datos.rol
         usuario.estaActivo = datos.estaActivo
         db.commit()
         db.refresh(usuario)
-    return "Usuario modificado correctamente"
+    
+        return schemas.UsuarioDeleteAndUpdateResponse(
+            nombreUsuario=usuario.nombreUsuario,
+            nombre=usuario.nombre,
+            apellido=usuario.apellido,
+            telefono=usuario.telefono,
+            email=usuario.email,
+            rol=usuario.rol,
+            mensaje="Usuario modificado correctamente"
+        )
 
 ########################################################################################################
 ########################################################################################################
@@ -123,7 +110,7 @@ def baja_usuario(db: Session, user_id: int):
 #Iniciar sesion
 def autenticar_usuario(db: Session, identificador: str, clave: str):
     usuario = db.query(models.Usuario).filter(
-        (models.Usuario.nombreUsuario == identificador) | (models.Usuario.emailUnico == identificador)
+        (models.Usuario.nombreUsuario == identificador) | (models.Usuario.email == identificador)
     ).first()
 
     if not usuario:
@@ -140,38 +127,10 @@ def autenticar_usuario(db: Session, identificador: str, clave: str):
         )
 
     if not usuario.estaActivo:
-        print("Usuario inactivo")
-        return schemas.LoginResponse(
-            loginResult=LoginResultCode.LOGIN_INACTIVE_USER,
-            mensaje="Usuario inactivo. Contacte al administrador.",
-            nombreUsuario=usuario.nombreUsuario,
-            nombre=usuario.nombre,
-            apellido=usuario.apellido,
-            telefono=usuario.telefono,
-            email=usuario.email,
-            rol=usuario.rol
-        )
+        return SchemaMapper.login_request_to_login_response(usuario, LoginResultCode.LOGIN_INACTIVE_USER, "Usuario inactivo. Contacte al administrador.")
 
     # Verificar clave con bcrypt
     if not utils.verificar_clave(clave, usuario.clave):
-        return schemas.LoginResponse(
-            loginResult=LoginResultCode.LOGIN_INVALID_CREDENTIALS,
-            mensaje="Credenciales incorrectas",
-            nombreUsuario=usuario.nombreUsuario,
-            nombre=usuario.nombre,
-            apellido=usuario.apellido,
-            telefono=usuario.telefono,
-            email=usuario.emailUnico,
-            rol=usuario.rol
-        )
-    
-    return schemas.LoginResponse(
-            loginResult=LoginResultCode.LOGIN_OK,
-            mensaje="Login exitoso",
-            nombreUsuario=usuario.nombreUsuario,
-            nombre=usuario.nombre,
-            apellido=usuario.apellido,
-            telefono=usuario.telefono,
-            email=usuario.emailUnico,
-            rol=usuario.rol
-        )
+        return SchemaMapper.login_request_to_login_response(usuario, LoginResultCode.LOGIN_INVALID_CREDENTIALS, "Credenciales incorrectas")
+
+    return SchemaMapper.login_request_to_login_response(usuario, LoginResultCode.LOGIN_OK, "Login exitoso")

@@ -31,8 +31,10 @@ class UsuarioCreate(UsuarioBase):
     pass
 
 class UsuarioUpdate(UsuarioBase):
-    id: int
     estaActivo: bool
+    
+class UsuarioDeleteAndUpdateResponse(UsuarioBase):
+    mensaje: str
     
 class UsuarioResponse(UsuarioBase):
     estaActivo: bool
@@ -41,6 +43,8 @@ class UsuarioResponse(UsuarioBase):
 
     class Config:
         orm_mode = True
+
+
 
 ##########################################
 # ---- Request Login -----################

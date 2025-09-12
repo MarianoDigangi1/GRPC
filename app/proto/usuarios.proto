@@ -52,7 +52,6 @@ message UpdateAndDeleteUserResponse {
   string mensaje = 2;
 }
 
-
 // ---- Login ----
 message LoginRequest {
   string identificador = 1; // Puede ser nombreUsuario o emailUnico
