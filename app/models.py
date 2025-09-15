@@ -5,6 +5,7 @@ from sqlalchemy import (
     Column, Integer, String, Boolean, Enum, Date, DateTime, ForeignKey, Text, Float, func
 )
 
+
 # ---------------- ENUMS ---------------- #
 class RolEnum(str, enum.Enum):
     Presidente = "Presidente"
@@ -32,3 +33,38 @@ class Usuario(Base):
     #auditorias = relationship("Auditoria", back_populates="usuario")
 
 # ---------------- MODELOS ACTIVIDAD ---------------- #
+
+
+# ---------------- MODELOS EVENTO ---------------- #
+class Evento(Base):
+    __tablename__ = "evento"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(200), nullable=False)
+    descripcion = Column(Text)
+    fecha_evento = Column(DateTime, nullable=False)
+
+    # Relaciones
+    participantes = relationship("EventoUsuario", cascade="all, delete-orphan",
+                                 back_populates="evento")
+    donaciones = relationship("EventoInventario", cascade="all, delete-orphan",
+                              back_populates="evento")
+
+class EventoUsuario(Base):
+    __tablename__ = "evento_usuario"
+
+    evento_id = Column(Integer, ForeignKey("evento.id", ondelete="CASCADE"), primary_key=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+
+    evento = relationship("Evento", back_populates="participantes")
+    usuario = relationship("Usuario")
+
+class EventoInventario(Base):
+    __tablename__ = "evento_inventario"
+
+    evento_id = Column(Integer, ForeignKey("evento.id", ondelete="CASCADE"), primary_key=True)
+    inventario_id = Column(Integer, ForeignKey("inventario.id"), primary_key=True)
+    cantidad_usada = Column(Integer, nullable=False)
+
+    evento = relationship("Evento", back_populates="donaciones")
+   

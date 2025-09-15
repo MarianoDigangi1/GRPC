@@ -1,6 +1,10 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, validator
+from typing import Optional, List
 from enum import Enum
+from datetime import datetime
+
+
+
 
 # Enumerado
 class RolEnum(str, Enum):
@@ -57,3 +61,42 @@ class LoginResponse(UsuarioBase):
     loginResult: LoginResultCode
     mensaje: str
    
+
+
+class DonacionUsada(BaseModel):
+    inventario_id: int
+    cantidad_usada: int
+
+class EventoBase(BaseModel):
+    nombre: str
+    descripcion: Optional[str]
+    fecha_evento_iso: str 
+
+    @validator("fecha_evento_iso")
+    def debe_ser_futuro(cls, v):
+        try:
+            fecha = datetime.fromisoformat(v)
+        except Exception:
+            raise ValueError("fecha_evento_iso debe estar en ISO 8601")
+        return v
+
+class EventoCreate(EventoBase):
+    miembros_ids: List[int] = []
+
+class EventoUpdate(BaseModel):
+    nombre: Optional[str]
+    fecha_evento_iso: Optional[str]
+    agregar_miembros_ids: List[int] = []
+    quitar_miembros_ids: List[int] = []
+    donaciones_usadas: List[DonacionUsada] = [] 
+
+class EventoResponse(BaseModel):
+    id: int
+    nombre: str
+    descripcion: Optional[str]
+    fecha_evento_iso: str
+    miembros_ids: List[int] = []
+    mensaje: Optional[str] = None
+
+    class Config:
+        orm_mode = True

@@ -1,4 +1,4 @@
-from app.proto import usuarios_pb2
+from app.proto import usuarios_pb2, eventos_pb2
 from app import schemas
 
 class ProtoMapper:
@@ -50,6 +50,31 @@ class ProtoMapper:
             usuario=usuarioCreate,
             mensaje=usuario.mensaje 
         )
+
+    @staticmethod
+    def evento_to_proto(evento_resp: schemas.EventoResponse) -> eventos_pb2.Evento:
+        return eventos_pb2.Evento(
+            id=evento_resp.id,
+            nombre=evento_resp.nombre,
+            descripcion=evento_resp.descripcion or "",
+            fecha_evento_iso=evento_resp.fecha_evento_iso,
+            miembros_ids=evento_resp.miembros_ids
+        )
+
+    @staticmethod
+    def evento_create_response_proto(evento_resp: schemas.EventoResponse, mensaje: str):
+        return eventos_pb2.CrearEventoResponse(
+            evento=ProtoMapper.evento_to_proto(evento_resp),
+            mensaje=mensaje
+        )
+
+    @staticmethod
+    def evento_update_response_proto(evento_resp: schemas.EventoResponse, mensaje: str):
+        return eventos_pb2.ModificarEventoResponse(
+            evento=ProtoMapper.evento_to_proto(evento_resp),
+            mensaje=mensaje
+        )
+    
     
 class SchemaMapper:
     
@@ -114,5 +139,20 @@ class SchemaMapper:
         print(usuarioResponse)
 
         return usuarioResponse
+
+    @staticmethod
+    def evento_model_to_response(evento, miembros_ids, mensaje=""):
+        from datetime import datetime
+        return schemas.EventoResponse(
+            id=evento.id,
+            nombre=evento.nombre,
+            descripcion=evento.descripcion,
+            fecha_evento_iso=evento.fecha_evento.isoformat(),
+            miembros_ids=miembros_ids,
+            mensaje=mensaje
+        )    
+
+
+        
 
  
