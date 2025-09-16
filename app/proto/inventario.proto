@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package inventario;
+
+service InventarioService {
+  rpc RegistrarInventario (InventarioRequest) returns (InventarioResponse);
+  rpc ModificarInventario (ModificarInventarioRequest) returns (InventarioResponse);
+  rpc BajaInventario (BajaInventarioRequest) returns (InventarioResponse);
+}
+
+message InventarioRequest {
+  string categoria = 1;
+  string descripcion = 2;
+  int32 cantidad = 3;
+  string usuario_alta = 4;
+}
+
+message ModificarInventarioRequest {
+  int32 id = 1;
+  string descripcion = 2;
+  int32 cantidad = 3;
+  string usuario_modificacion = 4;
+}
+
+message BajaInventarioRequest {
+  int32 id = 1;
+  string usuario_modificacion = 2;
+}
+
+message InventarioResponse {
+  bool success = 1;
+  string message = 2;
+  int32 id = 3;
+}

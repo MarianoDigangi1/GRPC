@@ -32,7 +32,22 @@ class Usuario(Base):
     #asignaciones = relationship("Asignacion", back_populates="usuario")
     #auditorias = relationship("Auditoria", back_populates="usuario")
 
-# ---------------- MODELOS ACTIVIDAD ---------------- #
+# ---------------- MODELO INVENTARIO ---------------- #
+
+class Inventario(Base):
+    __tablename__ = "inventario"
+    id = Column(Integer, primary_key=True, index=True)
+    categoria = Column(String, nullable=False)
+    descripcion = Column(String, nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    eliminado = Column(Boolean, default=False)
+    
+    # Renombramos los campos para que coincidan con la tabla real
+    created_at = Column(DateTime, default=func.now())
+    created_by = Column(Integer)  # Aquí deberías pasar el id del usuario
+    updated_at = Column(DateTime, onupdate=func.now())
+    updated_by = Column(Integer)
+
 
 
 # ---------------- MODELOS EVENTO ---------------- #

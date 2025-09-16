@@ -100,3 +100,30 @@ class EventoResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class InventarioBase(BaseModel):
+    categoria: str
+    descripcion: str
+    cantidad: int
+
+class InventarioCreate(InventarioBase):
+    usuario_alta: str
+
+class InventarioUpdate(BaseModel):
+    descripcion: str
+    cantidad: int
+    usuario_modificacion: str
+
+class InventarioBaja(BaseModel):
+    usuario_modificacion: str
+
+class Inventario(InventarioBase):
+    id: int
+    eliminado: bool
+    fecha_alta: str
+    usuario_alta: str
+    fecha_modificacion: str = None
+    usuario_modificacion: str = None
+
+    class Config:
+        orm_mode = True

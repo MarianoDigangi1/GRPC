@@ -1,15 +1,23 @@
 import grpc
 from concurrent import futures
-from sqlalchemy.orm import Session
 from app.services.usuario_service import UsuarioService
 from app.proto import usuarios_pb2_grpc
 from app.services.eventos_service import EventoService
 from app.proto import eventos_pb2_grpc
+from app.services.inventario_service import InventarioGRPCService
+from app.proto import inventario_pb2_grpc
+
 
 def server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+
+    # Registrar servicios existentes
     usuarios_pb2_grpc.add_UsuarioServiceServicer_to_server(UsuarioService(), server)
     eventos_pb2_grpc.add_EventoServiceServicer_to_server(EventoService(), server)
+
+    # Registrar servicio de inventario
+    inventario_pb2_grpc.add_InventarioServiceServicer_to_server(InventarioGRPCService(), server)
+
     server.add_insecure_port("[::]:50052")
     print("Servidor gRPC escuchando en puerto 50052...")
     server.start()

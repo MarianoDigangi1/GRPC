@@ -151,6 +151,19 @@ class SchemaMapper:
             miembros_ids=miembros_ids,
             mensaje=mensaje
         )    
+    
+    def inventario_to_schema(inventario):
+        return {
+        "id": getattr(inventario, "id", None),
+        "categoria": getattr(inventario, "categoria", None),
+        "descripcion": getattr(inventario, "descripcion", None),
+        "cantidad": getattr(inventario, "cantidad", None),
+        "eliminado": getattr(inventario, "eliminado", None),
+        "fecha_alta": inventario.fecha_alta.isoformat() if getattr(inventario, "fecha_alta", None) else None,
+        "usuario_alta": getattr(inventario, "usuario_alta", None),
+        "fecha_modificacion": inventario.fecha_modificacion.isoformat() if getattr(inventario, "fecha_modificacion", None) else None,
+        "usuario_modificacion": getattr(inventario, "usuario_modificacion", None),
+    }
 
 
         
