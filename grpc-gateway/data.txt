@@ -1,0 +1,4 @@
+https://medium.com/@dinesharney/building-a-simple-grpc-client-and-server-with-spring-boot-3-4672c1e4fab7
+
+Para correr el servidor de mailhog:
+docker run -p 8025:8025 -p 1025:1025 -d mailhog/mailhog --> 8025 es la UI web y el 1025 es el servidor SMTP
