@@ -1,14 +1,17 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
-import com.sistemas.distribuidos.grpc_gateway.annotation.RequireRole;
 import com.sistemas.distribuidos.grpc_gateway.dto.*;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateUserRequestDto;
+import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
+import com.sistemas.distribuidos.grpc_gateway.utils.UsuarioUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,9 +25,9 @@ public class UsuarioRestController {
     }
 
     @PostMapping("/crear")
-    @RequireRole("PRESIDENTE")
     public ResponseEntity<CreateUserResponseDto> crearUsuario(@RequestBody CreateUserRequestDto createUserRequestDto) {
         CreateUserResponseDto response = usuarioService.crearUsuario(createUserRequestDto);
+
         if (response.getMensaje() != null && response.getMensaje().equalsIgnoreCase("Usuario creado correctamente")) {
             return ResponseEntity.status(201).body(response);
         } else {
@@ -33,7 +36,6 @@ public class UsuarioRestController {
     }
 
     @PutMapping("/modificar/{idUsuario}")
-    @RequireRole("PRESIDENTE")
     public ResponseEntity<?> editarUsuario(
             @PathVariable int idUsuario,
             @RequestBody UpdateUserRequestDto updateUserRequestDto) {
@@ -47,7 +49,6 @@ public class UsuarioRestController {
     }
 
     @DeleteMapping("/eliminar/{idUsuario}")
-    @RequireRole("PRESIDENTE")
     public ResponseEntity<?> darBajaUsuario(@PathVariable int idUsuario) {
         UpdateAndDeleteUserResponseDto response = usuarioService.eliminarUsuario(idUsuario);
         String mensaje = response.getMensaje() != null ? response.getMensaje().toLowerCase() : "";

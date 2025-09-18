@@ -33,6 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 String username = jwtUtil.extractUsername(jwt);
                 String role = jwtUtil.extractRole(jwt);
+                int userId = jwtUtil.extractUserId(jwt);
+
+                CustomUserPrincipal principal = new CustomUserPrincipal(userId, username, role);
                 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     // Crear la autoridad con el rol extraído del token
@@ -40,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authority));
                     
                     UsernamePasswordAuthenticationToken authToken = 
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
                     
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }

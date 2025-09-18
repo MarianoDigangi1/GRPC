@@ -8,30 +8,23 @@ import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserRespon
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
 import com.sistemas.distribuidos.grpc_gateway.stubs.*;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioServiceGrpc.UsuarioServiceBlockingStub stubBlocking;
-    private final EnvioMailService mailService;
 
-    public UsuarioService(JavaMailSender mailSender) {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress("localhost", 50052)
-                .usePlaintext()
-                .build();
-        this.stubBlocking = UsuarioServiceGrpc.newBlockingStub(channel);
-        this.mailService = new EnvioMailService(mailSender);
+    @Autowired
+    public UsuarioService(ManagedChannel grpcChannel) {
+        this.stubBlocking = UsuarioServiceGrpc.newBlockingStub(grpcChannel);
     }
 
     public CreateUserResponseDto crearUsuario(CreateUserRequestDto createUserRequestDto) {
         try {
             CreateUserRequest createUserRequest = UsuarioConverter.convertRequestDtoToGrpcClass(createUserRequestDto);
             CreateUserResponse response = stubBlocking.crearUsuario(createUserRequest);
-            //mailService.enviarEmailUsuario(response);
             return UsuarioConverter.convertCreateUserResponseToDto(response);
         } catch (Exception e) {
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear usuario</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial; margin:0; padding:2rem; background:#0b1020; color:#e6edf3; }
+    .card { background:#11162a; border:1px solid #2a3553; border-radius:12px; padding:1.5rem; max-width:680px; margin:2rem auto; box-shadow:0 6px 24px rgba(0,0,0,.35); }
+    h1 { margin:0 0 1rem 0; font-size:1.6rem; }
+    label { display:block; font-weight:600; margin-top:.75rem; }
+    input, select { width:100%; background:#0a0f1f; color:#e6edf3; border:1px solid #2a3553; border-radius:8px; padding:.6rem .8rem; margin-top:.35rem; }
+    .actions { margin-top:1rem; display:flex; gap:.5rem; align-items:center; }
+    button, a.btn { background:#2e7dff; color:white; padding:.6rem 1rem; border-radius:8px; text-decoration:none; font-weight:700; border:0; cursor:pointer; }
+    a.btn { display:inline-block; }
+    .muted { color:#9fb0c5; }
+    .msg { margin-top:1rem; padding:.6rem .8rem; border-radius:8px; display:none; }
+    .error { background:#331a20; border:1px solid #7a2f3b; color:#ffd7de; }
+    .ok { background:#15351f; border:1px solid #2f7a46; color:#c7ffd9; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Crear usuario</h1>
+    <form id="crearUsuarioForm">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+      <label for="nombreUsuario">Nombre de usuario</label>
+      <input id="nombreUsuario" name="nombreUsuario" required />
+
+      <label for="nombre">Nombre</label>
+      <input id="nombre" name="nombre" required />
+
+      <label for="apellido">Apellido</label>
+      <input id="apellido" name="apellido" required />
+
+      <label for="telefono">Teléfono</label>
+      <input id="telefono" name="telefono" />
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" />
+
+      <label for="rol">Rol</label>
+      <select id="rol" name="rol" required>
+        <option value="PRESIDENTE">PRESIDENTE</option>
+        <option value="COORDINADOR">COORDINADOR</option>
+        <option value="SUSCRIPTOR">SUSCRIPTOR</option>
+      </select>
+
+      <div class="actions">
+        <button type="submit">Crear</button>
+        <a class="btn" href="/usuarios">Cancelar</a>
+      </div>
+
+      <div id="msgOk" class="msg ok"></div>
+      <div id="msgError" class="msg error"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('crearUsuarioForm');
+    const msgOk = document.getElementById('msgOk');
+    const msgError = document.getElementById('msgError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msgOk.style.display = 'none';
+      msgError.style.display = 'none';
+
+      const payload = {
+        nombreUsuario: document.getElementById('nombreUsuario').value.trim(),
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        telefono: document.getElementById('telefono').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        rol: document.getElementById('rol').value
+      };
+
+      try {
+        // Extraer token CSRF desde el formulario
+        const csrfInput = form.querySelector('input[name="_csrf"]');
+        const csrfHeader = csrfInput ? csrfInput.value : '';
+
+        const res = await fetch('/api/usuarios/crear', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfHeader
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          msgError.textContent = data?.mensaje || data?.error || 'No se pudo crear el usuario';
+          msgError.style.display = 'block';
+          return;
+        }
+
+        msgOk.textContent = data?.mensaje || 'Usuario creado correctamente';
+        msgOk.style.display = 'block';
+        setTimeout(() => { window.location.href = '/usuarios'; }, 800);
+      } catch (err) {
+        msgError.textContent = 'Error de red o CSRF inválido';
+        msgError.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

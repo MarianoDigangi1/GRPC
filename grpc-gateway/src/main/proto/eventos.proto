@@ -3,7 +3,7 @@ package eventos;
 
 option java_multiple_files = true;
 option java_package = "com.sistemas.distribuidos.grpc_gateway.stubs";
-option java_outer_classname = "SarasaProto";
+option java_outer_classname = "EventosProto";
 
 message Evento {
   int32 id = 1;

@@ -31,6 +31,15 @@ class UsuarioBase(BaseModel):
     email: str
     rol: Optional[RolEnum]
 
+class UsuarioBaseLogin(BaseModel):
+    id: int
+    nombreUsuario: str
+    nombre: str
+    apellido: str
+    telefono: Optional[str]
+    email: str
+    rol: Optional[RolEnum]
+
 class UsuarioCreate(UsuarioBase):
     pass
 
@@ -57,7 +66,7 @@ class LoginRequest(BaseModel):
     identificador: str
     clave: str
 
-class LoginResponse(UsuarioBase):
+class LoginResponse(UsuarioBaseLogin):
     loginResult: LoginResultCode
     mensaje: str
    

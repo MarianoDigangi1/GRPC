@@ -40,7 +40,8 @@ public class AuthRestController {
             // Genera token JWT con el rol del usuario
             String token = jwtUtil.generateToken(
                 loginResponseDto.getUsuario().getNombreUsuario(),
-                loginResponseDto.getUsuario().getRol()
+                loginResponseDto.getUsuario().getRol(),
+                    loginResponseDto.getUsuario().getId()
             );
 
             // Devuelve el token JWT junto con la información del usuario

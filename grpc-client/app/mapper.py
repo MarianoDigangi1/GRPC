@@ -94,7 +94,9 @@ class SchemaMapper:
         
     @staticmethod
     def login_request_to_login_response(request, loginResult, mensaje):
+        print("Mapper Schema - LoginResponse a devolver:", request.id, request.nombreUsuario)
         return schemas.LoginResponse(
+            id=request.id,
             loginResult=loginResult,
             mensaje=mensaje,
             nombreUsuario=request.nombreUsuario,

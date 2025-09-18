@@ -101,6 +101,7 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
             print(resultado.loginResult + " " + resultado.apellido + " " + resultado.nombre)
 
             usuarioResponse = usuarios_pb2.Usuario(
+                id=resultado.id,
                 nombreUsuario=resultado.nombreUsuario,
                 nombre=resultado.nombre,
                 apellido=resultado.apellido,
@@ -108,6 +109,8 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 email=resultado.email,
                 rol=resultado.rol
             )
+
+            print("UsuarioResponse creado:" + str(usuarioResponse))
             
             loginResponse = usuarios_pb2.LoginResponse(
                 result=resultado.loginResult,
