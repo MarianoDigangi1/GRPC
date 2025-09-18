@@ -7,8 +7,6 @@ from app.schemas import LoginResultCode
 from app.mapper import SchemaMapper
 from datetime import datetime
 
-
-
 ########################################################################################################
 ########################################################################################################
 # Crear usuario
@@ -138,6 +136,10 @@ def autenticar_usuario(db: Session, identificador: str, clave: str):
         return SchemaMapper.login_request_to_login_response(usuario, LoginResultCode.LOGIN_INVALID_CREDENTIALS, "Credenciales incorrectas")
 
     return SchemaMapper.login_request_to_login_response(usuario, LoginResultCode.LOGIN_OK, "Login exitoso")
+
+def listar_usuarios(db: Session):
+    usuarios = db.query(models.Usuario).all()
+    return usuarios
 
     # ---------- Helpers ----------
 def _es_futuro(dt: datetime) -> bool:

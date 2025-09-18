@@ -24,31 +24,37 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eusuarios.proto\x12\x08usuarios\"\xa0\x01\n\x07Usuario\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\x12\n\nclave_hash\x18\x06 \x01(\t\x12\r\n\x05\x65mail\x18\x07 \x01(\t\x12\x0b\n\x03rol\x18\x08 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\t \x01(\x08\"z\n\x11\x43reateUserRequest\x12\x15\n\rnombreUsuario\x18\x01 \x01(\t\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\x12\x10\n\x08telefono\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x0b\n\x03rol\x18\x06 \x01(\t\"\x96\x01\n\x11UpdateUserRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0b\n\x03rol\x18\x07 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\x08 \x01(\x08\" \n\x12\x42\x61jaUsuarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"S\n\x12\x43reateUserResponse\x12,\n\x07usuario\x18\x01 \x01(\x0b\x32\x1b.usuarios.CreateUserRequest\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"\\\n\x1bUpdateAndDeleteUserResponse\x12,\n\x07usuario\x18\x01 \x01(\x0b\x32\x1b.usuarios.CreateUserRequest\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"4\n\x0cLoginRequest\x12\x15\n\ridentificador\x18\x01 \x01(\t\x12\r\n\x05\x63lave\x18\x02 \x01(\t\"o\n\rLoginResponse\x12)\n\x06result\x18\x01 \x01(\x0e\x32\x19.usuarios.LoginResultCode\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\x12\"\n\x07usuario\x18\x03 \x01(\x0b\x32\x11.usuarios.Usuario*q\n\x0fLoginResultCode\x12\x0c\n\x08LOGIN_OK\x10\x00\x12\x18\n\x14LOGIN_USER_NOT_FOUND\x10\x01\x12\x1d\n\x19LOGIN_INVALID_CREDENTIALS\x10\x02\x12\x17\n\x13LOGIN_INACTIVE_USER\x10\x03\x32\xc1\x02\n\x0eUsuarioService\x12I\n\x0c\x43rearUsuario\x12\x1b.usuarios.CreateUserRequest\x1a\x1c.usuarios.CreateUserResponse\x12V\n\x10ModificarUsuario\x12\x1b.usuarios.UpdateUserRequest\x1a%.usuarios.UpdateAndDeleteUserResponse\x12R\n\x0b\x42\x61jaUsuario\x12\x1c.usuarios.BajaUsuarioRequest\x1a%.usuarios.UpdateAndDeleteUserResponse\x12\x38\n\x05Login\x12\x16.usuarios.LoginRequest\x1a\x17.usuarios.LoginResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eusuarios.proto\x12\x08usuarios\"\xa0\x01\n\x07Usuario\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\x12\n\nclave_hash\x18\x06 \x01(\t\x12\r\n\x05\x65mail\x18\x07 \x01(\t\x12\x0b\n\x03rol\x18\x08 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\t \x01(\x08\"\x07\n\x05\x45mpty\"z\n\x11\x43reateUserRequest\x12\x15\n\rnombreUsuario\x18\x01 \x01(\t\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\x12\x10\n\x08telefono\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x0b\n\x03rol\x18\x06 \x01(\t\"\x96\x01\n\x11UpdateUserRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0b\n\x03rol\x18\x07 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\x08 \x01(\x08\" \n\x12\x42\x61jaUsuarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"S\n\x12\x43reateUserResponse\x12,\n\x07usuario\x18\x01 \x01(\x0b\x32\x1b.usuarios.CreateUserRequest\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"\\\n\x1bUpdateAndDeleteUserResponse\x12,\n\x07usuario\x18\x01 \x01(\x0b\x32\x1b.usuarios.CreateUserRequest\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"\x91\x01\n\x0cUserResponse\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0b\n\x03rol\x18\x07 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\x08 \x01(\x08\"B\n\x16ListarUsuariosResponse\x12(\n\x08usuarios\x18\x01 \x03(\x0b\x32\x16.usuarios.UserResponse\"4\n\x0cLoginRequest\x12\x15\n\ridentificador\x18\x01 \x01(\t\x12\r\n\x05\x63lave\x18\x02 \x01(\t\"o\n\rLoginResponse\x12)\n\x06result\x18\x01 \x01(\x0e\x32\x19.usuarios.LoginResultCode\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\x12\"\n\x07usuario\x18\x03 \x01(\x0b\x32\x11.usuarios.Usuario*q\n\x0fLoginResultCode\x12\x0c\n\x08LOGIN_OK\x10\x00\x12\x18\n\x14LOGIN_USER_NOT_FOUND\x10\x01\x12\x1d\n\x19LOGIN_INVALID_CREDENTIALS\x10\x02\x12\x17\n\x13LOGIN_INACTIVE_USER\x10\x03\x32\x86\x03\n\x0eUsuarioService\x12I\n\x0c\x43rearUsuario\x12\x1b.usuarios.CreateUserRequest\x1a\x1c.usuarios.CreateUserResponse\x12V\n\x10ModificarUsuario\x12\x1b.usuarios.UpdateUserRequest\x1a%.usuarios.UpdateAndDeleteUserResponse\x12R\n\x0b\x42\x61jaUsuario\x12\x1c.usuarios.BajaUsuarioRequest\x1a%.usuarios.UpdateAndDeleteUserResponse\x12\x38\n\x05Login\x12\x16.usuarios.LoginRequest\x1a\x17.usuarios.LoginResponse\x12\x43\n\x0eListarUsuarios\x12\x0f.usuarios.Empty\x1a .usuarios.ListarUsuariosResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'usuarios_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_LOGINRESULTCODE']._serialized_start=848
-  _globals['_LOGINRESULTCODE']._serialized_end=961
+  _globals['_LOGINRESULTCODE']._serialized_start=1073
+  _globals['_LOGINRESULTCODE']._serialized_end=1186
   _globals['_USUARIO']._serialized_start=29
   _globals['_USUARIO']._serialized_end=189
-  _globals['_CREATEUSERREQUEST']._serialized_start=191
-  _globals['_CREATEUSERREQUEST']._serialized_end=313
-  _globals['_UPDATEUSERREQUEST']._serialized_start=316
-  _globals['_UPDATEUSERREQUEST']._serialized_end=466
-  _globals['_BAJAUSUARIOREQUEST']._serialized_start=468
-  _globals['_BAJAUSUARIOREQUEST']._serialized_end=500
-  _globals['_CREATEUSERRESPONSE']._serialized_start=502
-  _globals['_CREATEUSERRESPONSE']._serialized_end=585
-  _globals['_UPDATEANDDELETEUSERRESPONSE']._serialized_start=587
-  _globals['_UPDATEANDDELETEUSERRESPONSE']._serialized_end=679
-  _globals['_LOGINREQUEST']._serialized_start=681
-  _globals['_LOGINREQUEST']._serialized_end=733
-  _globals['_LOGINRESPONSE']._serialized_start=735
-  _globals['_LOGINRESPONSE']._serialized_end=846
-  _globals['_USUARIOSERVICE']._serialized_start=964
-  _globals['_USUARIOSERVICE']._serialized_end=1285
+  _globals['_EMPTY']._serialized_start=191
+  _globals['_EMPTY']._serialized_end=198
+  _globals['_CREATEUSERREQUEST']._serialized_start=200
+  _globals['_CREATEUSERREQUEST']._serialized_end=322
+  _globals['_UPDATEUSERREQUEST']._serialized_start=325
+  _globals['_UPDATEUSERREQUEST']._serialized_end=475
+  _globals['_BAJAUSUARIOREQUEST']._serialized_start=477
+  _globals['_BAJAUSUARIOREQUEST']._serialized_end=509
+  _globals['_CREATEUSERRESPONSE']._serialized_start=511
+  _globals['_CREATEUSERRESPONSE']._serialized_end=594
+  _globals['_UPDATEANDDELETEUSERRESPONSE']._serialized_start=596
+  _globals['_UPDATEANDDELETEUSERRESPONSE']._serialized_end=688
+  _globals['_USERRESPONSE']._serialized_start=691
+  _globals['_USERRESPONSE']._serialized_end=836
+  _globals['_LISTARUSUARIOSRESPONSE']._serialized_start=838
+  _globals['_LISTARUSUARIOSRESPONSE']._serialized_end=904
+  _globals['_LOGINREQUEST']._serialized_start=906
+  _globals['_LOGINREQUEST']._serialized_end=958
+  _globals['_LOGINRESPONSE']._serialized_start=960
+  _globals['_LOGINRESPONSE']._serialized_end=1071
+  _globals['_USUARIOSERVICE']._serialized_start=1189
+  _globals['_USUARIOSERVICE']._serialized_end=1579
 # @@protoc_insertion_point(module_scope)

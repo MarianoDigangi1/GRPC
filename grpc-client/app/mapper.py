@@ -21,6 +21,19 @@ class ProtoMapper:
 
 
     @staticmethod
+    def usuario_to_usuario_response_proto(request):
+        return usuarios_pb2.UserResponse(
+            nombreUsuario=getattr(request, "nombreUsuario", "") or "",
+            id=getattr(request, "id", 0) or 0,
+            apellido=getattr(request, "apellido", "") or "",
+            nombre=getattr(request, "nombre", "") or "",
+            telefono=getattr(request, "telefono", "") or "",
+            email=getattr(request, "email", "") or "",
+            rol=getattr(request, "rol", "") or "",
+            activo=getattr(request, "estaActivo", True) or True
+        )
+    
+    @staticmethod
     def usuario_response_to_usuario_proto(usuario):
         return usuarios_pb2.Usuario(
             nombreUsuario=getattr(usuario, "nombreUsuario", "") or "",

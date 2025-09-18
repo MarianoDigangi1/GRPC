@@ -14,8 +14,6 @@ def server():
     # Registrar servicios existentes
     usuarios_pb2_grpc.add_UsuarioServiceServicer_to_server(UsuarioService(), server)
     eventos_pb2_grpc.add_EventoServiceServicer_to_server(EventoService(), server)
-
-    # Registrar servicio de inventario
     inventario_pb2_grpc.add_InventarioServiceServicer_to_server(InventarioGRPCService(), server)
 
     server.add_insecure_port("[::]:50052")

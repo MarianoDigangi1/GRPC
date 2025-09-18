@@ -121,3 +121,18 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
             return loginResponse
         finally:
             db.close()
+
+    def ListarUsuarios(self, request, context):
+        print("Entró al método ListarUsuarios del servicio gRPC")
+        db: Session = self.db_session()
+        try:
+            usuarios = crud.listar_usuarios(db)
+            usuarios_proto = []
+
+            for usuario in usuarios:
+                usuario_proto = mapper.ProtoMapper.usuario_to_usuario_response_proto(usuario)
+                usuarios_proto.append(usuario_proto)
+            response = usuarios_pb2.ListarUsuariosResponse(usuarios=usuarios_proto)
+            return response
+        finally:
+            db.close()
