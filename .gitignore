@@ -1,0 +1,5 @@
+app/__pycache__/**
+app/proto/__pycache__/**
+grpc-gateway/.gitattributes
+grpc-gateway/target/**
+grpc-gateway/.idea
