@@ -1,21 +1,31 @@
 package com.sistemas.distribuidos.grpc_gateway.converter;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.evento.*;
-import com.sistemas.distribuidos.grpc_gateway.stubs.*;
 
+import com.sistemas.distribuidos.grpc_gateway.stubs.eventos.*;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class EventoConverter {
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
+
     public static CrearEventoRequest convertCrearEventoRequestFromDto(CrearEventoRequestDto dto) {
-        return CrearEventoRequest.newBuilder()
-                .setNombre(dto.getNombre())
-                .setDescripcion(dto.getDescripcion())
-                .setFechaEventoIso(dto.getFechaEventoIso())
-                .addAllMiembrosIds(dto.getMiembrosIds())
-                .setActorUsuarioId(dto.getActorUsuarioId())
-                .setActorRol(dto.getActorRol())
-                .build();
+        CrearEventoRequest request = CrearEventoRequest.newBuilder()
+            .setNombre(dto.getNombre())
+            .setDescripcion(dto.getDescripcion())
+            .setFechaEventoIso(dto.getFechaEventoIso() != null ? dto.getFechaEventoIso().format(FORMATTER) : "")
+            .addAllMiembrosIds(dto.getMiembrosIds() != null ? dto.getMiembrosIds() : List.of())
+            .setActorUsuarioId(dto.getActorUsuarioId())
+            .setActorRol(dto.getActorRol())
+            .build();
+
+        // DEBUG
+          System.out.println("➡ Converter -> Request gRPC generado: " + request);
+
+        return request;
     }
 
     public static CrearEventoResponseDto convertCrearEventoResponseToDto(CrearEventoResponse response) {
@@ -24,7 +34,10 @@ public class EventoConverter {
                                 .id(response.getEvento().getId())
                                 .nombre(response.getEvento().getNombre())
                                 .descripcion(response.getEvento().getDescripcion())
-                                .fechaEventoIso(response.getEvento().getFechaEventoIso())
+                                // String → LocalDateTime
+                                .fechaEventoIso(!response.getEvento().getFechaEventoIso().isEmpty()
+                                        ? LocalDateTime.parse(response.getEvento().getFechaEventoIso(), FORMATTER)
+                                        : null)
                                 .miembrosIds(response.getEvento().getMiembrosIdsList())
                                 .build()
                 )
@@ -43,7 +56,10 @@ public class EventoConverter {
         return ModificarEventoRequest.newBuilder()
                 .setId(dto.getId())
                 .setNombre(dto.getNombre())
-                .setFechaEventoIso(dto.getFechaEventoIso())
+                // LocalDateTime → String
+                .setFechaEventoIso(dto.getFechaEventoIso() != null 
+                        ? dto.getFechaEventoIso().format(FORMATTER) 
+                        : "")
                 .addAllAgregarMiembrosIds(dto.getAgregarMiembrosIds())
                 .addAllQuitarMiembrosIds(dto.getQuitarMiembrosIds())
                 .addAllDonacionesUsadas(donacionesUsadasProto)
@@ -58,7 +74,10 @@ public class EventoConverter {
                                 .id(response.getEvento().getId())
                                 .nombre(response.getEvento().getNombre())
                                 .descripcion(response.getEvento().getDescripcion())
-                                .fechaEventoIso(response.getEvento().getFechaEventoIso())
+                                // String → LocalDateTime
+                                .fechaEventoIso(!response.getEvento().getFechaEventoIso().isEmpty()
+                                        ? LocalDateTime.parse(response.getEvento().getFechaEventoIso(), FORMATTER)
+                                        : null)
                                 .miembrosIds(response.getEvento().getMiembrosIdsList())
                                 .build()
                 )
@@ -82,6 +101,25 @@ public class EventoConverter {
                 .setActorRol(dto.getActorRol())
                 .setAgregar(dto.isAgregar())
                 .build();
+    }
 
+    public static EventoDto convertEventoResponseToDto(EventoResponse response) {
+        if (response == null) {
+            return null;
+        }
+
+        // Debug: mostrar qué fecha está llegando del backend
+        System.out.println("Fecha recibida gRPC: " + response.getFechaEventoIso());
+
+        return EventoDto.builder()
+                .id(response.getId())
+                .nombre(response.getNombre())
+                .descripcion(response.getDescripcion())
+                // String → LocalDateTime
+                .fechaEventoIso(!response.getFechaEventoIso().isEmpty()
+                        ? LocalDateTime.parse(response.getFechaEventoIso(), FORMATTER)
+                        : null)
+                .miembrosIds(response.getMiembrosIdsList())
+                .build();
     }
 }

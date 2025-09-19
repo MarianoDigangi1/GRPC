@@ -3,7 +3,7 @@ syntax = "proto3";
 package inventario;
 
 option java_multiple_files = true;
-option java_package = "com.sistemas.distribuidos.grpc_gateway.stubs";
+option java_package = "com.sistemas.distribuidos.grpc_gateway.stubs.inventario";
 option java_outer_classname = "InventariosProto";
 
 service InventarioService {

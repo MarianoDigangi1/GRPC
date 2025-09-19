@@ -2,7 +2,8 @@ package com.sistemas.distribuidos.grpc_gateway.converter;
 
 
 import com.sistemas.distribuidos.grpc_gateway.dto.user.*;
-import com.sistemas.distribuidos.grpc_gateway.stubs.*;
+
+import com.sistemas.distribuidos.grpc_gateway.stubs.usuarios.*;
 
 public class UsuarioConverter {
 

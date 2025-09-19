@@ -5,9 +5,10 @@ import com.sistemas.distribuidos.grpc_gateway.converter.AuthConverter;
 import com.sistemas.distribuidos.grpc_gateway.dto.auth.LoginRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.auth.LoginResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
-import com.sistemas.distribuidos.grpc_gateway.stubs.LoginRequest;
-import com.sistemas.distribuidos.grpc_gateway.stubs.LoginResponse;
-import com.sistemas.distribuidos.grpc_gateway.stubs.UsuarioServiceGrpc;
+
+import com.sistemas.distribuidos.grpc_gateway.stubs.usuarios.LoginRequest;
+import com.sistemas.distribuidos.grpc_gateway.stubs.usuarios.LoginResponse;
+import com.sistemas.distribuidos.grpc_gateway.stubs.usuarios.UsuarioServiceGrpc;
 import io.grpc.ManagedChannel;
 import org.springframework.stereotype.Service;
 

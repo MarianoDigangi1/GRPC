@@ -1,10 +1,14 @@
 package com.sistemas.distribuidos.grpc_gateway.service;
 
+
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.sistemas.distribuidos.grpc_gateway.converter.EventoConverter;
 import com.sistemas.distribuidos.grpc_gateway.dto.evento.*;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
-import com.sistemas.distribuidos.grpc_gateway.stubs.EventoServiceGrpc;
-import com.sistemas.distribuidos.grpc_gateway.stubs.*;
+import com.sistemas.distribuidos.grpc_gateway.stubs.eventos.*;
 import io.grpc.ManagedChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +28,9 @@ public class EventosService {
 
         try {
             response = stubBlocking.crearEvento(EventoConverter.convertCrearEventoRequestFromDto(dto));
+            System.out.println(" Service -> Respuesta gRPC: " + response);
         } catch (Exception e) {
+            System.out.println("  Service -> Error gRPC: " + e.getMessage());
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
         }
 
@@ -66,4 +72,19 @@ public class EventosService {
 
         return response.getMensaje();
     }
+    
+    public List<EventoDto> listarEventos() {
+    ListarEventosResponse response;
+
+    try {
+        response = stubBlocking.listarEventosDisponibles(Empty.newBuilder().build());
+    } catch (Exception e) {
+        throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
+    }
+
+    // Convertir la respuesta gRPC a DTOs
+    return response.getEventosList().stream()
+            .map(EventoConverter::convertEventoResponseToDto)
+            .collect(Collectors.toList());
+}
 }

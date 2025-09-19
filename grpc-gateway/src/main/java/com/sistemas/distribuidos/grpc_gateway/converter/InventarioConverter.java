@@ -4,9 +4,10 @@ import com.sistemas.distribuidos.grpc_gateway.dto.inventario.InventarioRequestDt
 import com.sistemas.distribuidos.grpc_gateway.dto.inventario.InventarioResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.inventario.ModificarInventarioRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
-import com.sistemas.distribuidos.grpc_gateway.stubs.InventarioRequest;
-import com.sistemas.distribuidos.grpc_gateway.stubs.InventarioResponse;
-import com.sistemas.distribuidos.grpc_gateway.stubs.ModificarInventarioRequest;
+import com.sistemas.distribuidos.grpc_gateway.stubs.inventario.InventarioRequest;
+import com.sistemas.distribuidos.grpc_gateway.stubs.inventario.InventarioResponse;
+import com.sistemas.distribuidos.grpc_gateway.stubs.inventario.ModificarInventarioRequest;
+
 
 public class InventarioConverter {
 

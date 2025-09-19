@@ -3,7 +3,8 @@ package com.sistemas.distribuidos.grpc_gateway.service;
 import com.sistemas.distribuidos.grpc_gateway.converter.UsuarioConverter;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.*;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
-import com.sistemas.distribuidos.grpc_gateway.stubs.*;
+
+import com.sistemas.distribuidos.grpc_gateway.stubs.usuarios.*;
 import io.grpc.ManagedChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

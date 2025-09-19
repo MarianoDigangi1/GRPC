@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -15,7 +16,6 @@ public class EventoDto {
     private int id;
     private String nombre;
     private String descripcion;
-    // TODO: Esto estaria buenisimo si lo pasamos a localdate
-    private String fechaEventoIso;
+    private LocalDateTime fechaEventoIso;
     private List<Integer> miembrosIds;
 }

@@ -5,12 +5,12 @@ import com.sistemas.distribuidos.grpc_gateway.dto.inventario.BajaInventarioReque
 import com.sistemas.distribuidos.grpc_gateway.dto.inventario.InventarioRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.inventario.InventarioResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.inventario.ModificarInventarioRequestDto;
+//import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
-import com.sistemas.distribuidos.grpc_gateway.stubs.BajaInventarioRequest;
-import com.sistemas.distribuidos.grpc_gateway.stubs.InventarioRequest;
-import com.sistemas.distribuidos.grpc_gateway.stubs.InventarioResponse;
-import com.sistemas.distribuidos.grpc_gateway.stubs.InventarioServiceGrpc;
+import com.sistemas.distribuidos.grpc_gateway.stubs.inventario.BajaInventarioRequest;
+import com.sistemas.distribuidos.grpc_gateway.stubs.inventario.InventarioResponse;
+import com.sistemas.distribuidos.grpc_gateway.stubs.inventario.InventarioServiceGrpc;
 import io.grpc.ManagedChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

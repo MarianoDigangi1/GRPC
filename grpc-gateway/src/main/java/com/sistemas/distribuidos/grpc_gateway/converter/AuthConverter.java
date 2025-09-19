@@ -1,7 +1,8 @@
 package com.sistemas.distribuidos.grpc_gateway.converter;
 
+
 import com.sistemas.distribuidos.grpc_gateway.dto.auth.LoginResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.stubs.LoginResponse;
+import com.sistemas.distribuidos.grpc_gateway.stubs.usuarios.LoginResponse;
 
 public class AuthConverter {
 
