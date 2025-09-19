@@ -290,6 +290,10 @@ def quitar_usuario_de_eventos_futuros(db: Session, usuario_id: int):
         db.delete(p)
     db.commit()
 
+def listar_eventos_disponibles(db: Session):
+    eventos = db.query(models.Evento).all()
+    return eventos   
+
 ########################################################################################################
 ########################################################################################################
 # Inventario de donaciones

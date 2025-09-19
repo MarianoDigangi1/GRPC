@@ -3,10 +3,10 @@
 import grpc
 import warnings
 
+
 from . import eventos_pb2 as eventos__pb2
 
-
-GRPC_GENERATED_VERSION = '1.74.0'
+GRPC_GENERATED_VERSION = '1.75.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -55,6 +55,11 @@ class EventoServiceStub(object):
                 request_serializer=eventos__pb2.AsignarQuitarRequest.SerializeToString,
                 response_deserializer=eventos__pb2.AsignarQuitarResponse.FromString,
                 _registered_method=True)
+        self.ListarEventosDisponibles = channel.unary_unary(
+                '/eventos.EventoService/ListarEventosDisponibles',
+                request_serializer=eventos__pb2.Empty.SerializeToString,
+                response_deserializer=eventos__pb2.ListarEventosResponse.FromString,
+                _registered_method=True)
 
 
 class EventoServiceServicer(object):
@@ -84,6 +89,12 @@ class EventoServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListarEventosDisponibles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EventoServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -106,6 +117,11 @@ def add_EventoServiceServicer_to_server(servicer, server):
                     servicer.AsignarOQuitarMiembro,
                     request_deserializer=eventos__pb2.AsignarQuitarRequest.FromString,
                     response_serializer=eventos__pb2.AsignarQuitarResponse.SerializeToString,
+            ),
+            'ListarEventosDisponibles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListarEventosDisponibles,
+                    request_deserializer=eventos__pb2.Empty.FromString,
+                    response_serializer=eventos__pb2.ListarEventosResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -216,6 +232,33 @@ class EventoService(object):
             '/eventos.EventoService/AsignarOQuitarMiembro',
             eventos__pb2.AsignarQuitarRequest.SerializeToString,
             eventos__pb2.AsignarQuitarResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListarEventosDisponibles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/eventos.EventoService/ListarEventosDisponibles',
+            eventos__pb2.Empty.SerializeToString,
+            eventos__pb2.ListarEventosResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -67,9 +67,25 @@ message AsignarQuitarResponse {
   string mensaje = 1;
 }
 
+message Empty {}
+
+message EventoResponse {
+  int32 id = 1;
+  string nombre = 2;
+  string descripcion = 3;
+  string fecha_evento_iso = 4;
+  repeated int32 miembros_ids = 5;
+  bool pasado = 6; // true si la fecha del evento ya pasó
+}
+
+message ListarEventosResponse {
+  repeated EventoResponse eventos = 1;
+}
+
 service EventoService {
   rpc CrearEvento (CrearEventoRequest) returns (CrearEventoResponse);
   rpc ModificarEvento (ModificarEventoRequest) returns (ModificarEventoResponse);
   rpc BajaEvento (BajaEventoRequest) returns (BajaEventoResponse);
   rpc AsignarOQuitarMiembro (AsignarQuitarRequest) returns (AsignarQuitarResponse);
+  rpc ListarEventosDisponibles (Empty) returns (ListarEventosResponse);
 }

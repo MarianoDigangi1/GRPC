@@ -75,3 +75,19 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
             return eventos_pb2.AsignarQuitarResponse(mensaje=mensaje)
         finally:
             db.close()
+
+    def ListarEventosDisponibles(self, request, context):
+        print("Entró al método ListarEventos del servicio gRPC")
+        db: Session = self.db_session()
+        try:
+            eventos = crud.listar_eventos_disponibles(db)
+            eventos_proto = []
+            for evento in eventos:
+                evento_proto = mapper.ProtoMapper.evento_to_evento_response_proto(evento)
+                eventos_proto.append(evento_proto)
+            
+            response = eventos_pb2.ListarEventosResponse(eventos=eventos_proto)
+            return response
+           
+        finally:
+            db.close()        

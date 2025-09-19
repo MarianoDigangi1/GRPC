@@ -87,6 +87,16 @@ class ProtoMapper:
             evento=ProtoMapper.evento_to_proto(evento_resp),
             mensaje=mensaje
         )
+    @staticmethod
+    def evento_to_evento_response_proto(request):
+        return eventos_pb2.EventoResponse(
+            id=getattr(request, "id", 0) or 0,
+            nombre=getattr(request, "nombre", "") or "",
+            descripcion=getattr(request, "descripcion", "") or "",
+            fecha_evento_iso=getattr(request, "fecha_evento_iso", "") or "",
+            miembros_ids=list(getattr(request, "miembros_ids", [])) or []
+        )
+    
     
     
 class SchemaMapper:
