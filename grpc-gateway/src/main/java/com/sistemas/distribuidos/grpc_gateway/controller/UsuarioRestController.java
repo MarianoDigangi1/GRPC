@@ -1,10 +1,7 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.*;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserRequestDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateUserRequestDto;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.*;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import com.sistemas.distribuidos.grpc_gateway.utils.UsuarioUtils;
@@ -64,4 +61,12 @@ public class UsuarioRestController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping
+    public  ResponseEntity<ListarUsuariosResponseDto> listarUsuario(){
+        ListarUsuariosResponseDto response = usuarioService.listarUsuarios();
+        return ResponseEntity.ok(response);
+    }
+
+
 }

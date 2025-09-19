@@ -1,15 +1,15 @@
 package com.sistemas.distribuidos.grpc_gateway.service;
 
 import com.sistemas.distribuidos.grpc_gateway.converter.UsuarioConverter;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserRequestDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateUserRequestDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserResponseDto;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.*;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
 import com.sistemas.distribuidos.grpc_gateway.stubs.*;
 import io.grpc.ManagedChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -50,4 +50,31 @@ public class UsuarioService {
         }
     }
 
+    public ListarUsuariosResponseDto listarUsuarios() {
+        try {
+            // Construir la solicitud vacía para el método gRPC
+            Empty request = Empty.newBuilder().build();
+
+            // Llamar al método gRPC ListarUsuarios
+            ListarUsuariosResponse grpcResponse = stubBlocking.listarUsuarios(request);
+
+            // Mapear la respuesta gRPC al DTO
+            List<UserResponseDto> usuarios = grpcResponse.getUsuariosList().stream()
+                    .map(usuario -> new UserResponseDto(
+                            usuario.getId(),
+                            usuario.getNombreUsuario(),
+                            usuario.getNombre(),
+                            usuario.getApellido(),
+                            usuario.getTelefono(),
+                            usuario.getEmail(),
+                            usuario.getRol(),
+                            usuario.getActivo()
+                    ))
+                    .collect(Collectors.toList());
+
+            return new ListarUsuariosResponseDto(usuarios);
+        } catch (Exception e) {
+            throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
+        }
+    }
 }

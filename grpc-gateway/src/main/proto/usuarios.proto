@@ -18,6 +18,8 @@ message Usuario {
   bool activo = 9;
 }
 
+message Empty {}
+
 message CreateUserRequest {
   string nombreUsuario = 1;
   string nombre = 2;
@@ -56,6 +58,21 @@ message UpdateAndDeleteUserResponse {
   string mensaje = 2;
 }
 
+message UserResponse{
+  int32 id = 1; // PK (no mostrar en vistas si se desea)
+  string nombreUsuario = 2;
+  string nombre = 3;
+  string apellido = 4;
+  string telefono = 5;
+  string email = 6;
+  string rol = 7;
+  bool activo = 8;
+}
+
+message ListarUsuariosResponse {
+  repeated UserResponse usuarios = 1;
+}
+
 // ---- Login ----
 message LoginRequest {
   string identificador = 1; // Puede ser nombreUsuario o emailUnico
@@ -81,6 +98,7 @@ service UsuarioService {
   rpc ModificarUsuario (UpdateUserRequest) returns (UpdateAndDeleteUserResponse);
   rpc BajaUsuario (BajaUsuarioRequest) returns (UpdateAndDeleteUserResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
+  rpc ListarUsuarios (Empty) returns (ListarUsuariosResponse);
 }
 
 
