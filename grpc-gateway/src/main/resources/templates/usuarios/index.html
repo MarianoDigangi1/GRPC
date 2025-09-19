@@ -39,12 +39,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>demo</td>
-          <td>Nombre</td>
-          <td>Apellido</td>
-          <td>PRESIDENTE</td>
-          <td>Activo</td>
+        <tr th:each="usuario : ${usuarios}">
+          <td th:text="${usuario.nombreUsuario}">NombreUsuario</td>
+          <td th:text="${usuario.nombre}">Nombre</td>
+          <td th:text="${usuario.apellido}">Apellido</td>
+          <td th:text="${usuario.rol}">Rol</td>
+          <td th:text="${usuario.activo ? 'Activo' : 'Inactivo'}">Estado</td>
         </tr>
       </tbody>
     </table>
