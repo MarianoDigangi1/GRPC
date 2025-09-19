@@ -18,20 +18,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authz -> authz
-                        // Vistas públicas y recursos estáticos
-                        .requestMatchers("/", "/login", "/logout", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                        // Sección de vistas de usuarios (solo PRESIDENTE)
+                        .requestMatchers("/login", "/logout", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         .requestMatchers("/usuarios/**").hasRole("PRESIDENTE")
-                        // Rutas protegidas por rol (usarán sesión)
                         .requestMatchers("/api/usuarios/crear").hasRole("PRESIDENTE")
                         .requestMatchers("/api/usuarios/modificar/**").hasRole("PRESIDENTE")
                         .requestMatchers("/api/usuarios/eliminar/**").hasRole("PRESIDENTE")
                         .requestMatchers("/api/eventos/crear").hasAnyRole("PRESIDENTE", "COORDINADOR")
                         .anyRequest().authenticated()
                 )
-                // CSRF habilitado por defecto. Si necesitas deshabilitarlo para ciertos endpoints, configúralo aquí.
                 .csrf(Customizer.withDefaults())
-                // Autenticación con formulario
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -45,7 +40,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
-                // Usar nuestro AuthenticationProvider personalizado
                 .authenticationProvider(customAuthProvider)
                 .build();
     }

@@ -34,6 +34,7 @@ public class UsuarioConverter {
 
     public static UsuarioDto convertirUsuario(Usuario usuario) {
         return UsuarioDto.builder().nombreUsuario(usuario.getNombreUsuario())
+                .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .apellido(usuario.getApellido())
                 .telefono(usuario.getTelefono())

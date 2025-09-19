@@ -3,6 +3,7 @@ package com.sistemas.distribuidos.grpc_gateway.security;
 import com.sistemas.distribuidos.grpc_gateway.dto.auth.LoginRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.auth.LoginResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.UsuarioDto;
+import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.AuthService;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,14 +67,12 @@ public class CustomAuthProvider implements AuthenticationProvider {
 
         List<GrantedAuthority> authorities = new ArrayList<>();
         if (usuario.getRol() != null && !usuario.getRol().isBlank()) {
-            // Normalizamos el rol: trim + upper
             String normalizedRole = usuario.getRol().trim().toUpperCase();
-            // hasRole("PRESIDENTE") espera "ROLE_PRESIDENTE"
             authorities.add(new SimpleGrantedAuthority("ROLE_" + normalizedRole));
         }
 
-        // Principal puede ser el nombre de usuario; podrías mapear un UserDetails si luego lo necesitas
-        return new UsernamePasswordAuthenticationToken(usuario.getNombreUsuario(), null, authorities);
+        CustomUserPrincipal principal = CustomUserPrincipal.builder().id(usuario.getId()).username(usuario.getNombreUsuario()).role(usuario.getRol()).build();
+        return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }
 
     @Override
