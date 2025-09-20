@@ -76,6 +76,7 @@
           <th>Nombre</th>
           <th>Descripción</th>
           <th>Fecha</th>
+           <th>Miembros</th> 
           <th>Acciones</th>
         </tr>
       </thead>
@@ -84,6 +85,12 @@
           <td th:text="${evento.nombre}">Nombre</td>
           <td th:text="${evento.descripcion}">Descripción</td>
           <td th:text="${evento.fechaEventoIso != null ? #temporals.format(evento.fechaEventoIso, 'dd/MM/yyyy HH:mm') : '---'}">Fecha</td>
+
+          <td th:text="${evento.miembrosNombres}">-</td>
+
+
+
+          
           <td>
             <a th:href="@{'/eventos/editar/' + ${evento.id}}" class="btn">Editar</a>
             <a th:href="@{'/eventos/eliminar/' + ${evento.id}}" class="btn">Eliminar</a>

@@ -6,6 +6,7 @@ from . import models, schemas, utils
 from app.schemas import LoginResultCode
 from app.mapper import SchemaMapper
 from datetime import datetime
+from sqlalchemy.orm import selectinload
 
 ########################################################################################################
 ########################################################################################################
@@ -292,7 +293,19 @@ def quitar_usuario_de_eventos_futuros(db: Session, usuario_id: int):
 
 def listar_eventos_disponibles(db: Session):
     eventos = db.query(models.Evento).all()
-    return eventos   
+    result = []
+    for ev in eventos:
+        miembros_ids = [eu.usuario_id for eu in ev.participantes]
+        result.append(
+            SchemaMapper.evento_model_to_response(ev, miembros_ids)
+        )
+    return result
+   # result = []
+    #for ev in eventos:
+     #   miembros_ids = [eu.usuario_id for eu in ev.participantes]
+        # Reutilizamos el mismo mapper que ya usás en crear/modificar
+      #  result.append(SchemaMapper.evento_model_to_response(ev, miembros_ids))
+   # return result  
 
 ########################################################################################################
 ########################################################################################################

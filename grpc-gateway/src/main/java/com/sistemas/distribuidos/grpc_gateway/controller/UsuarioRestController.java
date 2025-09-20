@@ -1,7 +1,10 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.*;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.*;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserRequestDto;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserResponseDto;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserResponseDto;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateUserRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import com.sistemas.distribuidos.grpc_gateway.utils.UsuarioUtils;
@@ -9,8 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -62,5 +66,4 @@ public class UsuarioRestController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
 }

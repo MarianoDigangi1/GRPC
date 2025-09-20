@@ -18,4 +18,8 @@ public class EventoDto {
     private String descripcion;
     private LocalDateTime fechaEventoIso;
     private List<Integer> miembrosIds;
+
+    private String miembrosNombres;
+
+
 }

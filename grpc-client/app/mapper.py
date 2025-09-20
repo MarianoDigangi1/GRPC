@@ -91,7 +91,10 @@ class ProtoMapper:
         )
     @staticmethod
     def evento_to_evento_response_proto(request):
+
         from datetime import datetime
+        fecha_iso = getattr(request, "fecha_evento_iso", "") or ""
+
 
         if getattr(request, "fecha_evento", None) is None:
             print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → NO tiene atributo fecha_evento")
@@ -99,12 +102,12 @@ class ProtoMapper:
             print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → fecha_evento={request.fecha_evento}")
 
         return eventos_pb2.EventoResponse(
-            id=getattr(request, "id", 0) or 0,
-            nombre=getattr(request, "nombre", "") or "",
-            descripcion=getattr(request, "descripcion", "") or "",
-            fecha_evento_iso=request.fecha_evento.isoformat() if getattr(request, "fecha_evento", None) else "",
-            miembros_ids=list(getattr(request, "miembros_ids", [])) or [],
-            pasado=request.fecha_evento < datetime.now() if getattr(request, "fecha_evento", None) else False
+        id=getattr(request, "id", 0) or 0,
+        nombre=getattr(request, "nombre", "") or "",
+        descripcion=getattr(request, "descripcion", "") or "",
+        fecha_evento_iso=fecha_iso,
+        miembros_ids=list(getattr(request, "miembros_ids", [])) or [],
+        pasado=datetime.fromisoformat(fecha_iso) < datetime.now() if fecha_iso else False
         )
 
     
@@ -183,7 +186,7 @@ class SchemaMapper:
             id=evento.id,
             nombre=evento.nombre,
             descripcion=evento.descripcion,
-            fecha_evento_iso=evento.fecha_evento.isoformat(),
+            fecha_evento_iso=evento.fecha_evento.isoformat() if evento.fecha_evento else "",
             miembros_ids=miembros_ids,
             mensaje=mensaje
         )    

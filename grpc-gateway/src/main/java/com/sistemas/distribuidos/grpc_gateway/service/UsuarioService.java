@@ -78,4 +78,8 @@ public class UsuarioService {
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
         }
     }
+
+    
+
+
 }
