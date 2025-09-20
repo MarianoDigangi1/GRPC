@@ -1,11 +1,15 @@
 package com.sistemas.distribuidos.grpc_gateway.web;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.user.ListarUsuariosResponseDto;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 public class UsuarioViewController {
@@ -32,4 +36,32 @@ public class UsuarioViewController {
         model.addAttribute("title", "Crear usuario");
         return "usuarios/crear"; // src/main/resources/templates/usuarios/crear.html
     }
+
+    /*
+    @PutMapping("/modificar/{idUsuario}")
+    public ResponseEntity<?> editarUsuario(
+            @PathVariable int idUsuario,
+            @RequestBody UpdateUserRequestDto updateUserRequestDto) {
+        UpdateAndDeleteUserResponseDto response = usuarioService.modificarUsuario(updateUserRequestDto, idUsuario);
+
+        if (response.getMensaje() != null && response.getMensaje().toLowerCase().contains("editado")) {
+            return ResponseEntity.status(201).body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }*/
+
+    @DeleteMapping("/usuarios/eliminar/{idUsuario}")
+    public ResponseEntity<?> darBajaUsuario(@PathVariable int idUsuario) {
+        UpdateAndDeleteUserResponseDto response = usuarioService.bajaUsuario(idUsuario);
+        String mensaje = response.getMensaje() != null ? response.getMensaje().toLowerCase() : "";
+
+        if (mensaje.contains("Usuario dado de baja")) {
+            return ResponseEntity.status(204).body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+
 }

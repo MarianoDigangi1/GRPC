@@ -31,7 +31,7 @@ public class UsuarioService {
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
         }
     }
-
+/*
     public UpdateAndDeleteUserResponseDto modificarUsuario(UpdateUserRequestDto updateUserRequestDto, int idUsuario) {
         try {
             UpdateUserRequest grpcRequest = UsuarioConverter.convertUpdateUserRequestDtoToGrpcClass(updateUserRequestDto, idUsuario);
@@ -41,16 +41,7 @@ public class UsuarioService {
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
         }
     }
-
-    public UpdateAndDeleteUserResponseDto eliminarUsuario(int idUsuario) {
-        try {
-            UpdateAndDeleteUserResponse grpcResponse = stubBlocking.bajaUsuario(BajaUsuarioRequest.newBuilder().setId(idUsuario).build());
-            return UsuarioConverter.convertUpdateAndDeleteUserResponseToDto(grpcResponse);
-        } catch  (Exception e) {
-            throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
-        }
-    }
-
+*/
     public ListarUsuariosResponseDto listarUsuarios() {
         try {
             // Construir la solicitud vacía para el método gRPC
@@ -79,7 +70,22 @@ public class UsuarioService {
         }
     }
 
-    
+    public UpdateAndDeleteUserResponseDto bajaUsuario(int idUsuario){
+        try {
+            BajaUsuarioRequest grpcRequest = BajaUsuarioRequest.newBuilder()
+                    .setId(idUsuario)
+                    .build();
 
+            UpdateAndDeleteUserResponse grpcResponse = stubBlocking.bajaUsuario(grpcRequest);
+
+            return new UpdateAndDeleteUserResponseDto(
+                    null,
+                    grpcResponse.getMensaje()
+            );
+        }catch (Exception e) {
+            throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
+        }
+
+    }
 
 }

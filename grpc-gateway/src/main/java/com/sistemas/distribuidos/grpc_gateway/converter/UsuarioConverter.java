@@ -57,9 +57,16 @@ public class UsuarioConverter {
                 .build();
     }
 
+    /*
     public static UpdateAndDeleteUserResponseDto convertUpdateAndDeleteUserResponseToDto(UpdateAndDeleteUserResponse response) {
         UsuarioDto usuarioDto = convertGrpcUsuarioToDto(response.getUsuario());
         return new UpdateAndDeleteUserResponseDto(usuarioDto, response.getMensaje());
     }
 
+
+    public static UpdateAndDeleteUserResponseDto convertUpdateAndDeleteUserResponseToDto(UpdateAndDeleteUserResponse response) {
+        UsuarioDto usuarioDto = convertGrpcUsuarioToDto(response.getUsuario());
+        return new UpdateAndDeleteUserResponseDto(usuarioDto, response.getMensaje());
+    }
+    */
 }

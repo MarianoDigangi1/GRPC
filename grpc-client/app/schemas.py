@@ -3,9 +3,6 @@ from typing import Optional, List
 from enum import Enum
 from datetime import datetime
 
-
-
-
 # Enumerado
 class RolEnum(str, Enum):
     Presidente = "Presidente"

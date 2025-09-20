@@ -1,13 +1,14 @@
 package com.sistemas.distribuidos.grpc_gateway.dto.user;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateAndDeleteUserResponseDto {
-    private CreateUserRequestDto usuario;
-    private String mensaje;
+@Builder
+public class BajaUsuarioRequestDto {
+    private int id;
 }

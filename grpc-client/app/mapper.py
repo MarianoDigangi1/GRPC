@@ -24,6 +24,11 @@ class ProtoMapper:
 
     @staticmethod
     def usuario_to_usuario_response_proto(request):
+        #print(request.estaActivo)
+
+        variablePrueba = getattr(request, "estaActivo", True) 
+        print(variablePrueba)
+
         return usuarios_pb2.UserResponse(
             nombreUsuario=getattr(request, "nombreUsuario", "") or "",
             id=getattr(request, "id", 0) or 0,
@@ -32,7 +37,7 @@ class ProtoMapper:
             telefono=getattr(request, "telefono", "") or "",
             email=getattr(request, "email", "") or "",
             rol=getattr(request, "rol", "") or "",
-            activo=getattr(request, "estaActivo", True) or True
+            activo=getattr(request, "estaActivo", True)
         )
     
     @staticmethod

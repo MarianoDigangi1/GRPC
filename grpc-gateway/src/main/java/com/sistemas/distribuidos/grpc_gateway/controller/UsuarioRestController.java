@@ -36,7 +36,7 @@ public class UsuarioRestController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
+/*
     @PutMapping("/modificar/{idUsuario}")
     public ResponseEntity<?> editarUsuario(
             @PathVariable int idUsuario,
@@ -66,4 +66,7 @@ public class UsuarioRestController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    */
+
+
 }
