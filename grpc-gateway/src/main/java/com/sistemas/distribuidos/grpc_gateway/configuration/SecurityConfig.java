@@ -24,6 +24,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/modificar/**").hasRole("PRESIDENTE")
                         .requestMatchers("/api/usuarios/eliminar/**").hasRole("PRESIDENTE")
                         .requestMatchers("/api/eventos/crear").hasAnyRole("PRESIDENTE", "COORDINADOR")
+                        .requestMatchers("/inventario/**").hasAnyRole("PRESIDENTE", "VOCAL")
                         .anyRequest().authenticated()
                 )
                 .csrf(Customizer.withDefaults())

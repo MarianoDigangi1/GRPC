@@ -6,6 +6,8 @@ service InventarioService {
   rpc RegistrarInventario (InventarioRequest) returns (InventarioResponse);
   rpc ModificarInventario (ModificarInventarioRequest) returns (InventarioResponse);
   rpc BajaInventario (BajaInventarioRequest) returns (InventarioResponse);
+  rpc ListarInventario (Empty) returns (ListarInventarioResponse);
+  rpc ObtenerInventarioPorId (ObtenerInventarioPorIdRequest) returns (ObtenerInventarioPorIdResponse);
 }
 
 message InventarioRequest {
@@ -31,4 +33,32 @@ message InventarioResponse {
   bool success = 1;
   string message = 2;
   int32 id = 3;
+}
+
+message Empty {}
+
+message InventarioListResponse {
+  int32 id = 1;
+  string categoria = 2;
+  string descripcion = 3;
+  int32 cantidad = 4;
+}
+
+message ListarInventarioResponse {
+  repeated InventarioListResponse inventarios = 1;
+}
+
+message ObtenerInventarioPorIdRequest {
+  int32 id = 1;
+}
+
+message Inventario {
+  string categoria = 1;
+  string descripcion = 2;
+  int32 cantidad = 3;
+}
+
+message ObtenerInventarioPorIdResponse {
+  Inventario inventario = 1;
+  string message = 2;
 }

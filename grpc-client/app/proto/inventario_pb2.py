@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10inventario.proto\x12\ninventario\"c\n\x11InventarioRequest\x12\x11\n\tcategoria\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scripcion\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x03 \x01(\x05\x12\x14\n\x0cusuario_alta\x18\x04 \x01(\t\"m\n\x1aModificarInventarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scripcion\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x03 \x01(\x05\x12\x1c\n\x14usuario_modificacion\x18\x04 \x01(\t\"A\n\x15\x42\x61jaInventarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x1c\n\x14usuario_modificacion\x18\x02 \x01(\t\"B\n\x12InventarioResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\x05\x32\x9d\x02\n\x11InventarioService\x12T\n\x13RegistrarInventario\x12\x1d.inventario.InventarioRequest\x1a\x1e.inventario.InventarioResponse\x12]\n\x13ModificarInventario\x12&.inventario.ModificarInventarioRequest\x1a\x1e.inventario.InventarioResponse\x12S\n\x0e\x42\x61jaInventario\x12!.inventario.BajaInventarioRequest\x1a\x1e.inventario.InventarioResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10inventario.proto\x12\ninventario\"c\n\x11InventarioRequest\x12\x11\n\tcategoria\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scripcion\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x03 \x01(\x05\x12\x14\n\x0cusuario_alta\x18\x04 \x01(\t\"m\n\x1aModificarInventarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scripcion\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x03 \x01(\x05\x12\x1c\n\x14usuario_modificacion\x18\x04 \x01(\t\"A\n\x15\x42\x61jaInventarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x1c\n\x14usuario_modificacion\x18\x02 \x01(\t\"B\n\x12InventarioResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\x05\"\x07\n\x05\x45mpty\"^\n\x16InventarioListResponse\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcategoria\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scripcion\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x04 \x01(\x05\"S\n\x18ListarInventarioResponse\x12\x37\n\x0binventarios\x18\x01 \x03(\x0b\x32\".inventario.InventarioListResponse\"+\n\x1dObtenerInventarioPorIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"F\n\nInventario\x12\x11\n\tcategoria\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scripcion\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x03 \x01(\x05\"]\n\x1eObtenerInventarioPorIdResponse\x12*\n\ninventario\x18\x01 \x01(\x0b\x32\x16.inventario.Inventario\x12\x0f\n\x07message\x18\x02 \x01(\t2\xdb\x03\n\x11InventarioService\x12T\n\x13RegistrarInventario\x12\x1d.inventario.InventarioRequest\x1a\x1e.inventario.InventarioResponse\x12]\n\x13ModificarInventario\x12&.inventario.ModificarInventarioRequest\x1a\x1e.inventario.InventarioResponse\x12S\n\x0e\x42\x61jaInventario\x12!.inventario.BajaInventarioRequest\x1a\x1e.inventario.InventarioResponse\x12K\n\x10ListarInventario\x12\x11.inventario.Empty\x1a$.inventario.ListarInventarioResponse\x12o\n\x16ObtenerInventarioPorId\x12).inventario.ObtenerInventarioPorIdRequest\x1a*.inventario.ObtenerInventarioPorIdResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,6 +39,18 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_BAJAINVENTARIOREQUEST']._serialized_end=309
   _globals['_INVENTARIORESPONSE']._serialized_start=311
   _globals['_INVENTARIORESPONSE']._serialized_end=377
-  _globals['_INVENTARIOSERVICE']._serialized_start=380
-  _globals['_INVENTARIOSERVICE']._serialized_end=665
+  _globals['_EMPTY']._serialized_start=379
+  _globals['_EMPTY']._serialized_end=386
+  _globals['_INVENTARIOLISTRESPONSE']._serialized_start=388
+  _globals['_INVENTARIOLISTRESPONSE']._serialized_end=482
+  _globals['_LISTARINVENTARIORESPONSE']._serialized_start=484
+  _globals['_LISTARINVENTARIORESPONSE']._serialized_end=567
+  _globals['_OBTENERINVENTARIOPORIDREQUEST']._serialized_start=569
+  _globals['_OBTENERINVENTARIOPORIDREQUEST']._serialized_end=612
+  _globals['_INVENTARIO']._serialized_start=614
+  _globals['_INVENTARIO']._serialized_end=684
+  _globals['_OBTENERINVENTARIOPORIDRESPONSE']._serialized_start=686
+  _globals['_OBTENERINVENTARIOPORIDRESPONSE']._serialized_end=779
+  _globals['_INVENTARIOSERVICE']._serialized_start=782
+  _globals['_INVENTARIOSERVICE']._serialized_end=1257
 # @@protoc_insertion_point(module_scope)

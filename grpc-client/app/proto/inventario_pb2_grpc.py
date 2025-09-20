@@ -3,9 +3,9 @@
 import grpc
 import warnings
 
-from app.proto import inventario_pb2 as inventario__pb2
+from . import inventario_pb2 as inventario__pb2
 
-GRPC_GENERATED_VERSION = '1.74.0'
+GRPC_GENERATED_VERSION = '1.75.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -49,6 +49,16 @@ class InventarioServiceStub(object):
                 request_serializer=inventario__pb2.BajaInventarioRequest.SerializeToString,
                 response_deserializer=inventario__pb2.InventarioResponse.FromString,
                 _registered_method=True)
+        self.ListarInventario = channel.unary_unary(
+                '/inventario.InventarioService/ListarInventario',
+                request_serializer=inventario__pb2.Empty.SerializeToString,
+                response_deserializer=inventario__pb2.ListarInventarioResponse.FromString,
+                _registered_method=True)
+        self.ObtenerInventarioPorId = channel.unary_unary(
+                '/inventario.InventarioService/ObtenerInventarioPorId',
+                request_serializer=inventario__pb2.ObtenerInventarioPorIdRequest.SerializeToString,
+                response_deserializer=inventario__pb2.ObtenerInventarioPorIdResponse.FromString,
+                _registered_method=True)
 
 
 class InventarioServiceServicer(object):
@@ -72,6 +82,18 @@ class InventarioServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListarInventario(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ObtenerInventarioPorId(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_InventarioServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -89,6 +111,16 @@ def add_InventarioServiceServicer_to_server(servicer, server):
                     servicer.BajaInventario,
                     request_deserializer=inventario__pb2.BajaInventarioRequest.FromString,
                     response_serializer=inventario__pb2.InventarioResponse.SerializeToString,
+            ),
+            'ListarInventario': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListarInventario,
+                    request_deserializer=inventario__pb2.Empty.FromString,
+                    response_serializer=inventario__pb2.ListarInventarioResponse.SerializeToString,
+            ),
+            'ObtenerInventarioPorId': grpc.unary_unary_rpc_method_handler(
+                    servicer.ObtenerInventarioPorId,
+                    request_deserializer=inventario__pb2.ObtenerInventarioPorIdRequest.FromString,
+                    response_serializer=inventario__pb2.ObtenerInventarioPorIdResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -172,6 +204,60 @@ class InventarioService(object):
             '/inventario.InventarioService/BajaInventario',
             inventario__pb2.BajaInventarioRequest.SerializeToString,
             inventario__pb2.InventarioResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListarInventario(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/inventario.InventarioService/ListarInventario',
+            inventario__pb2.Empty.SerializeToString,
+            inventario__pb2.ListarInventarioResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ObtenerInventarioPorId(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/inventario.InventarioService/ObtenerInventarioPorId',
+            inventario__pb2.ObtenerInventarioPorIdRequest.SerializeToString,
+            inventario__pb2.ObtenerInventarioPorIdResponse.FromString,
             options,
             channel_credentials,
             insecure,

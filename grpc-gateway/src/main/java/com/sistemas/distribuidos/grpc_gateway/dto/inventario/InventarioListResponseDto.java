@@ -1,15 +1,14 @@
 package com.sistemas.distribuidos.grpc_gateway.dto.inventario;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Builder
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class InventarioRequestDto {
+public class InventarioListResponseDto {
+    @JsonIgnore
+    private int id;
     private String categoria;
     private String descripcion;
     private int cantidad;

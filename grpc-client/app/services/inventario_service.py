@@ -1,9 +1,10 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app import models
+from app import crud, models, mapper, database
 from app.database import SessionLocal
 import app.proto.inventario_pb2 as inventario_pb2
 import app.proto.inventario_pb2_grpc as inventario_pb2_grpc
+import grpc
 
 class InventarioService:
     def registrar_inventario(self, db: Session, request):
@@ -42,6 +43,9 @@ class InventarioService:
         return inventario
 
 class InventarioGRPCService(inventario_pb2_grpc.InventarioServiceServicer):
+    def __init__(self):
+        self.db_session = database.SessionLocal
+
     def RegistrarInventario(self, request, context):
         db = SessionLocal()
         service = InventarioService()
@@ -71,3 +75,32 @@ class InventarioGRPCService(inventario_pb2_grpc.InventarioServiceServicer):
             message="Inventario dado de baja correctamente" if inventario else "No encontrado",
             id=inventario.id if inventario else 0
         )
+
+    def ListarInventario(self, request, context):
+        print("Entró al metodo ListaInventario del servicio gRPC")
+        db: Session = self.db_session()
+        try:
+            inventario = crud.listar_inventario(db)
+            inventarios_proto = []
+
+            for item in inventario:
+                inventario_proto = mapper.ProtoMapper.inventario_to_inventario_list_response_proto(item)
+                inventarios_proto.append(inventario_proto)
+
+            response = inventario_pb2.ListarInventarioResponse(inventarios=inventarios_proto)
+            return response
+        finally:
+            db.close()
+    
+    def ObtenerInventarioPorId(self, request, context):
+        print("Entró al metodo ObtenerInventarioPorId del servicio gRPC")
+        db: Session = self.db_session()
+        try:
+            resp, err = crud.obtener_inventario_por_id(db, request.id)
+            if err:
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details(err)
+                return inventario_pb2.ObtenerInventarioPorIdResponse()
+            return mapper.ProtoMapper.inventario_to_obtener_inventario_por_id_response_proto(resp, "")
+        finally:
+            db.close()

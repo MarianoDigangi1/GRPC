@@ -1,15 +1,12 @@
 package com.sistemas.distribuidos.grpc_gateway.dto.inventario;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Builder
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class InventarioRequestDto {
+public class InventarioDto {
+    private int id;
     private String categoria;
     private String descripcion;
     private int cantidad;

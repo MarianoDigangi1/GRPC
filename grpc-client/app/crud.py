@@ -347,3 +347,13 @@ def baja_inventario(db, inventario_id: int, usuario_modificacion: str):
         db.commit()
         db.refresh(db_inventario)
     return db_inventario
+
+def listar_inventario(db: Session):
+    inventarios = db.query(models.Inventario).filter(models.Inventario.eliminado == False).all()
+    return inventarios
+
+def obtener_inventario_por_id(db: Session, inventario_id: int):
+    inventario = db.query(models.Inventario).filter_by(id=inventario_id).first()
+    if not inventario:
+        return None, "Inventario no encontrado."
+    return inventario, None

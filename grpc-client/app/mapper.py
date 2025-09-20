@@ -1,4 +1,4 @@
-from app.proto import usuarios_pb2, eventos_pb2
+from app.proto import usuarios_pb2, eventos_pb2, inventario_pb2
 from app import schemas
 from datetime import datetime
 
@@ -109,10 +109,28 @@ class ProtoMapper:
         miembros_ids=list(getattr(request, "miembros_ids", [])) or [],
         pasado=datetime.fromisoformat(fecha_iso) < datetime.now() if fecha_iso else False
         )
+    
+    @staticmethod
+    def inventario_to_inventario_list_response_proto(request):
+        return inventario_pb2.InventarioListResponse(
+            id=getattr(request, "id", 0) or 0,
+            categoria=getattr(request, "categoria", "") or "",
+            descripcion=getattr(request, "descripcion", "") or "",
+            cantidad=getattr(request, "cantidad", 0) or 0
+        )
+    
+    @staticmethod
+    def inventario_to_obtener_inventario_por_id_response_proto(request, mensaje=""):
+        return inventario_pb2.ObtenerInventarioPorIdResponse(
+            inventario = inventario_pb2.Inventario(
+                categoria=getattr(request, "categoria", "") or "",
+                descripcion=getattr(request, "descripcion", "") or "",
+                cantidad=getattr(request, "cantidad", 0) or 0
+            ),
+            message=mensaje
+        )
 
-    
-    
-    
+
 class SchemaMapper:
     
     @staticmethod
