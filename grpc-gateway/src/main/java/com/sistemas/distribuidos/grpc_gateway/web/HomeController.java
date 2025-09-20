@@ -1,8 +1,10 @@
 package com.sistemas.distribuidos.grpc_gateway.web;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.user.ListarUsuariosResponseDto;
+import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +19,9 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("title", "Spring Boot + Thymeleaf");
-        model.addAttribute("message", "¡Hola! Esta es una vista renderizada con Thymeleaf.");
-        return "index"; // src/main/resources/templates/index.html
+    public String index(@AuthenticationPrincipal CustomUserPrincipal userPrincipal, Model model) {
+        model.addAttribute("usuarioActual", userPrincipal);
+        return "index";
     }
 
     @GetMapping("/login")

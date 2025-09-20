@@ -16,21 +16,29 @@
 </head>
 <body>
   <div class="card">
-    <h1 th:text="${title}">Spring Boot + Thymeleaf</h1>
-    <p th:text="${message}">¡Hola! Esta es una vista renderizada con Thymeleaf.</p>
+    <h1>Inicio</h1>
 
-    <p>
-      Plantillas en <code>src/main/resources/templates/</code>.<br />
-      Recursos estáticos en <code>src/main/resources/static/</code>.
-    </p>
-    <a class="btn" href="/">Recargar</a>
-    <a class="btn" style="margin-left:.5rem" href="/login">Ir a Login</a>
-    <a class="btn" style="margin-left:.5rem" href="/usuarios">Administrar Usuarios</a>
-    <a class="btn" style="margin-left:.5rem" href="/eventos">Administrar Eventos</a>
-    <a class="btn" style="margin-left:.5rem" href="/inventario">Administrar Inventarios</a>
+    <div th:if="${usuarioActual != null}" style="margin: 1rem 0; padding: 0.8rem; background: #1a2332; border-radius: 8px;">
+      <p style="margin: 0; color: #9fb0c5;">
+        Bienvenido, <strong th:text="${usuarioActual.username}">Usuario</strong> 
+        (<span th:text="${usuarioActual.role}">Rol</span>)
+      </p>
+    </div>
+    
 
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;">
+      <a class="btn" href="/">Recargar</a>
+      <a class="btn" href="/login">Ir a Login</a>
 
+      <a class="btn" th:if="${usuarioActual != null and usuarioActual.role == 'Presidente'}"
+         href="/usuarios">Administrar Usuarios</a>
 
+      <a class="btn" th:if="${usuarioActual != null and (usuarioActual.role == 'Presidente' or usuarioActual.role == 'Coordinador' or usuarioActual.role == 'Voluntario')}"
+         href="/eventos">Administrar Eventos</a>
+
+      <a class="btn" th:if="${usuarioActual != null and (usuarioActual.role == 'Presidente' or usuarioActual.role == 'Vocal')}"
+         href="/inventario">Administrar Inventarios</a>
+    </div>
   </div>
 </body>
 </html>
