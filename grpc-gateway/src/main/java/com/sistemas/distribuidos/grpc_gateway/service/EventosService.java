@@ -61,6 +61,15 @@ public class EventosService {
         return response.getMensaje();
     }
 
+    public EventoDto buscarEventoPorId(int id) {
+        List<EventoDto> eventos = listarEventos();
+        return eventos.stream()
+                .filter(ev -> ev.getId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
+
     public String asignarOQuitarUsuario(AsignarQuitarRequestDto dto) {
         AsignarQuitarResponse response;
 

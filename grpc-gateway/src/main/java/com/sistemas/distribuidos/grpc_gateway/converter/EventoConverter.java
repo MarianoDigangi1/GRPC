@@ -15,7 +15,7 @@ public class EventoConverter {
     public static CrearEventoRequest convertCrearEventoRequestFromDto(CrearEventoRequestDto dto) {
         CrearEventoRequest request = CrearEventoRequest.newBuilder()
             .setNombre(dto.getNombre())
-            .setDescripcion(dto.getDescripcion())
+            .setDescripcion(dto.getDescripcion()!= null ? dto.getDescripcion() : "")
             .setFechaEventoIso(dto.getFechaEventoIso() != null ? dto.getFechaEventoIso().format(FORMATTER) : "")
             .addAllMiembrosIds(dto.getMiembrosIds() != null ? dto.getMiembrosIds() : List.of())
             .setActorUsuarioId(dto.getActorUsuarioId())
@@ -69,6 +69,7 @@ public class EventoConverter {
     }
 
     public static ModificarEventoResponseDto convertModificarEventoResponseToDto(ModificarEventoResponse response) {
+
         return ModificarEventoResponseDto.builder().evento(
                         EventoDto.builder()
                                 .id(response.getEvento().getId())
@@ -83,6 +84,7 @@ public class EventoConverter {
                 )
                 .mensaje(response.getMensaje())
                 .build();
+
     }
 
     public static BajaEventoRequest convertBajaEventoRequestFromDto(BajaEventoRequestDto dto) {
@@ -108,8 +110,7 @@ public class EventoConverter {
             return null;
         }
 
-        // Debug: mostrar qué fecha está llegando del backend
-        System.out.println("Fecha recibida gRPC: " + response.getFechaEventoIso());
+
 
         return EventoDto.builder()
                 .id(response.getId())

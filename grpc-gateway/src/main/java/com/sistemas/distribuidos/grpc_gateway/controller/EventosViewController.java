@@ -1,21 +1,26 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
+import com.sistemas.distribuidos.grpc_gateway.dto.evento.*;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.UserResponseDto;
+import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
+import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.EventosService;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
-import com.sistemas.distribuidos.grpc_gateway.dto.evento.CrearEventoRequestDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.evento.EventoDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,23 +73,26 @@ public class EventosViewController {
         model.addAttribute("eventos", eventos);
         return "eventos/eventos";
 
-        /*model.addAttribute("eventos", eventos);
-        //System.out.println("MOSTRANDO TEST:"+model.addAttribute("nombresPorId", nombresPorId));
-        model.addAttribute("nombresPorId", nombresPorId);
-        return "eventos/eventos";*/
+
     }
 
+
+
     @GetMapping("/nuevo")
-    public String mostrarFormularioNuevoEvento() {
-        return "eventos/nuevo_evento"; // templates/eventos/nuevo_evento.html
-    }
+    public String mostrarFormularioNuevoEvento(@RequestParam(required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("errorMessage", error);
+        }
+    return "eventos/nuevo_evento";
+}
+
 
     @PostMapping("/crear")
     public String crearEvento(@RequestParam String nombre,
                               @RequestParam String descripcion,
-                              @RequestParam String fechaEventoIso) {
-
-        // Parse del valor del <input type="datetime-local">
+                              @RequestParam String fechaEventoIso
+                                ) {
+        try {
         LocalDateTime fecha;
         try {
             fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT);
@@ -95,14 +103,157 @@ public class EventosViewController {
         CrearEventoRequestDto dto = new CrearEventoRequestDto();
         dto.setNombre(nombre);
         dto.setDescripcion(descripcion);
-        dto.setFechaEventoIso(fecha);  // ahora LocalDateTime
-        dto.setActorUsuarioId(1);      // temporal para probar
-        dto.setActorRol("Presidente"); // temporal para probar
-
-        System.out.println("➡ Controller -> DTO listo: " + dto);
+        dto.setFechaEventoIso(fecha);
+        dto.setActorUsuarioId(1);
+        dto.setActorRol("Presidente");
 
         eventosService.crearEvento(dto);
-        return "redirect:/eventos"; // después de crear, vuelve a la lista
-    
+        return "redirect:/eventos";
+
+    } catch (GrpcConnectionException e) {
+        // Usamos RedirectAttributes para pasar el error como flash attribute
+        return "redirect:/nuevo?error=" + e.getMessage();
     }
-}
+
+    }
+
+    @PostMapping("/eventos/editar/{id}")
+    public String editarEvento(
+            @PathVariable int id,
+            @RequestParam String nombre,
+            @RequestParam String descripcion,
+            @RequestParam String fechaEventoIso,
+            @RequestParam(required = false) List<Integer> agregarMiembrosIds,
+            @RequestParam(required = false) List<Integer> quitarMiembrosIds,
+            @RequestParam(required = false) List<Integer> donacionesInventarioIds,
+            @RequestParam(required = false) List<Integer> cantidadesUsadas,
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            Model model) {
+
+        // Parseo de fecha
+        LocalDateTime fecha;
+        try {
+            fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT);
+        } catch (Exception e) {
+            fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT_SEC);
+        }
+
+        // Donaciones
+        List<DonacionUsadaDto> donaciones = new ArrayList<>();
+        if (donacionesInventarioIds != null && cantidadesUsadas != null) {
+            for (int i = 0; i < donacionesInventarioIds.size(); i++) {
+                donaciones.add(new DonacionUsadaDto(
+                        donacionesInventarioIds.get(i),
+                        cantidadesUsadas.get(i)
+                ));
+            }
+        }
+
+        // Construcción del DTO usando Lombok builder
+        ModificarEventoRequestDto dto = ModificarEventoRequestDto.builder()
+                .id(id)
+                .nombre(nombre)
+                .descripcion(descripcion)   
+                .fechaEventoIso(fecha) // asegurate que en el DTO sea LocalDateTime
+                .agregarMiembrosIds(agregarMiembrosIds != null ? agregarMiembrosIds : List.of())
+                .quitarMiembrosIds(quitarMiembrosIds != null ? quitarMiembrosIds : List.of())
+                .donacionesUsadas(donaciones)
+                .actorUsuarioId(user.getId())   // reemplazar por usuario logueado real
+                .actorRol(user.getRole())
+                .build();
+        System.out.println("️ Controller: dto = " + dto);
+        try {
+            eventosService.modificarEvento(dto);
+            return "redirect:/eventos";
+        } catch (GrpcConnectionException e) {
+            model.addAttribute("error", e.getMessage());
+            return "eventos/editar_evento";
+        }
+
+
+    }
+
+    @GetMapping("/eventos/eliminar/{id}")
+    public String mostrarConfirmacionBaja(@PathVariable int id, Model model) {
+        EventoDto evento = eventosService.buscarEventoPorId(id);
+
+        if (evento == null) {
+            model.addAttribute("error", "Evento no encontrado");
+            return "eventos/eventos";
+        }
+
+        // Validamos que sea a futuro
+        if (evento.getFechaEventoIso() != null && evento.getFechaEventoIso().isBefore(LocalDateTime.now())) {
+            model.addAttribute("error", "Solo se pueden dar de baja eventos a futuro");
+            return "eventos/eventos";
+        }
+
+        model.addAttribute("evento", evento);
+        return "eventos/confirmar_baja"; // vista thymeleaf de confirmación
+    }
+
+    @PostMapping("/eventos/eliminar/{id}")
+    public String eliminarEvento(@PathVariable int id,
+                                 @AuthenticationPrincipal CustomUserPrincipal user,
+                                 Model model) {
+        try {
+            // Armamos el DTO para baja
+            BajaEventoRequestDto dto = new BajaEventoRequestDto();
+            dto.setId(id);
+            dto.setActorUsuarioId(user.getId());
+            dto.setActorRol(user.getRole());
+
+            String mensaje = eventosService.darBajaEvento(dto);
+            System.out.println("🗑 Baja evento -> " + mensaje);
+
+            return "redirect:/eventos";
+        } catch (GrpcConnectionException e) {
+            model.addAttribute("error", e.getMessage());
+            return "eventos/eventos";
+        }
+    }
+
+
+
+    @GetMapping("/eventos/editar/{id}")
+    public String mostrarFormularioEditar(@PathVariable int id, Model model) {
+        EventoDto evento = eventosService.buscarEventoPorId(id);
+
+        if (evento == null) {
+            model.addAttribute("error", "Evento no encontrado");
+            return "eventos/eventos";
+        }
+
+        // Traigo todos los usuarios
+        List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
+
+        // Miembros actuales del evento
+        List<UserResponseDto> miembrosActuales = usuarios.stream()
+                .filter(u -> evento.getMiembrosIds().contains(u.getId()))
+                .toList();
+
+        // Usuarios disponibles (no son miembros del evento)
+        List<UserResponseDto> disponibles = usuarios.stream()
+                .filter(u -> !evento.getMiembrosIds().contains(u.getId()))
+                .toList();
+
+
+        model.addAttribute("evento", evento);
+        model.addAttribute("miembrosActuales", miembrosActuales);
+        model.addAttribute("usuariosDisponibles", disponibles);
+        return "eventos/editar_evento";
+    }
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+

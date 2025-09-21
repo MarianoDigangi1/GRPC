@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmar Baja de Evento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: rgb(43, 85, 223);
+      margin-bottom: 1rem;
+    }
+    p {
+      margin-bottom: 2rem;
+      color: #333;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      margin: 0.3rem;
+      border-radius: 5px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .btn-confirm {
+      background-color: #cf4194;
+    }
+    .btn-confirm:hover {
+      background-color: #b5279d;
+    }
+    .btn-cancel {
+      background-color: #6c757d;
+    }
+    .btn-cancel:hover {
+      background-color: #565e64;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Confirmar Baja</h1>
+    <p>¿Seguro que deseas dar de baja el evento <b th:text="${evento.nombre}">Evento</b>?</p>
+    <form th:action="@{'/eventos/eliminar/' + ${evento.id}}" method="post">
+      <button type="submit" class="btn btn-confirm">Sí, eliminar</button>
+      <a href="/eventos" class="btn btn-cancel">Cancelar</a>
+    </form>
+  </div>
+</body>
+</html>
