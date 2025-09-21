@@ -59,8 +59,8 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
  
             usuarioUpdate = crud.modificar_usuario(db, request.id, usuario_update)
 
-            print("Estoy en clase usuario_service: Usuario modificado")
-            print(usuarioUpdate)
+            #print("Estoy en clase usuario_service: Usuario modificado")
+            #print(usuarioUpdate)
 
             usuarioToProto = usuarios_pb2.CreateUserRequest(
                 nombreUsuario=usuarioUpdate.nombreUsuario,
@@ -70,8 +70,8 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 email=usuarioUpdate.email,
                 rol=usuarioUpdate.rol if usuarioUpdate.rol else ""
             )
-            print("Estoy en clase usuario_service: Retornando respuesta de usuario modificado")
-            print(usuarioUpdate)
+            #print("Estoy en clase usuario_service: Retornando respuesta de usuario modificado")
+            #print(usuarioUpdate)
 
             return usuarios_pb2.UpdateAndDeleteUserResponse(
                 usuario=usuarioToProto,
@@ -134,5 +134,20 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 usuarios_proto.append(usuario_proto)
             response = usuarios_pb2.ListarUsuariosResponse(usuarios=usuarios_proto)
             return response
+        finally:
+            db.close()
+
+    def ObtenerUsuarioPorId(self, request, context):
+        print("Entró al método ObtenerUsuarioPorId del servicio gRPC")
+        db: Session = self.db_session()
+        try:
+            usuario = crud.obtener_usuario_por_id(db, request.id)
+            if usuario is None:
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details(f"Usuario con ID {request.id} no encontrado.")
+                return usuarios_pb2.UserResponse()  # Retorna un objeto vacío en caso de no encontrar el usuario
+            
+            usuario_proto = mapper.ProtoMapper.usuario_to_usuario_response_proto(usuario)
+            return usuarios_pb2.UserResponse(usuario=usuario_proto)
         finally:
             db.close()

@@ -46,14 +46,11 @@ def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
     return SchemaMapper.usuario_request_to_usuario_response(usuario, True, clave, "Usuario creado correctamente")
 
 ########################################################################################################
-########################################################################################################
 # Modificar usuario
 ########################################################################################################
-########################################################################################################
+
 def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
     usuario = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
-    print("Estoy en clase crud - Usuario  modificar:")
-    print(usuario)
 
     if not usuario:
         print("Estoy en clase crud - Usuario no encontrado")
@@ -70,6 +67,17 @@ def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
     
     if usuario:
         print("Estoy en clase crud - Modificando usuario...")
+        # Imprimir información del usuario antes de modificar
+        print("Usuario encontrado:")
+        print({
+            "id": usuario.id,
+            "nombreUsuario": usuario.nombreUsuario,
+            "nombre": usuario.nombre,
+            "apellido": usuario.apellido,
+            "email": usuario.email,
+            "rol": usuario.rol,
+            "estaActivo": usuario.estaActivo
+        })
         usuario.nombreUsuario = datos.nombreUsuario
         usuario.nombre = datos.nombre
         usuario.apellido = datos.apellido
@@ -90,11 +98,6 @@ def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
             mensaje="Usuario modificado correctamente"
         )
 
-########################################################################################################
-########################################################################################################
-# Baja usuario (Baja lógica)
-########################################################################################################
-########################################################################################################
 def baja_usuario(db: Session, user_id: int):
     usuario = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
     
@@ -118,7 +121,9 @@ def autenticar_usuario(db: Session, identificador: str, clave: str):
 
     if not usuario:
         print("Usuario no encontrado en la base de datos")
+
         return schemas.LoginResponse(
+            id=0,
             loginResult=LoginResultCode.LOGIN_USER_NOT_FOUND,
             mensaje="Usuario no encontrado",
             nombreUsuario="",
@@ -142,6 +147,12 @@ def listar_usuarios(db: Session):
     usuarios = db.query(models.Usuario).all()
     return usuarios
 
+def obtener_usuario_por_id(db: Session, user_id: int):
+    usuario = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
+    if not usuario:
+        return None
+    return usuario
+########################################################################################################
     # ---------- Helpers ----------
 def _es_futuro(dt: datetime) -> bool:
     return dt > datetime.now()
@@ -300,7 +311,12 @@ def listar_eventos_disponibles(db: Session):
             SchemaMapper.evento_model_to_response(ev, miembros_ids)
         )
     return result
-   
+   # result = []
+    #for ev in eventos:
+     #   miembros_ids = [eu.usuario_id for eu in ev.participantes]
+        # Reutilizamos el mismo mapper que ya usás en crear/modificar
+      #  result.append(SchemaMapper.evento_model_to_response(ev, miembros_ids))
+   # return result  
 
 ########################################################################################################
 ########################################################################################################
