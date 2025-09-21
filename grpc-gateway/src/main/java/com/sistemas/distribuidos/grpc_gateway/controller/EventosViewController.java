@@ -104,7 +104,6 @@ public class EventosViewController {
     public String editarEvento(
             @PathVariable int id,
             @RequestParam String nombre,
-            @RequestParam String descripcion,
             @RequestParam String fechaEventoIso,
             @RequestParam(required = false) List<Integer> agregarMiembrosIds,
             @RequestParam(required = false) List<Integer> quitarMiembrosIds,
@@ -135,7 +134,6 @@ public class EventosViewController {
         ModificarEventoRequestDto dto = ModificarEventoRequestDto.builder()
                 .id(id)
                 .nombre(nombre)
-                .descripcion(descripcion)
                 .fechaEventoIso(fecha)
                 .agregarMiembrosIds(agregarMiembrosIds != null ? agregarMiembrosIds : List.of())
                 .quitarMiembrosIds(quitarMiembrosIds != null ? quitarMiembrosIds : List.of())
