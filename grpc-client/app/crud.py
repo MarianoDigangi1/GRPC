@@ -300,12 +300,7 @@ def listar_eventos_disponibles(db: Session):
             SchemaMapper.evento_model_to_response(ev, miembros_ids)
         )
     return result
-   # result = []
-    #for ev in eventos:
-     #   miembros_ids = [eu.usuario_id for eu in ev.participantes]
-        # Reutilizamos el mismo mapper que ya usás en crear/modificar
-      #  result.append(SchemaMapper.evento_model_to_response(ev, miembros_ids))
-   # return result  
+   
 
 ########################################################################################################
 ########################################################################################################

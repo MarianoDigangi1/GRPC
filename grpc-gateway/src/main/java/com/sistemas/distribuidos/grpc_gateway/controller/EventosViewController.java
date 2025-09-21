@@ -14,12 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
-
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +27,8 @@ public class EventosViewController {
     private final EventosService eventosService;
     private final UsuarioService usuarioService;
 
-
     private static final DateTimeFormatter HTML_DT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private static final DateTimeFormatter HTML_DT_SEC = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-
 
     @Autowired
     public EventosViewController(EventosService eventosService, UsuarioService usuarioService) {
@@ -45,19 +39,14 @@ public class EventosViewController {
 
     @GetMapping("/eventos")
     public String vistaEventos(Model model) {
-        // llamar al servicio gRPC para traer eventos
         List<EventoDto> eventos = eventosService.listarEventos();
 
-         // llamar al servicio gRPC de usuarios
-        List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios(); 
+        List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
 
-         // armar mapa id → nombre completo
         Map<Integer, String> nombresPorId = usuarios.stream()
-            .collect(Collectors.toMap(UserResponseDto::getId,
-                                      u -> u.getNombre() + " " + u.getApellido()));
+                .collect(Collectors.toMap(UserResponseDto::getId,
+                        u -> u.getNombre() + " " + u.getApellido()));
 
-
-        // Enriquecemos cada evento con los nombres de sus miembros
         for (EventoDto ev : eventos) {
             List<Integer> ids = ev.getMiembrosIds();
             if (ids != null && !ids.isEmpty()) {
@@ -73,47 +62,41 @@ public class EventosViewController {
         model.addAttribute("eventos", eventos);
         return "eventos/eventos";
 
-
     }
-
-
 
     @GetMapping("/nuevo")
     public String mostrarFormularioNuevoEvento(@RequestParam(required = false) String error, Model model) {
         if (error != null) {
             model.addAttribute("errorMessage", error);
         }
-    return "eventos/nuevo_evento";
-}
-
+        return "eventos/nuevo_evento";
+    }
 
     @PostMapping("/crear")
     public String crearEvento(@RequestParam String nombre,
-                              @RequestParam String descripcion,
-                              @RequestParam String fechaEventoIso
-                                ) {
+            @RequestParam String descripcion,
+            @RequestParam String fechaEventoIso) {
         try {
-        LocalDateTime fecha;
-        try {
-            fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT);
-        } catch (Exception e) {
-            fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT_SEC);
+            LocalDateTime fecha;
+            try {
+                fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT);
+            } catch (Exception e) {
+                fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT_SEC);
+            }
+
+            CrearEventoRequestDto dto = new CrearEventoRequestDto();
+            dto.setNombre(nombre);
+            dto.setDescripcion(descripcion);
+            dto.setFechaEventoIso(fecha);
+            dto.setActorUsuarioId(1);
+            dto.setActorRol("Presidente");
+
+            eventosService.crearEvento(dto);
+            return "redirect:/eventos";
+
+        } catch (GrpcConnectionException e) {
+            return "redirect:/nuevo?error=" + e.getMessage();
         }
-
-        CrearEventoRequestDto dto = new CrearEventoRequestDto();
-        dto.setNombre(nombre);
-        dto.setDescripcion(descripcion);
-        dto.setFechaEventoIso(fecha);
-        dto.setActorUsuarioId(1);
-        dto.setActorRol("Presidente");
-
-        eventosService.crearEvento(dto);
-        return "redirect:/eventos";
-
-    } catch (GrpcConnectionException e) {
-        // Usamos RedirectAttributes para pasar el error como flash attribute
-        return "redirect:/nuevo?error=" + e.getMessage();
-    }
 
     }
 
@@ -144,8 +127,7 @@ public class EventosViewController {
             for (int i = 0; i < donacionesInventarioIds.size(); i++) {
                 donaciones.add(new DonacionUsadaDto(
                         donacionesInventarioIds.get(i),
-                        cantidadesUsadas.get(i)
-                ));
+                        cantidadesUsadas.get(i)));
             }
         }
 
@@ -153,12 +135,12 @@ public class EventosViewController {
         ModificarEventoRequestDto dto = ModificarEventoRequestDto.builder()
                 .id(id)
                 .nombre(nombre)
-                .descripcion(descripcion)   
-                .fechaEventoIso(fecha) // asegurate que en el DTO sea LocalDateTime
+                .descripcion(descripcion)
+                .fechaEventoIso(fecha)
                 .agregarMiembrosIds(agregarMiembrosIds != null ? agregarMiembrosIds : List.of())
                 .quitarMiembrosIds(quitarMiembrosIds != null ? quitarMiembrosIds : List.of())
                 .donacionesUsadas(donaciones)
-                .actorUsuarioId(user.getId())   // reemplazar por usuario logueado real
+                .actorUsuarioId(user.getId()) 
                 .actorRol(user.getRole())
                 .build();
         System.out.println("️ Controller: dto = " + dto);
@@ -169,7 +151,6 @@ public class EventosViewController {
             model.addAttribute("error", e.getMessage());
             return "eventos/editar_evento";
         }
-
 
     }
 
@@ -182,22 +163,20 @@ public class EventosViewController {
             return "eventos/eventos";
         }
 
-        // Validamos que sea a futuro
         if (evento.getFechaEventoIso() != null && evento.getFechaEventoIso().isBefore(LocalDateTime.now())) {
             model.addAttribute("error", "Solo se pueden dar de baja eventos a futuro");
             return "eventos/eventos";
         }
 
         model.addAttribute("evento", evento);
-        return "eventos/confirmar_baja"; // vista thymeleaf de confirmación
+        return "eventos/confirmar_baja"; 
     }
 
     @PostMapping("/eventos/eliminar/{id}")
     public String eliminarEvento(@PathVariable int id,
-                                 @AuthenticationPrincipal CustomUserPrincipal user,
-                                 Model model) {
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            Model model) {
         try {
-            // Armamos el DTO para baja
             BajaEventoRequestDto dto = new BajaEventoRequestDto();
             dto.setId(id);
             dto.setActorUsuarioId(user.getId());
@@ -213,8 +192,6 @@ public class EventosViewController {
         }
     }
 
-
-
     @GetMapping("/eventos/editar/{id}")
     public String mostrarFormularioEditar(@PathVariable int id, Model model) {
         EventoDto evento = eventosService.buscarEventoPorId(id);
@@ -224,19 +201,15 @@ public class EventosViewController {
             return "eventos/eventos";
         }
 
-        // Traigo todos los usuarios
         List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
 
-        // Miembros actuales del evento
         List<UserResponseDto> miembrosActuales = usuarios.stream()
                 .filter(u -> evento.getMiembrosIds().contains(u.getId()))
                 .toList();
 
-        // Usuarios disponibles (no son miembros del evento)
         List<UserResponseDto> disponibles = usuarios.stream()
                 .filter(u -> !evento.getMiembrosIds().contains(u.getId()))
                 .toList();
-
 
         model.addAttribute("evento", evento);
         model.addAttribute("miembrosActuales", miembrosActuales);
@@ -244,16 +217,4 @@ public class EventosViewController {
         return "eventos/editar_evento";
     }
 
-
-
-
-
-
-
-    }
-
-
-
-
-
-
+}

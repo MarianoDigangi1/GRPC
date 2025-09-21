@@ -3,7 +3,6 @@ package com.sistemas.distribuidos.grpc_gateway.controller;
 import com.sistemas.distribuidos.grpc_gateway.dto.evento.*;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.EventosService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,7 +24,7 @@ public class EventosRestController {
     public ResponseEntity<?> crearEvento(@RequestBody CrearEventoRequestDto request) {
         CrearEventoResponseDto response = eventosService.crearEvento(request);
 
-        if(response.getMensaje() != null && response.getMensaje().equals("Evento creado correctamente")){
+        if (response.getMensaje() != null && response.getMensaje().equals("Evento creado correctamente")) {
             return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.badRequest().body(response);
@@ -40,7 +39,7 @@ public class EventosRestController {
 
         ModificarEventoResponseDto response = eventosService.modificarEvento(request);
 
-        if(response.getMensaje() != null && response.getMensaje().equals("Evento modificado correctamente")){
+        if (response.getMensaje() != null && response.getMensaje().equals("Evento modificado correctamente")) {
             return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.badRequest().body(response);

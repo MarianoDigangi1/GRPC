@@ -34,14 +34,13 @@ message ModificarEventoRequest {
   string fecha_evento_iso = 3;         
   repeated int32 agregar_miembros_ids = 4;
   repeated int32 quitar_miembros_ids = 5;
-  // si el evento ya pasó, se permite registrar donaciones usadas:
   repeated DonacionUsada donaciones_usadas = 6;
   int32 actor_usuario_id = 7;
   string actor_rol = 8;
 }
 
 message ModificarEventoResponse {
-  Evento evento = 1;   // campos actuales
+  Evento evento = 1;   
   string mensaje = 2;
 }
 
@@ -57,10 +56,10 @@ message BajaEventoResponse {
 
 message AsignarQuitarRequest {
   int32 evento_id = 1;
-  int32 usuario_id = 2;       // a asignar/quitar
-  int32 actor_usuario_id = 3; // quien ejecuta
+  int32 usuario_id = 2;      
+  int32 actor_usuario_id = 3; 
   string actor_rol = 4;
-  bool agregar = 5;           // true: asignar, false: quitar
+  bool agregar = 5;           
 }
 
 message AsignarQuitarResponse {
@@ -75,8 +74,7 @@ message EventoResponse {
   string descripcion = 3;
   string fecha_evento_iso = 4;
   repeated int32 miembros_ids = 5;
-  bool pasado = 6; // true si la fecha del evento ya pasó
-}
+  bool pasado = 6; 
 
 message ListarEventosResponse {
   repeated EventoResponse eventos = 1;

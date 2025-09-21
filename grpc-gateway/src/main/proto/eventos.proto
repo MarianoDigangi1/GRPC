@@ -45,7 +45,7 @@ message ModificarEventoRequest {
 }
 
 message ModificarEventoResponse {
-  Evento evento = 1;   // campos actuales
+  Evento evento = 1;   
   string mensaje = 2;
 }
 
@@ -61,10 +61,10 @@ message BajaEventoResponse {
 
 message AsignarQuitarRequest {
   int32 evento_id = 1;
-  int32 usuario_id = 2;       // a asignar/quitar
-  int32 actor_usuario_id = 3; // quien ejecuta
+  int32 usuario_id = 2;       
+  int32 actor_usuario_id = 3; 
   string actor_rol = 4;
-  bool agregar = 5;           // true: asignar, false: quitar
+  bool agregar = 5;           
 }
 
 message AsignarQuitarResponse {
