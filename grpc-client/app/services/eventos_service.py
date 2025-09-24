@@ -1,12 +1,16 @@
 from sqlalchemy.orm import Session
-from app import crud, schemas, database, mapper
-from app.proto import eventos_pb2, eventos_pb2_grpc
 import grpc
+
+from app import schemas, database, mapper
+from app.proto import eventos_pb2, eventos_pb2_grpc
+from app.crud import evento as crud_evento  
+
 
 class EventoService(eventos_pb2_grpc.EventoServiceServicer):
     def __init__(self):
         self.db_session = database.SessionLocal
 
+    # Crear evento
     def CrearEvento(self, request, context):
         db: Session = self.db_session()
         try:
@@ -16,7 +20,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
                 fecha_evento_iso=request.fecha_evento_iso,
                 miembros_ids=list(request.miembros_ids)
             )
-            resp, err = crud.crear_evento(db, data)
+            resp, err = crud_evento.crear_evento(db, data)  # 👈 nuevo import
             if err:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details(err)
@@ -25,6 +29,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
         finally:
             db.close()
 
+    # Modificar evento
     def ModificarEvento(self, request, context):
         db: Session = self.db_session()
         try:
@@ -33,10 +38,12 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
                 fecha_evento_iso=request.fecha_evento_iso if request.fecha_evento_iso else None,
                 agregar_miembros_ids=list(request.agregar_miembros_ids),
                 quitar_miembros_ids=list(request.quitar_miembros_ids),
-                donaciones_usadas=[schemas.DonacionUsada(inventario_id=d.inventario_id, cantidad_usada=d.cantidad_usada)
-                                   for d in request.donaciones_usadas]
+                donaciones_usadas=[
+                    schemas.DonacionUsada(inventario_id=d.inventario_id, cantidad_usada=d.cantidad_usada)
+                    for d in request.donaciones_usadas
+                ]
             )
-            resp, err = crud.modificar_evento(db, request.id, data, request.actor_usuario_id, request.actor_rol)
+            resp, err = crud_evento.modificar_evento(db, request.id, data, request.actor_usuario_id, request.actor_rol)  # 👈 nuevo import
             if err:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details(err)
@@ -45,10 +52,11 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
         finally:
             db.close()
 
+    # Baja evento
     def BajaEvento(self, request, context):
         db: Session = self.db_session()
         try:
-            mensaje = crud.baja_evento(db, request.id)
+            mensaje = crud_evento.baja_evento(db, request.id)  # 👈 nuevo import
             if "Solo pueden eliminarse" in mensaje or "no encontrado" in mensaje:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details(mensaje)
@@ -57,10 +65,11 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
         finally:
             db.close()
 
+    # Asignar o quitar miembro
     def AsignarOQuitarMiembro(self, request, context):
         db: Session = self.db_session()
         try:
-            mensaje = crud.asignar_quitar_miembro(
+            mensaje = crud_evento.asignar_quitar_miembro(  # 👈 nuevo import
                 db,
                 evento_id=request.evento_id,
                 usuario_id=request.usuario_id,
@@ -76,18 +85,16 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
         finally:
             db.close()
 
+    # Listar eventos disponibles
     def ListarEventosDisponibles(self, request, context):
-        print("Entró al método ListarEventos del servicio gRPC")
+        print("Entró al método ListarEventosDisponibles del servicio gRPC")
         db: Session = self.db_session()
         try:
-            eventos = crud.listar_eventos_disponibles(db)
-            eventos_proto = []
-            for evento in eventos:
-                evento_proto = mapper.ProtoMapper.evento_to_evento_response_proto(evento)
-                eventos_proto.append(evento_proto)
-            
-            response = eventos_pb2.ListarEventosResponse(eventos=eventos_proto)
-            return response
-           
+            eventos = crud_evento.listar_eventos_disponibles(db)  # 👈 nuevo import
+            eventos_proto = [
+                mapper.ProtoMapper.evento_to_evento_response_proto(evento)
+                for evento in eventos
+            ]
+            return eventos_pb2.ListarEventosResponse(eventos=eventos_proto)
         finally:
-            db.close()        
+            db.close()

@@ -1,20 +1,22 @@
-from app import crud, schemas, database, mapper
-from app.proto import usuarios_pb2, usuarios_pb2_grpc
-from app.models import RolEnum  
 from sqlalchemy.orm import Session
 import grpc
+
+from app import schemas, database, mapper
+from app.proto import usuarios_pb2, usuarios_pb2_grpc
+from app.models import RolEnum  
+from app.crud import usuario as crud_usuario  
+
 
 class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
     
     def __init__(self):
         self.db_session = database.SessionLocal
 
-    # Funciona correctamente
+    # Crear usuario
     def CrearUsuario(self, request, context):
         print("Entró al método CrearUsuario del servicio gRPC")
         db: Session = self.db_session()
         try:
-            # Crear el objeto UsuarioCreate desde el request
             usuario_create = schemas.UsuarioCreate(
                 nombreUsuario=request.nombreUsuario,
                 nombre=request.nombre,
@@ -23,22 +25,15 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 email=request.email,
                 rol=request.rol
             )
-            # Crea el usuario en la base de datos
-            usuarioResponse = crud.crear_usuario(db, usuario_create) 
-            # Mapea el resultado a un objeto proto, para usarlo con gRPC      
+            usuarioResponse = crud_usuario.crear_usuario(db, usuario_create)  # 👈 nuevo import
             usuarioResponseProto = mapper.ProtoMapper.usuario_to_create_user_request_proto(usuarioResponse)
-            # Retorna el objeto proto
             return usuarioResponseProto
         finally:
             db.close()
 
-########################################################################################################
-########################################################################################################
-# Modificar usuario
-########################################################################################################
-########################################################################################################
+    # Modificar usuario
     def ModificarUsuario(self, request, context):
-        print("Estoy en clase usuario_service: Entró al método ModificarUsuario del servicio gRPC")
+        print("Entró al método ModificarUsuario del servicio gRPC")
         db: Session = self.db_session()
         
         if request.rol not in RolEnum.__members__ and request.rol not in [e.value for e in RolEnum]:
@@ -56,11 +51,7 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 rol=request.rol,
                 estaActivo=request.activo,
             )
- 
-            usuarioUpdate = crud.modificar_usuario(db, request.id, usuario_update)
-
-            #print("Estoy en clase usuario_service: Usuario modificado")
-            #print(usuarioUpdate)
+            usuarioUpdate = crud_usuario.modificar_usuario(db, request.id, usuario_update)  # 👈 nuevo import
 
             usuarioToProto = usuarios_pb2.CreateUserRequest(
                 nombreUsuario=usuarioUpdate.nombreUsuario,
@@ -70,35 +61,32 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 email=usuarioUpdate.email,
                 rol=usuarioUpdate.rol if usuarioUpdate.rol else ""
             )
-            #print("Estoy en clase usuario_service: Retornando respuesta de usuario modificado")
-            #print(usuarioUpdate)
 
             return usuarios_pb2.UpdateAndDeleteUserResponse(
                 usuario=usuarioToProto,
                 mensaje=usuarioUpdate.mensaje
             )
-        
-            #mapper.ProtoMapper.usuario_to_usuario_delete_and_update_response_proto(usuario_update)
         finally:
             db.close()
 
-    # Funciona correctamente
+    # Baja usuario
     def BajaUsuario(self, request, context):
         print("Entró al método BajaUsuario del servicio gRPC")
         db: Session = self.db_session()
         try:
-            mensaje = crud.baja_usuario(db, request.id)
+            mensaje = crud_usuario.baja_usuario(db, request.id)  # 👈 nuevo import
             return usuarios_pb2.UpdateAndDeleteUserResponse(mensaje=mensaje)
         finally:
             db.close()
 
+    # Login
     def Login(self, request, context):
         db: Session = self.db_session()
         try:
-            resultado = crud.autenticar_usuario(db, request.identificador, request.clave)
+            resultado = crud_usuario.autenticar_usuario(db, request.identificador, request.clave)  # 👈 nuevo import
             
             print("Resultado del login:")
-            print(resultado.loginResult + " " + resultado.apellido + " " + resultado.nombre)
+            print(f"{resultado.loginResult} {resultado.apellido} {resultado.nombre}")
 
             usuarioResponse = usuarios_pb2.Usuario(
                 id=resultado.id,
@@ -110,42 +98,39 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
                 rol=resultado.rol
             )
 
-            print("UsuarioResponse creado:" + str(usuarioResponse))
-            
             loginResponse = usuarios_pb2.LoginResponse(
                 result=resultado.loginResult,
                 mensaje=resultado.mensaje,
                 usuario=usuarioResponse
             )
-
             return loginResponse
         finally:
             db.close()
 
+    # Listar usuarios
     def ListarUsuarios(self, request, context):
         print("Entró al método ListarUsuarios del servicio gRPC")
         db: Session = self.db_session()
         try:
-            usuarios = crud.listar_usuarios(db)
-            usuarios_proto = []
-
-            for usuario in usuarios:
-                usuario_proto = mapper.ProtoMapper.usuario_to_usuario_response_proto(usuario)
-                usuarios_proto.append(usuario_proto)
-            response = usuarios_pb2.ListarUsuariosResponse(usuarios=usuarios_proto)
-            return response
+            usuarios = crud_usuario.listar_usuarios(db)  # 👈 nuevo import
+            usuarios_proto = [
+                mapper.ProtoMapper.usuario_to_usuario_response_proto(usuario)
+                for usuario in usuarios
+            ]
+            return usuarios_pb2.ListarUsuariosResponse(usuarios=usuarios_proto)
         finally:
             db.close()
 
+    # Obtener usuario por ID
     def ObtenerUsuarioPorId(self, request, context):
         print("Entró al método ObtenerUsuarioPorId del servicio gRPC")
         db: Session = self.db_session()
         try:
-            usuario = crud.obtener_usuario_por_id(db, request.id)
+            usuario = crud_usuario.obtener_usuario_por_id(db, request.id)  # 👈 nuevo import
             if usuario is None:
                 context.set_code(grpc.StatusCode.NOT_FOUND)
                 context.set_details(f"Usuario con ID {request.id} no encontrado.")
-                return usuarios_pb2.UserResponse()  # Retorna un objeto vacío en caso de no encontrar el usuario
+                return usuarios_pb2.UserResponse()  
             
             usuario_proto = mapper.ProtoMapper.usuario_to_usuario_response_proto(usuario)
             return usuarios_pb2.UserResponse(usuario=usuario_proto)

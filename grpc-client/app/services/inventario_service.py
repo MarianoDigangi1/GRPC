@@ -1,102 +1,88 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app import crud, models, mapper, database
-from app.database import SessionLocal
-import app.proto.inventario_pb2 as inventario_pb2
-import app.proto.inventario_pb2_grpc as inventario_pb2_grpc
 import grpc
 
-class InventarioService:
-    def registrar_inventario(self, db: Session, request):
-        inventario = models.Inventario(
-            categoria=request.categoria,
-            descripcion=request.descripcion,
-            cantidad=request.cantidad,
-            eliminado=False,
-            created_at=datetime.now(),
-            created_by=request.usuario_alta  # Aquí debes enviar el ID del usuario
-        )
-        db.add(inventario)
-        db.commit()
-        db.refresh(inventario)
-        return inventario
+from app import mapper, database
+from app.database import SessionLocal
+from app.crud import inventario as crud_inventario   
+import app.proto.inventario_pb2 as inventario_pb2
+import app.proto.inventario_pb2_grpc as inventario_pb2_grpc
 
-    def modificar_inventario(self, db: Session, request):
-        inventario = db.query(models.Inventario).filter_by(id=request.id, eliminado=False).first()
-        if inventario:
-            inventario.descripcion = request.descripcion
-            inventario.cantidad = request.cantidad
-            inventario.updated_at = datetime.now()
-            inventario.updated_by = request.usuario_modificacion  # ID del usuario
-            db.commit()
-            db.refresh(inventario)
-        return inventario
-
-    def baja_inventario(self, db: Session, request):
-        inventario = db.query(models.Inventario).filter_by(id=request.id, eliminado=False).first()
-        if inventario:
-            inventario.eliminado = True
-            inventario.updated_at = datetime.now()
-            inventario.updated_by = request.usuario_modificacion
-            db.commit()
-            db.refresh(inventario)
-        return inventario
 
 class InventarioGRPCService(inventario_pb2_grpc.InventarioServiceServicer):
     def __init__(self):
         self.db_session = database.SessionLocal
 
+    # Registrar inventario
     def RegistrarInventario(self, request, context):
-        db = SessionLocal()
-        service = InventarioService()
-        inventario = service.registrar_inventario(db, request)
-        return inventario_pb2.InventarioResponse(
-            success=True if inventario else False,
-            message="Inventario registrado correctamente" if inventario else "Error al registrar",
-            id=inventario.id if inventario else 0
-        )
+        db: Session = SessionLocal()
+        try:
+            inventario_data = {
+                "categoria": request.categoria,
+                "descripcion": request.descripcion,
+                "cantidad": request.cantidad,
+                "usuario_alta": request.usuario_alta
+            }
+            db_inventario = crud_inventario.create_inventario(db, inventario_pb2.InventarioCreate(**inventario_data))
+            return inventario_pb2.InventarioResponse(
+                success=True if db_inventario else False,
+                message="Inventario registrado correctamente" if db_inventario else "Error al registrar",
+                id=db_inventario.id if db_inventario else 0
+            )
+        finally:
+            db.close()
 
+    # Modificar inventario
     def ModificarInventario(self, request, context):
-        db = SessionLocal()
-        service = InventarioService()
-        inventario = service.modificar_inventario(db, request)
-        return inventario_pb2.InventarioResponse(
-            success=True if inventario else False,
-            message="Inventario modificado correctamente" if inventario else "No encontrado",
-            id=inventario.id if inventario else 0
-        )
+        db: Session = SessionLocal()
+        try:
+            update_data = {
+                "descripcion": request.descripcion,
+                "cantidad": request.cantidad,
+                "usuario_modificacion": request.usuario_modificacion
+            }
+            db_inventario = crud_inventario.update_inventario(db, request.id, inventario_pb2.InventarioUpdate(**update_data))
+            return inventario_pb2.InventarioResponse(
+                success=True if db_inventario else False,
+                message="Inventario modificado correctamente" if db_inventario else "No encontrado",
+                id=db_inventario.id if db_inventario else 0
+            )
+        finally:
+            db.close()
 
+    # Baja inventario
     def BajaInventario(self, request, context):
-        db = SessionLocal()
-        service = InventarioService()
-        inventario = service.baja_inventario(db, request)
-        return inventario_pb2.InventarioResponse(
-            success=True if inventario else False,
-            message="Inventario dado de baja correctamente" if inventario else "No encontrado",
-            id=inventario.id if inventario else 0
-        )
+        db: Session = SessionLocal()
+        try:
+            db_inventario = crud_inventario.baja_inventario(db, request.id, request.usuario_modificacion)
+            return inventario_pb2.InventarioResponse(
+                success=True if db_inventario else False,
+                message="Inventario dado de baja correctamente" if db_inventario else "No encontrado",
+                id=db_inventario.id if db_inventario else 0
+            )
+        finally:
+            db.close()
 
+    # Listar inventario
     def ListarInventario(self, request, context):
-        print("Entró al metodo ListaInventario del servicio gRPC")
+        print("Entró al método ListarInventario del servicio gRPC")
         db: Session = self.db_session()
         try:
-            inventario = crud.listar_inventario(db)
-            inventarios_proto = []
-
-            for item in inventario:
-                inventario_proto = mapper.ProtoMapper.inventario_to_inventario_list_response_proto(item)
-                inventarios_proto.append(inventario_proto)
-
-            response = inventario_pb2.ListarInventarioResponse(inventarios=inventarios_proto)
-            return response
+            inventario = crud_inventario.listar_inventario(db)  # 👈 nuevo crud
+            inventarios_proto = [
+                mapper.ProtoMapper.inventario_to_inventario_list_response_proto(item)
+                for item in inventario
+            ]
+            return inventario_pb2.ListarInventarioResponse(inventarios=inventarios_proto)
         finally:
             db.close()
     
+    # Obtener inventario por ID
     def ObtenerInventarioPorId(self, request, context):
-        print("Entró al metodo ObtenerInventarioPorId del servicio gRPC")
+        print("Entró al método ObtenerInventarioPorId del servicio gRPC")
         db: Session = self.db_session()
         try:
-            resp, err = crud.obtener_inventario_por_id(db, request.id)
+            resp, err = crud_inventario.obtener_inventario_por_id(db, request.id)  # 👈 nuevo crud
             if err:
                 context.set_code(grpc.StatusCode.NOT_FOUND)
                 context.set_details(err)
