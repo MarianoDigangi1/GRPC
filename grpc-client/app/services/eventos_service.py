@@ -20,7 +20,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
                 fecha_evento_iso=request.fecha_evento_iso,
                 miembros_ids=list(request.miembros_ids)
             )
-            resp, err = crud_evento.crear_evento(db, data)  # 👈 nuevo import
+            resp, err = crud_evento.crear_evento(db, data) 
             if err:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details(err)
@@ -31,6 +31,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
 
     # Modificar evento
     def ModificarEvento(self, request, context):
+        print(f"📩 Request ModificarEvento: {request}")
         db: Session = self.db_session()
         try:
             data = schemas.EventoUpdate(
@@ -43,7 +44,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
                     for d in request.donaciones_usadas
                 ]
             )
-            resp, err = crud_evento.modificar_evento(db, request.id, data, request.actor_usuario_id, request.actor_rol)  # 👈 nuevo import
+            resp, err = crud_evento.modificar_evento(db, request.id, data, request.actor_usuario_id, request.actor_rol) 
             if err:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details(err)
@@ -56,7 +57,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
     def BajaEvento(self, request, context):
         db: Session = self.db_session()
         try:
-            mensaje = crud_evento.baja_evento(db, request.id)  # 👈 nuevo import
+            mensaje = crud_evento.baja_evento(db, request.id) 
             if "Solo pueden eliminarse" in mensaje or "no encontrado" in mensaje:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details(mensaje)
@@ -69,7 +70,7 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
     def AsignarOQuitarMiembro(self, request, context):
         db: Session = self.db_session()
         try:
-            mensaje = crud_evento.asignar_quitar_miembro(  # 👈 nuevo import
+            mensaje = crud_evento.asignar_quitar_miembro(  
                 db,
                 evento_id=request.evento_id,
                 usuario_id=request.usuario_id,
@@ -87,10 +88,10 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
 
     # Listar eventos disponibles
     def ListarEventosDisponibles(self, request, context):
-        print("Entró al método ListarEventosDisponibles del servicio gRPC")
+        
         db: Session = self.db_session()
         try:
-            eventos = crud_evento.listar_eventos_disponibles(db)  # 👈 nuevo import
+            eventos = crud_evento.listar_eventos_disponibles(db)  
             eventos_proto = [
                 mapper.ProtoMapper.evento_to_evento_response_proto(evento)
                 for evento in eventos

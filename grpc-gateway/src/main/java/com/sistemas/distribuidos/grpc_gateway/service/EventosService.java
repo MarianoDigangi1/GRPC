@@ -39,6 +39,12 @@ public class EventosService {
 
     public ModificarEventoResponseDto modificarEvento(ModificarEventoRequestDto dto) {
         ModificarEventoResponse response;
+        var request = EventoConverter.convertModificarEventoRequestFromDto(dto);
+        System.out.println("➡️ Service: Request convertido para gRPC: " + request);
+
+        response = stubBlocking.modificarEvento(request);
+
+        System.out.println("✅ Service: Respuesta gRPC recibida: " + response);
 
         try {
             response = stubBlocking.modificarEvento(EventoConverter.convertModificarEventoRequestFromDto(dto));
@@ -46,6 +52,7 @@ public class EventosService {
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
         }
 
+        
         return EventoConverter.convertModificarEventoResponseToDto(response);
     }
 

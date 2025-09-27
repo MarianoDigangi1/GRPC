@@ -10,8 +10,8 @@ def create_inventario(db: Session, inventario: schemas.InventarioCreate):
         descripcion=inventario.descripcion,
         cantidad=inventario.cantidad,
         eliminado=False,
-        fecha_alta=datetime.now(),
-        usuario_alta=inventario.usuario_alta
+        created_at=datetime.now(),        # 👈 coincide con models.py
+        created_by=inventario.usuario_alta
     )
     db.add(db_inventario)
     db.commit()
@@ -25,8 +25,8 @@ def update_inventario(db: Session, inventario_id: int, inventario: schemas.Inven
     if db_inventario:
         db_inventario.descripcion = inventario.descripcion
         db_inventario.cantidad = inventario.cantidad
-        db_inventario.fecha_modificacion = datetime.now()
-        db_inventario.usuario_modificacion = inventario.usuario_modificacion
+        db_inventario.updated_at = datetime.now()    # 👈 coincide con models.py
+        db_inventario.updated_by = inventario.usuario_modificacion
         db.commit()
         db.refresh(db_inventario)
     return db_inventario
@@ -37,8 +37,8 @@ def baja_inventario(db: Session, inventario_id: int, usuario_modificacion: str):
     db_inventario = db.query(models.Inventario).filter_by(id=inventario_id, eliminado=False).first()
     if db_inventario:
         db_inventario.eliminado = True
-        db_inventario.fecha_modificacion = datetime.now()
-        db_inventario.usuario_modificacion = usuario_modificacion
+        db_inventario.updated_at = datetime.now()    # 👈 coincide con models.py
+        db_inventario.updated_by = usuario_modificacion
         db.commit()
         db.refresh(db_inventario)
     return db_inventario

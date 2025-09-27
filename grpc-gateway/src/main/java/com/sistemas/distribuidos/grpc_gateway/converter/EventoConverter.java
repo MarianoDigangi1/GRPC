@@ -44,6 +44,7 @@ public class EventoConverter {
         }
 
         public static ModificarEventoRequest convertModificarEventoRequestFromDto(ModificarEventoRequestDto dto) {
+                System.out.println("➡️ Converter: DTO recibido -> " + dto);
                 List<DonacionUsada> donacionesUsadasProto = dto.getDonacionesUsadas().stream()
                                 .map(dtoDonacion -> DonacionUsada.newBuilder()
                                                 .setInventarioId(dtoDonacion.getInventarioId())
@@ -53,20 +54,22 @@ public class EventoConverter {
 
                 return ModificarEventoRequest.newBuilder()
                                 .setId(dto.getId())
-                                .setNombre(dto.getNombre())
+                                .setNombre(dto.getNombre() != null ? dto.getNombre() : "")
                                 .setFechaEventoIso(dto.getFechaEventoIso() != null
                                                 ? dto.getFechaEventoIso().format(FORMATTER)
                                                 : "")
-                                .addAllAgregarMiembrosIds(dto.getAgregarMiembrosIds())
-                                .addAllQuitarMiembrosIds(dto.getQuitarMiembrosIds())
+                                .addAllAgregarMiembrosIds(dto.getAgregarMiembrosIds() != null ? dto.getAgregarMiembrosIds() : List.of())
+                                .addAllQuitarMiembrosIds(dto.getQuitarMiembrosIds() != null ? dto.getQuitarMiembrosIds() : List.of())   
                                 .addAllDonacionesUsadas(donacionesUsadasProto)
                                 .setActorUsuarioId(dto.getActorUsuarioId())
                                 .setActorRol(dto.getActorRol())
                                 .build();
+                              
+                                
         }
 
         public static ModificarEventoResponseDto convertModificarEventoResponseToDto(ModificarEventoResponse response) {
-
+        
                 return ModificarEventoResponseDto.builder().evento(
                                 EventoDto.builder()
                                                 .id(response.getEvento().getId())

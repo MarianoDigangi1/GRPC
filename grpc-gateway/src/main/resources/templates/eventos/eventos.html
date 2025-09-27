@@ -28,9 +28,19 @@
           <td th:text="${evento.fechaEventoIso != null ? #temporals.format(evento.fechaEventoIso, 'dd/MM/yyyy HH:mm') : '---'}">Fecha</td>
           <td th:text="${evento.miembrosNombres}">-</td>
           <td>
-            <a th:href="@{'/eventos/editar/' + ${evento.id}}" class="btn btn-warning">Editar</a>
-            <a th:href="@{'/eventos/eliminar/' + ${evento.id}}" class="btn btn-danger">Eliminar</a>
+              <!-- Evento futuro: permite editar -->
+              <a th:if="${evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())}"
+                th:href="@{'/eventos/editar/' + ${evento.id}}" class="btn btn-warning">Editar</a>
+
+              <!-- Evento pasado: permite actualizar inventario -->
+              <a th:if="${evento.fechaEventoIso.isBefore(T(java.time.LocalDateTime).now())}"
+                th:href="@{'/eventos/inventario/' + ${evento.id}}" class="btn btn-primary">Actualizar Inventario</a>
+
+              <!-- Dar de baja solo eventos futuros -->
+              <a th:if="${evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())}"
+                th:href="@{'/eventos/eliminar/' + ${evento.id}}" class="btn btn-danger">Eliminar</a>
           </td>
+
         </tr>
       </tbody>
     </table>

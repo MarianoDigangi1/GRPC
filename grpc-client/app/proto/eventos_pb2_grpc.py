@@ -3,8 +3,7 @@
 import grpc
 import warnings
 
-
-from . import eventos_pb2 as eventos__pb2
+from .import eventos_pb2 as eventos__pb2
 
 GRPC_GENERATED_VERSION = '1.75.0'
 GRPC_VERSION = grpc.__version__

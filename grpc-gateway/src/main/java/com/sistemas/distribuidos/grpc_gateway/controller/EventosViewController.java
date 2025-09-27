@@ -215,4 +215,73 @@ public class EventosViewController {
         return "eventos/editar_evento";
     }
 
+    @GetMapping("/eventos/inventario/{id}")
+    public String mostrarFormularioInventario(@PathVariable int id, Model model) {
+    EventoDto evento = eventosService.buscarEventoPorId(id);
+    System.out.println("Evento buscado -> " + evento);
+
+    if (evento == null) {
+        model.addAttribute("error", "Evento no encontrado");
+        return "eventos/eventos";
+    }
+
+    if (evento.getFechaEventoIso() != null && evento.getFechaEventoIso().isAfter(LocalDateTime.now())) {
+        model.addAttribute("error", "Solo se puede actualizar inventario de eventos ya realizados");
+        return "eventos/eventos";
+    }
+
+    model.addAttribute("evento", evento);
+    return "eventos/actualizar_inventario";
+}
+
+
+    @PostMapping("/eventos/inventario/{id}")
+public String actualizarInventario(
+        @PathVariable int id,
+        @RequestParam int ropa,
+        @RequestParam int alimentos,
+        @RequestParam int juguetes,
+        @RequestParam int utiles,
+        @AuthenticationPrincipal CustomUserPrincipal user,
+        Model model) {
+    try {
+        List<DonacionUsadaDto> donaciones = new ArrayList<>();
+
+        if (ropa > 0) donaciones.add(new DonacionUsadaDto(1, ropa));
+        if (alimentos > 0) donaciones.add(new DonacionUsadaDto(2, alimentos));
+        if (juguetes > 0) donaciones.add(new DonacionUsadaDto(3, juguetes));
+        if (utiles > 0) donaciones.add(new DonacionUsadaDto(4, utiles));
+
+        ModificarEventoRequestDto dto = ModificarEventoRequestDto.builder()
+                .id(id)
+                .donacionesUsadas(donaciones)
+                .actorUsuarioId(user.getId())
+                .actorRol(user.getRole())
+                .build();
+
+            System.out.println("➡️ Controller: DTO que voy a enviar: " + dto);
+                eventosService.modificarEvento(dto);
+
+        return "redirect:/eventos";
+
+    } catch (GrpcConnectionException e) {
+        // 👇 log en consola
+        System.err.println("❌ Error al actualizar inventario: " + e.getMessage());
+
+        // volver a cargar el evento para la vista
+        EventoDto evento = eventosService.buscarEventoPorId(id);
+        model.addAttribute("evento", evento);
+        model.addAttribute("error", e.getMessage());
+
+        return "eventos/actualizar_inventario";
+    }
+}
+
+
+    
+
+
+
+
+
 }

@@ -101,10 +101,10 @@ class ProtoMapper:
         fecha_iso = getattr(request, "fecha_evento_iso", "") or ""
 
 
-        if getattr(request, "fecha_evento", None) is None:
-            print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → NO tiene atributo fecha_evento")
-        else:
-            print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → fecha_evento={request.fecha_evento}")
+        #if getattr(request, "fecha_evento", None) is None:
+        #    print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → NO tiene atributo fecha_evento")
+        #else:
+        #    print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → fecha_evento={request.fecha_evento}")
 
         return eventos_pb2.EventoResponse(
         id=getattr(request, "id", 0) or 0,
