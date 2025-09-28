@@ -7,32 +7,33 @@
 </head>
 <body>
 <div class="container">
-  <h1 th:text="'Actualizar inventario de: ' + ${evento.nombre}"></h1>
+  <h1 th:text="'Registrar donaciones del evento: ' + ${evento.nombre}"></h1>
 
-<!-- Bloque de error -->
-<div th:if="${error}" class="alert alert-danger" role="alert">
-  <span th:text="${error}"></span>
-</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Categoría</th>
+        <th>Descripción</th>
+        <th>Cantidad actual</th>
+        <th>Donación dada</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="inv : ${inventario}">
+        <td th:text="${inv.categoria}"></td>
+        <td th:text="${inv.descripcion}"></td>
+        <td th:text="${inv.cantidad}"></td>
+        <td>
+          <form th:action="@{'/eventos/inventario/' + ${evento.id} + '/donar/' + ${inv.id}}" method="post">
+            <input type="number" name="donacion" min="1" value="1" />
+            <button type="submit" class="btn btn-primary">Registrar</button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-<form th:action="@{'/eventos/inventario/' + ${evento.id}}" method="post">
-  <label for="ropa">Ropa entregada</label>
-  <input type="number" id="ropa" name="ropa" min="0" value="0"/>
-
-  <label for="alimentos">Alimentos entregados</label>
-  <input type="number" id="alimentos" name="alimentos" min="0" value="0"/>
-
-  <label for="juguetes">Juguetes entregados</label>
-  <input type="number" id="juguetes" name="juguetes" min="0" value="0"/>
-
-  <label for="utiles">Útiles escolares entregados</label>
-  <input type="number" id="utiles" name="utiles" min="0" value="0"/>
-
-  <div class="actions">
-    <button type="submit">Guardar</button>
-    <a href="/eventos">Cancelar</a>
-  </div>
-</form>
-
+  <a href="/eventos" class="btn btn-secondary">Volver</a>
 </div>
 </body>
 </html>

@@ -44,7 +44,7 @@ public class EventoConverter {
         }
 
         public static ModificarEventoRequest convertModificarEventoRequestFromDto(ModificarEventoRequestDto dto) {
-                System.out.println("➡️ Converter: DTO recibido -> " + dto);
+             //   System.out.println("➡️ Converter: DTO recibido -> " + dto);
                 List<DonacionUsada> donacionesUsadasProto = dto.getDonacionesUsadas().stream()
                                 .map(dtoDonacion -> DonacionUsada.newBuilder()
                                                 .setInventarioId(dtoDonacion.getInventarioId())

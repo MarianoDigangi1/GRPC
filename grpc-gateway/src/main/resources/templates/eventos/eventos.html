@@ -10,6 +10,12 @@
   <div class="container">
     <h1>Eventos Solidarios</h1>
 
+    <!-- Mensajes -->
+    <div th:if="${exitoMessage}" class="ok">
+      <span th:text="${exitoMessage}"></span>
+    </div>
+
+    
     <!-- Tabla de eventos  -->
     <table>
       <thead>

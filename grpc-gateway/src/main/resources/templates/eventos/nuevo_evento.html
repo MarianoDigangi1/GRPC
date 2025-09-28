@@ -8,6 +8,13 @@
 <body>
   <div class="card">
     <h1>Crear Nuevo Evento</h1>
+    
+
+    <div th:if="${exitoMessage}" class="ok">
+      <span th:text="${exitoMessage}"></span>
+    </div>
+
+    
 
     <div th:if="${errorMessage}" class="error">
       <span th:text="${errorMessage}"></span>

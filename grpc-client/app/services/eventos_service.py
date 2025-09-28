@@ -31,7 +31,13 @@ class EventoService(eventos_pb2_grpc.EventoServiceServicer):
 
     # Modificar evento
     def ModificarEvento(self, request, context):
-        print(f"📩 Request ModificarEvento: {request}")
+        def ModificarEvento(self, request, context):
+            print("📩 gRPC ModificarEvento:", {
+                "evento_id": request.id,
+                "donaciones": [(d.inventario_id, d.cantidad_usada) for d in request.donaciones_usadas],
+                "actor": (request.actor_usuario_id, request.actor_rol),
+             })
+
         db: Session = self.db_session()
         try:
             data = schemas.EventoUpdate(

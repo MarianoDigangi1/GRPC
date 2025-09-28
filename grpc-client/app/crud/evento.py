@@ -94,20 +94,27 @@ def modificar_evento(db: Session, evento_id: int, data: schemas.EventoUpdate, ac
                 models.Inventario.eliminado == False
             ).with_for_update().first()
 
+            print(f"Antes: inv {d.inventario_id} cantidad={inv.cantidad}")
+
             if not inv or inv.cantidad < d.cantidad_usada:
                 return None, f"Inventario {d.inventario_id} insuficiente o inexistente."
 
+            
             inv.cantidad -= d.cantidad_usada
             inv.updated_at = datetime.now()
             inv.updated_by = actor_usuario_id
+
+            print(f"Después: inv {d.inventario_id} cantidad={inv.cantidad}")
 
             ya = db.query(models.EventoInventario).filter(
                 and_(models.EventoInventario.evento_id == ev.id, models.EventoInventario.inventario_id == d.inventario_id)
             ).first()
 
             if ya:
+                print(f"🔁 Ya existe registro, sumando {d.cantidad_usada}")
                 ya.cantidad_usada += d.cantidad_usada
             else:
+                print(f"➕ Nuevo registro, insertando {d.cantidad_usada}")
                 db.add(models.EventoInventario(
                     evento_id=ev.id,
                     inventario_id=d.inventario_id,

@@ -27,7 +27,7 @@ class ProtoMapper:
         #print(request.estaActivo)
 
         variablePrueba = getattr(request, "estaActivo", True) 
-        print(variablePrueba)
+        #print(variablePrueba)
 
         return usuarios_pb2.UserResponse(
             nombreUsuario=getattr(request, "nombreUsuario", "") or "",
@@ -54,8 +54,8 @@ class ProtoMapper:
 
     @staticmethod
     def usuario_to_usuario_delete_and_update_response_proto(usuario: schemas.UsuarioDeleteAndUpdateResponse):
-        print("Mapper Proto - Usuario a devolver:")
-        print(usuario)
+        #print("Mapper Proto - Usuario a devolver:")
+        #print(usuario)
         usuarioCreate = usuarios_pb2.CreateUserRequest(
             nombreUsuario=getattr(usuario, "nombreUsuario", "") or "",
             nombre=getattr(usuario, "nombre", "") or "",
@@ -64,8 +64,8 @@ class ProtoMapper:
             email=getattr(usuario, "email", "") or "",
             rol=getattr(usuario, "rol", "") or ""
         )    
-        print("UsuarioCreate creado:")
-        print(usuario.mensaje)
+        #print("UsuarioCreate creado:")
+        #print(usuario.mensaje)
         return usuarios_pb2.UpdateAndDeleteUserResponse(
             usuario=usuarioCreate,
             mensaje=usuario.mensaje 
@@ -154,7 +154,7 @@ class SchemaMapper:
         
     @staticmethod
     def login_request_to_login_response(request, loginResult, mensaje):
-        print("Mapper Schema - LoginResponse a devolver:", request.id, request.nombreUsuario)
+        #print("Mapper Schema - LoginResponse a devolver:", request.id, request.nombreUsuario)
         return schemas.LoginResponse(
             id=request.id,
             loginResult=loginResult,
@@ -170,7 +170,7 @@ class SchemaMapper:
     @staticmethod
     def usuario_to_usuario_delete_and_update_response(usuario, mensaje):
 
-        print("Mapper Schema - Usuario a devolver:")
+       # print("Mapper Schema - Usuario a devolver:")
         usuarioResponse = schemas.UsuarioDeleteAndUpdateResponse(
             nombreUsuario=usuario.nombreUsuario,
             nombre=usuario.nombre,
@@ -180,8 +180,8 @@ class SchemaMapper:
             rol=usuario.rol,
             mensaje=mensaje
         )
-        print("UsuarioResponse creado:")
-        print(usuarioResponse)
+      #  print("UsuarioResponse creado:")
+      #  print(usuarioResponse)
 
         return usuarioResponse
     
@@ -197,8 +197,8 @@ class SchemaMapper:
             rol=None,
             mensaje="Error: Usuario no encontrado"
         )
-        print("UsuarioResponse creado:")
-        print(usuarioResponse)
+       # print("UsuarioResponse creado:")
+        #print(usuarioResponse)
 
         return usuarioResponse
 

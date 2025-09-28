@@ -12,6 +12,8 @@ import com.sistemas.distribuidos.grpc_gateway.stubs.eventos.*;
 import io.grpc.ManagedChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 @Service
 public class EventosService {
@@ -24,37 +26,44 @@ public class EventosService {
     }
 
     public CrearEventoResponseDto crearEvento(CrearEventoRequestDto dto) {
-        CrearEventoResponse response;
-
-        try {
-            response = stubBlocking.crearEvento(EventoConverter.convertCrearEventoRequestFromDto(dto));
-            System.out.println(" Service -> Respuesta gRPC: " + response);
-        } catch (Exception e) {
-            System.out.println("  Service -> Error gRPC: " + e.getMessage());
-            throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
-        }
-
+    try {
+        CrearEventoResponse response =
+            stubBlocking.crearEvento(EventoConverter.convertCrearEventoRequestFromDto(dto));
         return EventoConverter.convertCrearEventoResponseToDto(response);
+
+    } catch (StatusRuntimeException e) {
+        // Validación de negocio desde el microservicio
+        if (e.getStatus().getCode() == Status.Code.INVALID_ARGUMENT) {
+            throw new IllegalArgumentException(e.getStatus().getDescription());
+        }
+        // Errores de conexión u otros
+        throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
+
+    } catch (Exception e) {
+        throw new GrpcConnectionException("Error inesperado en gRPC: " + e.getMessage(), e);
     }
+}
 
     public ModificarEventoResponseDto modificarEvento(ModificarEventoRequestDto dto) {
-        ModificarEventoResponse response;
+    try {
+        // Convertir el DTO a request gRPC
         var request = EventoConverter.convertModificarEventoRequestFromDto(dto);
-        System.out.println("➡️ Service: Request convertido para gRPC: " + request);
+        // Log opcional
+        System.out.println("➡️ Service: Request gRPC -> " + request);
 
-        response = stubBlocking.modificarEvento(request);
+        // Llamada al stub (una sola vez)
+        ModificarEventoResponse response = stubBlocking.modificarEvento(request);
 
-        System.out.println("✅ Service: Respuesta gRPC recibida: " + response);
+        // Log opcional
+        System.out.println(" Service: Response gRPC -> " + response);
 
-        try {
-            response = stubBlocking.modificarEvento(EventoConverter.convertModificarEventoRequestFromDto(dto));
-        } catch (Exception e) {
-            throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
-        }
-
-        
+        // Convertir la respuesta a DTO y devolver
         return EventoConverter.convertModificarEventoResponseToDto(response);
+    } catch (Exception e) {
+        throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
     }
+}
+
 
     public String darBajaEvento(BajaEventoRequestDto dto) {
         BajaEventoResponse response;
