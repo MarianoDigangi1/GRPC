@@ -96,7 +96,6 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
 
     # Listar usuarios
     def ListarUsuarios(self, request, context):
-        print("Entró al método ListarUsuarios del servicio gRPC")
         db: Session = self.db_session()
         try:
             usuarios = crud_usuario.listar_usuarios(db) 
@@ -108,18 +107,21 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
         finally:
             db.close()
 
-    # Obtener usuario por ID
-    def ObtenerUsuarioPorId(self, request, context):
-        print("Entró al método ObtenerUsuarioPorId del servicio gRPC")
+    # Traer usuario por ID
+    def TraerUsuarioPorId(self, request, context):
         db: Session = self.db_session()
         try:
             usuario = crud_usuario.obtener_usuario_por_id(db, request.id)  
-            if usuario is None:
-                context.set_code(grpc.StatusCode.NOT_FOUND)
-                context.set_details(f"Usuario con ID {request.id} no encontrado.")
-                return usuarios_pb2.UserResponse()  
-            
-            usuario_proto = mapper.ProtoMapper.usuario_to_usuario_response_proto(usuario)
-            return usuarios_pb2.UserResponse(usuario=usuario_proto)
+            return usuarios_pb2.UserResponse(
+                id=request.id,
+                nombreUsuario=usuario.nombreUsuario,
+                nombre=usuario.nombre,
+                apellido=usuario.apellido,
+                telefono=usuario.telefono if usuario.telefono else "",
+                email=usuario.email,
+                rol=usuario.rol if usuario.rol else "",
+                activo=usuario.estaActivo,
+            )
         finally:
             db.close()
+            

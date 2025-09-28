@@ -48,7 +48,7 @@ class UsuarioDeleteAndUpdateResponse(UsuarioBase):
     
 class UsuarioResponse(UsuarioBase):
     estaActivo: bool
-    generated_password: Optional[str] 
+    generated_password: Optional[str] = None
     mensaje: Optional[str] = None
 
     class Config:
