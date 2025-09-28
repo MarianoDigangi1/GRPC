@@ -60,6 +60,11 @@ class UsuarioServiceStub(object):
                 request_serializer=usuarios__pb2.Empty.SerializeToString,
                 response_deserializer=usuarios__pb2.ListarUsuariosResponse.FromString,
                 _registered_method=True)
+        self.TraerUsuarioPorId = channel.unary_unary(
+                '/usuarios.UsuarioService/TraerUsuarioPorId',
+                request_serializer=usuarios__pb2.TraerUsuarioPorIdRequest.SerializeToString,
+                response_deserializer=usuarios__pb2.UserResponse.FromString,
+                _registered_method=True)
 
 
 class UsuarioServiceServicer(object):
@@ -96,6 +101,12 @@ class UsuarioServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def TraerUsuarioPorId(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_UsuarioServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -123,6 +134,11 @@ def add_UsuarioServiceServicer_to_server(servicer, server):
                     servicer.ListarUsuarios,
                     request_deserializer=usuarios__pb2.Empty.FromString,
                     response_serializer=usuarios__pb2.ListarUsuariosResponse.SerializeToString,
+            ),
+            'TraerUsuarioPorId': grpc.unary_unary_rpc_method_handler(
+                    servicer.TraerUsuarioPorId,
+                    request_deserializer=usuarios__pb2.TraerUsuarioPorIdRequest.FromString,
+                    response_serializer=usuarios__pb2.UserResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -261,6 +277,33 @@ class UsuarioService(object):
             '/usuarios.UsuarioService/ListarUsuarios',
             usuarios__pb2.Empty.SerializeToString,
             usuarios__pb2.ListarUsuariosResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def TraerUsuarioPorId(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/usuarios.UsuarioService/TraerUsuarioPorId',
+            usuarios__pb2.TraerUsuarioPorIdRequest.SerializeToString,
+            usuarios__pb2.UserResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -58,6 +58,10 @@ message UpdateAndDeleteUserResponse {
   string mensaje = 2;
 }
 
+message TraerUsuarioPorIdRequest {
+  int32 id = 1;
+}
+
 message UserResponse{
   int32 id = 1; // PK (no mostrar en vistas si se desea)
   string nombreUsuario = 2;
@@ -99,9 +103,6 @@ service UsuarioService {
   rpc BajaUsuario (BajaUsuarioRequest) returns (UpdateAndDeleteUserResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc ListarUsuarios (Empty) returns (ListarUsuariosResponse);
+  rpc TraerUsuarioPorId (TraerUsuarioPorIdRequest) returns (UserResponse);
 }
 
-
-// ******************************************************************
-// Evento solidario
-// ******************************************************************

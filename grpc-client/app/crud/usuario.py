@@ -139,4 +139,34 @@ def listar_usuarios(db: Session):
 
 # Obtener usuario por ID
 def obtener_usuario_por_id(db: Session, user_id: int):
-    return db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
+    print("Ingreso a obtenerUsuarioCrud ")
+    usuario = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
+    
+    print("Usuario obtenido de la base de datos: ")
+
+    if not usuario:
+        print("Usuario no encontrado en la base de datos")
+        return schemas.UsuarioResponse(
+            nombreUsuario="", 
+            nombre="", 
+            apellido="",
+            telefono="",
+            email="",
+            rol=None,
+            estaActivo=False,
+            mensaje="Usuario no encontrado"
+        )
+        
+
+    return schemas.UsuarioResponse(
+        nombreUsuario=usuario.nombreUsuario,
+        nombre=usuario.nombre,
+        apellido=usuario.apellido,
+        telefono=usuario.telefono,
+        email=usuario.email,
+        rol=usuario.rol,
+        estaActivo=usuario.estaActivo,
+        generated_password=None,
+        mensaje="Usuario encontrado"
+    )
+

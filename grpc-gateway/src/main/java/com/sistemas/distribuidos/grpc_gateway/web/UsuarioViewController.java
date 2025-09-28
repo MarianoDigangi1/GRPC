@@ -37,6 +37,12 @@ public class UsuarioViewController {
         return "usuarios/crear"; // src/main/resources/templates/usuarios/crear.html
     }
 
+    @GetMapping("/usuarios/editar/{idUsuario}")
+    public String mostrarFormularioEdicion(@PathVariable int idUsuario, Model model) {
+        model.addAttribute("title", "Editar Usuario");
+        return "usuarios/modificar"; // src/main/resources/templates/usuarios/modificar.html
+    }
+
     /*
     @PutMapping("/modificar/{idUsuario}")
     public ResponseEntity<?> editarUsuario(
