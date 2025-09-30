@@ -18,7 +18,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/login", "/logout", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/login", "/logout", "/css/**", "/js/**", "/images/**", "/webjars/**", "/api/kafka/**").permitAll()
                         .requestMatchers("/usuarios/**").hasRole("PRESIDENTE")
                         .requestMatchers("/api/usuarios/crear").hasRole("PRESIDENTE")
                         .requestMatchers("/api/usuarios/modificar/**").hasRole("PRESIDENTE")
