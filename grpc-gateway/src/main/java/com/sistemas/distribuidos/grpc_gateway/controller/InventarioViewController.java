@@ -1,26 +1,34 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.inventario.*;
+import com.sistemas.distribuidos.grpc_gateway.dto.kafka.donacion.SolicitudDonacionDto;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.InventarioService;
+import com.sistemas.distribuidos.grpc_gateway.service.kafka.KafkaProducerSolicitudDonaciones;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/inventario")
 public class InventarioViewController {
 
     private final InventarioService inventarioService;
+    private final KafkaProducerSolicitudDonaciones kafkaProducerSolicitudDonaciones;
 
     @Autowired
-    public InventarioViewController(InventarioService inventarioService) {
+    public InventarioViewController(InventarioService inventarioService, KafkaProducerSolicitudDonaciones kafkaProducerSolicitudDonaciones) {
         this.inventarioService = inventarioService;
+        this.kafkaProducerSolicitudDonaciones = kafkaProducerSolicitudDonaciones;
     }
 
     @GetMapping
@@ -103,4 +111,35 @@ public class InventarioViewController {
             return "redirect:/inventario";
         }
     }
+
+    // TODO: aca tendria que ir la vista de solicitudes externas
+    @GetMapping("/solicitudes-externas")
+    public String visualizarSolicitudesExternas(Model model) {
+        return "inventario/externas/listarSolicitudesExternas";
+    }
+
+    @GetMapping("/solicitar-donacion")
+    public String solicitarDonacion(Model model) {
+        model.addAttribute("solicitudDonacion", new SolicitudDonacionDto());
+        return "inventario/externas/solicitarDonaciones";
+    }
+
+    @PostMapping("/solicitar-donacion")
+    public String solicitarDonaciones(@ModelAttribute SolicitudDonacionDto solicitudDonacion,
+                                     RedirectAttributes redirectAttributes,
+                                     Model model) {
+        try {
+            kafkaProducerSolicitudDonaciones.solicitarDonaciones(solicitudDonacion);
+            redirectAttributes.addFlashAttribute("mensaje", "Solicitud de donación enviada exitosamente");
+            redirectAttributes.addFlashAttribute("tipo", "success");
+            return "redirect:/inventario/solicitudes-externas";
+
+        } catch (Exception e) {
+            model.addAttribute("mensaje", "Error al enviar la solicitud: ");
+            model.addAttribute("tipo", "error");
+            model.addAttribute("solicitudDonacion", solicitudDonacion);
+            return "inventario/externas/solicitarDonaciones";
+        }
+    }
+
 }
