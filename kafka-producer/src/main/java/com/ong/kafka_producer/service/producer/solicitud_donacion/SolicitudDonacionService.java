@@ -1,12 +1,11 @@
-package com.ong.kafka_producer.service;
+package com.ong.kafka_producer.service.producer.solicitud_donacion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ong.kafka_producer.dto.DonacionDto;
-import com.ong.kafka_producer.dto.ResponseDto;
-import com.ong.kafka_producer.dto.SolicitudDonacionDto;
-import com.ong.kafka_producer.entity.SolicitudDonacionExterna;
-import com.ong.kafka_producer.entity.SolicitudDonacionExternaItem;
-import com.ong.kafka_producer.repository.SolicitudExternaRepository;
+import com.ong.kafka_producer.dto.solicitud_donacion.ResponseDto;
+import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
+import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacion;
+import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacionItem;
+import com.ong.kafka_producer.repository.solicitud_donacion.SolicitudDonacionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SolicitudDonacionService {
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final SolicitudExternaRepository repository;
+    private final SolicitudDonacionRepository repository;
     private final ObjectMapper objectMapper;
 
     @Value("${spring.kafka.topic.solicitud.donaciones}")
@@ -37,17 +36,17 @@ public class SolicitudDonacionService {
 
             solicitudDto.setDonaciones(solicitudDto.getDonaciones());
 
-            // TODO: Esto quizas moverlo a un converte si hay tiempo
-            SolicitudDonacionExterna solicitudEntity = new SolicitudDonacionExterna();
-            solicitudEntity.setIdSolicitud(idSolicitud);
-            solicitudEntity.setIdOrganizacionSolicitante(solicitudDto.getIdOrganizacionSolicitante());
-            solicitudEntity.setFechaSolicitud(LocalDateTime.now());// TODO: esto creo que se puede hacer con un @PrePersist en la clase entity. Tema a ver.
-            solicitudEntity.setActiva(true); // TODO: esto es lo mismo que lo de la fecha
+            // TODO: Esto quizas moverlo a un converter si hay tiempo
+            SolicitudDonacion solicitudEntity = SolicitudDonacion.builder().idSolicitud(idSolicitud)
+                    .idOrganizacionSolicitante(solicitudDto.getIdOrganizacionSolicitante())
+                    .fechaSolicitud(LocalDateTime.now())
+                    .activa(true)
+                    .esExterna(false).build();
 
             // crear items para donacion
-            List<SolicitudDonacionExternaItem> items = solicitudDto.getDonaciones().stream()
+            List<SolicitudDonacionItem> items = solicitudDto.getDonaciones().stream()
                     .map(donacion -> {
-                        SolicitudDonacionExternaItem item = new SolicitudDonacionExternaItem();
+                        SolicitudDonacionItem item = new SolicitudDonacionItem();
                         item.setCategoria(donacion.getCategoria());
                         item.setDescripcion(donacion.getDescripcion());
                         item.setSolicitudDonacion(solicitudEntity);

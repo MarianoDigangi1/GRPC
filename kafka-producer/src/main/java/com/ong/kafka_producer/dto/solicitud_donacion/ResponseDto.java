@@ -1,4 +1,4 @@
-package com.ong.kafka_producer.dto;
+package com.ong.kafka_producer.dto.solicitud_donacion;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

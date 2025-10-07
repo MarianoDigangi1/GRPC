@@ -1,8 +1,8 @@
 package com.ong.kafka_producer.controller;
 
-import com.ong.kafka_producer.dto.ResponseDto;
-import com.ong.kafka_producer.dto.SolicitudDonacionDto;
-import com.ong.kafka_producer.service.SolicitudDonacionService;
+import com.ong.kafka_producer.dto.solicitud_donacion.ResponseDto;
+import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
+import com.ong.kafka_producer.service.producer.solicitud_donacion.SolicitudDonacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

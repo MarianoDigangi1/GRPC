@@ -59,6 +59,7 @@ CREATE TABLE solicitud_donacion_externa (
     id_organizacion_solicitante INT NOT NULL,
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activa BOOLEAN DEFAULT TRUE,
+    es_externa boolean DEFAULT FALSE,
     UNIQUE KEY unique_solicitud (id_solicitud, id_organizacion_solicitante)
 );
 

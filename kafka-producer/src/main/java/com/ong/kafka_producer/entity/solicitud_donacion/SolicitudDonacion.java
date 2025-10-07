@@ -1,7 +1,8 @@
-package com.ong.kafka_producer.entity;
+package com.ong.kafka_producer.entity.solicitud_donacion;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +14,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SolicitudDonacionExterna {
+@Builder
+public class SolicitudDonacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // esto quizas no haga falta, pero lo agrego por los dduas
@@ -30,7 +32,10 @@ public class SolicitudDonacionExterna {
     @Column(name = "activa")
     private Boolean activa = true;
 
+    @Column(name = "es_externa", nullable = false)
+    private Boolean esExterna = true;
+
     @OneToMany(mappedBy = "solicitudDonacion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SolicitudDonacionExternaItem> items;
+    private List<SolicitudDonacionItem> items;
 
 }

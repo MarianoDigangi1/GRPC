@@ -1,4 +1,4 @@
-package com.ong.kafka_producer.dto;
+package com.ong.kafka_producer.dto.solicitud_donacion;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SolicitudDonacionDto {
+    private String idSolicitud;
     private Integer idOrganizacionSolicitante;
     private List<DonacionDto> donaciones;
 }
