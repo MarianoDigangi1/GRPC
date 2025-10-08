@@ -7,6 +7,7 @@ import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacionItem;
 import com.ong.kafka_producer.repository.solicitud_donacion.SolicitudDonacionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,9 @@ public class SolicitudDonacionExternaService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Value("${spring.kafka.idOrganizacion}")
+    private Integer idOrganizacion;
+
     public void procesarSolicitudExterna(String mensaje) {
         try {
 
@@ -29,7 +33,7 @@ public class SolicitudDonacionExternaService {
 
             //TODO: capaz habria que hacer un control de lo que llega. ejemplo si es un tipo permitido.
 
-            if (checkearSiEsSolicitudDePropiaOrganizacion(solicitudDto)) return;
+            if (checkearSiEsSolicitudDePropiaOrganizacion(solicitudDto, idOrganizacion)) return;
             if (checkearSiSolicitudExisteEnBDD(solicitudDto)) return;
 
             SolicitudDonacion solicitudExterna = SolicitudDonacion.builder()
@@ -65,9 +69,9 @@ public class SolicitudDonacionExternaService {
         return false;
     }
 
-    private static boolean checkearSiEsSolicitudDePropiaOrganizacion(SolicitudDonacionDto solicitudDto) {
-        if (solicitudDto.getIdOrganizacionSolicitante().equals(1)) {
-            log.info("Ignorando solicitud propia de organización: {}", 1);
+    private static boolean checkearSiEsSolicitudDePropiaOrganizacion(SolicitudDonacionDto solicitudDto, Integer idOrganizacion) {
+        if (solicitudDto.getIdOrganizacionSolicitante().equals(idOrganizacion.toString())) {
+            log.info("Ignorando solicitud propia de organización: {}", idOrganizacion);
             return true;
         }
         return false;

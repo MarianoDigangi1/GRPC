@@ -22,6 +22,9 @@ public class KafkaProducerSolicitudDonaciones {
     @Value("${kafka.producer.server.donaciones.solicitar}")
     private String donacionesUrl;
 
+    @Value("${kafka.producer.server.idOrganizacion}")
+    private Integer idOrganizacion;
+
     @Autowired
     public KafkaProducerSolicitudDonaciones(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -33,7 +36,7 @@ public class KafkaProducerSolicitudDonaciones {
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("donaciones", solicitudDonacion.getDonaciones());
-        payload.put("idOrganizacionSolicitante", 1); // TODO: obtener del usuario logueado
+        payload.put("idOrganizacionSolicitante", idOrganizacion);
 
         ResponseEntity<String> response = restTemplate.postForEntity(kafkaProducerUrl, payload, String.class);
         if(!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {

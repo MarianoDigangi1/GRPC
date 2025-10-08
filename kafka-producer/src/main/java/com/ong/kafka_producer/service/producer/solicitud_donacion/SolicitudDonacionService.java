@@ -1,7 +1,7 @@
 package com.ong.kafka_producer.service.producer.solicitud_donacion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ong.kafka_producer.dto.solicitud_donacion.ResponseDto;
+import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacion;
 import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacionItem;
@@ -34,6 +34,7 @@ public class SolicitudDonacionService {
         try {
             String idSolicitud = UUID.randomUUID().toString();
 
+            solicitudDto.setIdSolicitud(idSolicitud);
             solicitudDto.setDonaciones(solicitudDto.getDonaciones());
 
             // TODO: Esto quizas moverlo a un converter si hay tiempo
