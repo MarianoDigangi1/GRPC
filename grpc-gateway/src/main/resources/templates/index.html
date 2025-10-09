@@ -35,7 +35,12 @@
             <a class="nav-link" href="/login">Login</a>
           </li>
           <li class="nav-item" th:if="${usuarioActual != null}">
-            <a class="nav-link text-danger" href="/logout">Cerrar sesión</a>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit" class="btn btn-outline-danger btn-sm">
+                🚪 Cerrar sesión
+              </button>
+            </form>
           </li>
         </ul>
       </div>

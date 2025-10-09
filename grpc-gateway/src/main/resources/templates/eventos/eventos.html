@@ -26,7 +26,8 @@
     <div class="card bg-dark border-0 shadow-lg p-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h4 mb-0">Listado de Eventos</h1>
-        <a href="/nuevo" class="btn btn-primary">➕ Crear Evento</a>
+        <!-- Solo Presidente o Coordinador pueden crear -->
+        <a th:if="${isPresiOrCoord}" href="/nuevo" class="btn btn-primary">➕ Crear Evento</a>
       </div>
 
       <!-- Mensajes -->
@@ -50,29 +51,49 @@
             </tr>
           </thead>
           <tbody>
-            <tr th:each="evento : ${eventos}">
+            <tr th:each="evento : ${eventos}"
+                th:with="
+                  isFuture=${evento.fechaEventoIso != null and evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())},
+                  joined=${evento.miembrosIds != null and userId != null ? evento.miembrosIds.contains(userId) : false}
+                ">
               <td th:text="${evento.nombre}">Nombre</td>
               <td th:text="${evento.descripcion}">Descripción</td>
               <td th:text="${evento.fechaEventoIso != null ? #temporals.format(evento.fechaEventoIso, 'dd/MM/yyyy HH:mm') : '---'}">Fecha</td>
-              <td>
-                <span th:text="${evento.miembrosNombres != null ? evento.miembrosNombres : '-'}">-</span>
-              </td>
-              <td>
-                <div class="d-flex justify-content-center gap-2">
-                  <!-- Evento futuro: permite editar -->
-                  <a th:if="${evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())}"
-                     th:href="@{'/eventos/editar/' + ${evento.id}}"
-                     class="btn btn-sm btn-warning">✏️ Editar</a>
+              <td><span th:text="${evento.miembrosNombres != null ? evento.miembrosNombres : '-'}">-</span></td>
 
-                  <!-- Evento pasado: permite actualizar inventario -->
-                  <a th:if="${evento.fechaEventoIso.isBefore(T(java.time.LocalDateTime).now())}"
-                     th:href="@{'/eventos/inventario/' + ${evento.id}}"
-                     class="btn btn-sm btn-primary">📦 Inventario</a>
+              <td>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
 
-                  <!-- Dar de baja solo eventos futuros -->
-                  <a th:if="${evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())}"
-                     th:href="@{'/eventos/eliminar/' + ${evento.id}}"
-                     class="btn btn-sm btn-danger">🗑️ Eliminar</a>
+                  <!-- 🔸 PRESIDENTE / COORDINADOR -->
+                  <div th:if="${isPresiOrCoord}">
+                    <a th:if="${isFuture}" th:href="@{'/eventos/editar/' + ${evento.id}}"
+                       class="btn btn-sm btn-warning">✏️ Editar</a>
+                    <a th:if="${!isFuture and evento.fechaEventoIso != null}"
+                       th:href="@{'/eventos/inventario/' + ${evento.id}}"
+                       class="btn btn-sm btn-primary">📦 Inventario</a>
+                    <a th:if="${isFuture}" th:href="@{'/eventos/eliminar/' + ${evento.id}}"
+                       class="btn btn-sm btn-danger">🗑️ Eliminar</a>
+                  </div>
+
+                  <!-- 🔸 VOCAL -->
+                  <div th:if="${isVocal}">
+                    <a th:href="@{'/inventario'}" class="btn btn-sm btn-info">📦 Ver Inventario</a>
+                  </div>
+
+                  <!-- 🔸 VOLUNTARIO -->
+                  <div th:if="${isVoluntario}">
+                    <!-- Unirse: solo futuro y si NO está unido -->
+                    <form th:if="${isFuture and !joined}"
+                          th:action="@{'/eventos/unirse/' + ${evento.id}}" method="post">
+                      <button type="submit" class="btn btn-sm btn-success">✅ Unirse</button>
+                    </form>
+                    <!-- Salir: solo futuro y si YA está unido -->
+                    <form th:if="${isFuture and joined}"
+                          th:action="@{'/eventos/salir/' + ${evento.id}}" method="post">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">🚪 Salir</button>
+                    </form>
+                  </div>
+
                 </div>
               </td>
             </tr>

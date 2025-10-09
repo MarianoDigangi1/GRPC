@@ -21,9 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -45,31 +43,56 @@ public class EventosViewController {
     }
 
     @GetMapping("/eventos")
-    public String vistaEventos(Model model) {
-        List<EventoDto> eventos = eventosService.listarEventos();
+public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Model model) {
+    List<EventoDto> eventos = eventosService.listarEventos();
+    List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
 
-        List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
+    // Mapa de nombre completo por ID
+    Map<Integer, String> nombresPorId = usuarios.stream()
+            .collect(Collectors.toMap(UserResponseDto::getId, 
+                    u -> u.getNombre() + " " + u.getApellido()));
 
-        Map<Integer, String> nombresPorId = usuarios.stream()
-                .collect(Collectors.toMap(UserResponseDto::getId,
-                        u -> u.getNombre() + " " + u.getApellido()));
+    // 🧩 Filtrar solo IDs de usuarios activos
+    Set<Integer> idsActivos = usuarios.stream()
+            .filter(UserResponseDto::isActivo)
+            .map(UserResponseDto::getId)
+            .collect(Collectors.toSet());
 
-        for (EventoDto ev : eventos) {
-            List<Integer> ids = ev.getMiembrosIds();
-            if (ids != null && !ids.isEmpty()) {
-                List<String> nombres = ids.stream()
-                        .map(nombresPorId::get)
-                        .collect(Collectors.toList());
-                ev.setMiembrosNombres(String.join(", ", nombres));
-            } else {
-                ev.setMiembrosNombres("-");
-            }
+    for (EventoDto ev : eventos) {
+        // 🧹 Eliminar miembros inactivos
+        if (ev.getMiembrosIds() != null) {
+            List<Integer> filtrados = ev.getMiembrosIds().stream()
+                    .filter(idsActivos::contains)
+                    .collect(Collectors.toList());
+            ev.setMiembrosIds(filtrados);
         }
 
-        model.addAttribute("eventos", eventos);
-        return "eventos/eventos";
-
+        // Reconstruir nombres
+        List<Integer> ids = ev.getMiembrosIds();
+        if (ids != null && !ids.isEmpty()) {
+            List<String> nombres = ids.stream()
+                    .map(nombresPorId::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            ev.setMiembrosNombres(String.join(", ", nombres));
+        } else {
+            ev.setMiembrosNombres("-");
+        }
     }
+
+    // tus atributos del modelo existentes
+    String role = (user != null ? user.getRole() : null);
+    model.addAttribute("isPresiOrCoord", "Presidente".equalsIgnoreCase(role) || "Coordinador".equalsIgnoreCase(role));
+    model.addAttribute("isVocal", "Vocal".equalsIgnoreCase(role));
+    model.addAttribute("isVoluntario", "Voluntario".equalsIgnoreCase(role));
+    model.addAttribute("userId", (user != null ? user.getId() : null));
+
+    model.addAttribute("eventos", eventos);
+    return "eventos/eventos";
+}
+
+
+
 
     @GetMapping("/nuevo")
     public String mostrarFormularioNuevoEvento(@RequestParam(required = false) String error, Model model) {
@@ -266,12 +289,20 @@ public String mostrarFormularioEditar(@PathVariable int id, Model model) {
         return "redirect:/eventos";
     }
 
-    // cargar miembros actuales y disponibles
     var usuarios = usuarioService.listarUsuarios().getUsuarios();
-    var miembrosActuales = usuarios.stream()
+
+    // 🧩 Filtrar solo los activos
+    var usuariosActivos = usuarios.stream()
+            .filter(UserResponseDto::isActivo)
+            .collect(Collectors.toList());
+
+    // Miembros actuales (de los activos)
+    var miembrosActuales = usuariosActivos.stream()
             .filter(u -> evento.getMiembrosIds().contains(u.getId()))
             .collect(Collectors.toList());
-    var usuariosDisponibles = usuarios.stream()
+
+    // Usuarios disponibles (activos y que no estén ya en el evento)
+    var usuariosDisponibles = usuariosActivos.stream()
             .filter(u -> !evento.getMiembrosIds().contains(u.getId()))
             .collect(Collectors.toList());
 
@@ -279,8 +310,60 @@ public String mostrarFormularioEditar(@PathVariable int id, Model model) {
     model.addAttribute("miembrosActuales", miembrosActuales);
     model.addAttribute("usuariosDisponibles", usuariosDisponibles);
 
-    return "eventos/editar_evento"; 
+    return "eventos/editar_evento";
 }
+
+
+    @PostMapping("/eventos/unirse/{id}")
+public String unirseEvento(@PathVariable int id,
+                           @AuthenticationPrincipal CustomUserPrincipal user,
+                           RedirectAttributes redirectAttributes) {
+    try {
+        ModificarEventoRequestDto dto = ModificarEventoRequestDto.builder()
+                .id(id)
+                .agregarMiembrosIds(List.of(user.getId()))
+                .quitarMiembrosIds(List.of())
+                .donacionesUsadas(List.of())   // ✅ aseguramos lista vacía
+                .actorUsuarioId(user.getId())
+                .actorRol(user.getRole())
+                .build();
+
+        eventosService.modificarEvento(dto);
+        redirectAttributes.addFlashAttribute("exitoMessage", "Te uniste correctamente al evento.");
+    } catch (GrpcConnectionException e) {
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al conectar con gRPC: " + e.getMessage());
+    } catch (Exception e) {
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al unirse: " + e.getMessage());
+    }
+    return "redirect:/eventos";
+}
+
+@PostMapping("/eventos/salir/{id}")
+public String salirEvento(@PathVariable int id,
+                          @AuthenticationPrincipal CustomUserPrincipal user,
+                          RedirectAttributes redirectAttributes) {
+    try {
+        ModificarEventoRequestDto dto = ModificarEventoRequestDto.builder()
+                .id(id)
+                .agregarMiembrosIds(List.of())
+                .quitarMiembrosIds(List.of(user.getId()))
+                .donacionesUsadas(List.of())   // ✅ importante: lista vacía, no null
+                .actorUsuarioId(user.getId())
+                .actorRol(user.getRole())
+                .build();
+
+        eventosService.modificarEvento(dto);
+        redirectAttributes.addFlashAttribute("exitoMessage", "Has salido del evento correctamente.");
+    } catch (GrpcConnectionException e) {
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al conectar con gRPC: " + e.getMessage());
+    } catch (Exception e) {
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al salir: " + e.getMessage());
+    }
+    return "redirect:/eventos";
+}
+
+
+
 
 
 }

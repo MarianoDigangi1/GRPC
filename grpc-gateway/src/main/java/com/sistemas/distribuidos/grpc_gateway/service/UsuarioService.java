@@ -88,4 +88,38 @@ public class UsuarioService {
 
     }
 
+    public UserResponseDto traerUsuarioPorId(int idUsuario) {
+    try {
+        TraerUsuarioPorIdRequest grpcRequest = TraerUsuarioPorIdRequest.newBuilder()
+                .setId(idUsuario)
+                .build();
+
+        UserResponse grpcResponse = stubBlocking.traerUsuarioPorId(grpcRequest);
+
+        return new UserResponseDto(
+                grpcResponse.getId(),
+                grpcResponse.getNombreUsuario(),
+                grpcResponse.getNombre(),
+                grpcResponse.getApellido(),
+                grpcResponse.getTelefono(),
+                grpcResponse.getEmail(),
+                grpcResponse.getRol(),
+                grpcResponse.getActivo()
+        );
+    } catch (Exception e) {
+        throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 }

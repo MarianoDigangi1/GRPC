@@ -15,33 +15,37 @@ public class SecurityConfig {
     private CustomAuthProvider customAuthProvider;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/login", "/logout", "/css/**", "/js/**", "/images/**", "/webjars/**", "/api/kafka/**").permitAll()
-                        .requestMatchers("/usuarios/**").hasRole("PRESIDENTE")
-                        .requestMatchers("/api/usuarios/crear").hasRole("PRESIDENTE")
-                        .requestMatchers("/api/usuarios/modificar/**").hasRole("PRESIDENTE")
-                        .requestMatchers("/api/usuarios/eliminar/**").hasRole("PRESIDENTE")
-                        .requestMatchers("/api/eventos/crear").hasAnyRole("PRESIDENTE", "COORDINADOR")
-                        .requestMatchers("/inventario/**").hasAnyRole("PRESIDENTE", "VOCAL")
-                        .anyRequest().authenticated()
-                )
-                .csrf(Customizer.withDefaults())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .usernameParameter("identificador")
-                        .passwordParameter("clave")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                )
-                .authenticationProvider(customAuthProvider)
-                .build();
-    }
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    return http
+            .authorizeHttpRequests(authz -> authz
+                    .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/webjars/**", "/api/kafka/**").permitAll()
+                    .requestMatchers("/usuarios/**").hasRole("PRESIDENTE")
+                    .requestMatchers("/api/usuarios/crear").hasRole("PRESIDENTE")
+                    .requestMatchers("/api/usuarios/modificar/**").hasRole("PRESIDENTE")
+                    .requestMatchers("/api/usuarios/eliminar/**").hasRole("PRESIDENTE")
+                    .requestMatchers("/api/eventos/crear").hasAnyRole("PRESIDENTE", "COORDINADOR")
+                    .requestMatchers("/inventario/**").hasAnyRole("PRESIDENTE", "VOCAL")
+                    .anyRequest().authenticated()
+            )
+            // ✅ Mantiene protección CSRF (obligatoria para logout POST)
+            .csrf(Customizer.withDefaults())
+            .formLogin(form -> form
+                    .loginPage("/login")
+                    .loginProcessingUrl("/login")
+                    .usernameParameter("identificador")
+                    .passwordParameter("clave")
+                    .defaultSuccessUrl("/", true)
+                    .permitAll()
+            )
+            .logout(logout -> logout
+                    .logoutUrl("/logout")                    // endpoint del form
+                    .logoutSuccessUrl("/login?logout=true")  // mensaje de sesión cerrada
+                    .invalidateHttpSession(true)             // invalida la sesión
+                    .deleteCookies("JSESSIONID")             // borra la cookie
+                    .permitAll()
+            )
+            .authenticationProvider(customAuthProvider)
+            .build();
+}
+
 }
