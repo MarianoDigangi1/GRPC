@@ -82,4 +82,11 @@ class EventoInventario(Base):
     cantidad_usada = Column(Integer, nullable=False)
 
     evento = relationship("Evento", back_populates="donaciones")
-   
+
+# ---------------- MODELO EMAIL ---------------- #
+
+class Email:
+  def __init__(self, usuario, password, email):
+    self.usuario = usuario
+    self.password = password
+    self.email = email

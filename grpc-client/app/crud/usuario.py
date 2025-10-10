@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas, utils
 from app.schemas import LoginResultCode
 from app.mapper import SchemaMapper
+from app.models import Email
 
 
 # Crear usuario
@@ -38,7 +39,7 @@ def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
     db.refresh(db_usuario)
 
     # Enviar clave por email
-    utils.enviar_email(usuario.email, clave)
+    utils.enviar_email(Email(usuario.nombreUsuario, clave, usuario.email))
 
     return SchemaMapper.usuario_request_to_usuario_response(
         usuario, True, clave, "Usuario creado correctamente"
