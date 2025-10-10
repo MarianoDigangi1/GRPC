@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventoSolidarioDto {
-    private Long idOrganizacion;
-    private Long idEvento;
     private String nombreEvento;
     private String descripcion;
     private LocalDateTime fechaHoraEvento;
