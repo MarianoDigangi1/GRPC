@@ -47,10 +47,16 @@ def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
 
 
 # Modificar usuario
+# Modificar usuario
 def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
+    """Actualiza un usuario existente en la base de datos."""
+    print(f"🟡 [CRUD] Entró a modificar_usuario() con ID={user_id}")
+
+    # Buscar el usuario por ID
     usuario = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
 
     if not usuario:
+        print(f"❌ [CRUD] Usuario con ID={user_id} no encontrado")
         return schemas.UsuarioDeleteAndUpdateResponse(
             nombreUsuario="",
             nombre="",
@@ -61,6 +67,9 @@ def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
             mensaje="Usuario no encontrado"
         )
 
+    print(f"🛠️ [CRUD] Modificando usuario {user_id} → Nuevo rol: {datos.rol}, activo: {datos.estaActivo}")
+
+    # Asignar los nuevos valores
     usuario.nombreUsuario = datos.nombreUsuario
     usuario.nombre = datos.nombre
     usuario.apellido = datos.apellido
@@ -69,9 +78,14 @@ def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
     usuario.rol = datos.rol
     usuario.estaActivo = datos.estaActivo
 
+    # Persistir cambios
+    print(f"Antes del commit → rol={usuario.rol}, activo={usuario.estaActivo}")
     db.commit()
+    db.flush()
     db.refresh(usuario)
+    print(f"✅ Después del commit → rol={usuario.rol}, activo={usuario.estaActivo}")
 
+    # Devolver respuesta compatible con el proto
     return schemas.UsuarioDeleteAndUpdateResponse(
         nombreUsuario=usuario.nombreUsuario,
         nombre=usuario.nombre,
@@ -81,6 +95,8 @@ def modificar_usuario(db: Session, user_id: int, datos: schemas.UsuarioUpdate):
         rol=usuario.rol,
         mensaje="Usuario modificado correctamente"
     )
+
+
 
 
 # Baja lógica de usuario

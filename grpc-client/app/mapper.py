@@ -54,22 +54,15 @@ class ProtoMapper:
 
     @staticmethod
     def usuario_to_usuario_delete_and_update_response_proto(usuario: schemas.UsuarioDeleteAndUpdateResponse):
-        #print("Mapper Proto - Usuario a devolver:")
-        #print(usuario)
-        usuarioCreate = usuarios_pb2.CreateUserRequest(
-            nombreUsuario=getattr(usuario, "nombreUsuario", "") or "",
-            nombre=getattr(usuario, "nombre", "") or "",
-            apellido=getattr(usuario, "apellido", "") or "",
-            telefono=getattr(usuario, "telefono", "") or "",
-            email=getattr(usuario, "email", "") or "",
-            rol=getattr(usuario, "rol", "") or ""
-        )    
-        #print("UsuarioCreate creado:")
-        #print(usuario.mensaje)
+        """
+        Mapea la respuesta del CRUD de modificación/baja de usuario al proto gRPC.
+        """
+        print("✅ Mapper Proto: preparando UpdateAndDeleteUserResponse con mensaje:", usuario.mensaje)
         return usuarios_pb2.UpdateAndDeleteUserResponse(
-            usuario=usuarioCreate,
-            mensaje=usuario.mensaje 
+            mensaje=getattr(usuario, "mensaje", "Usuario actualizado correctamente")
         )
+
+
 
     @staticmethod
     def evento_to_proto(evento_resp: schemas.EventoResponse) -> eventos_pb2.Evento:

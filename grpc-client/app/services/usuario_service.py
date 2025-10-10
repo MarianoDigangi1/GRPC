@@ -34,28 +34,45 @@ class UsuarioService(usuarios_pb2_grpc.UsuarioServiceServicer):
     def ModificarUsuario(self, request, context):
         print("Entró al método ModificarUsuario del servicio gRPC")
         db: Session = self.db_session()
-        
-        if request.rol not in RolEnum.__members__ and request.rol not in [e.value for e in RolEnum]:
-            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
-            context.set_details(f"Rol '{request.rol}' no es válido. Debe ser uno de: {[e.value for e in RolEnum]}")
-            return usuarios_pb2.UpdateAndDeleteUserResponse()  
-        
+
+        print(f"Rol recibido desde gRPC: {request.rol}")
+        print(f"Roles válidos en el Enum: {[e.value for e in RolEnum]}")
+
+        # Normalizar rol (por si llega en mayúsculas)
+        rol_normalizado = request.rol.capitalize() if request.rol else None
+        print(f"🧩 Rol normalizado a: {rol_normalizado}")
+
         try:
             usuario_update = schemas.UsuarioUpdate(
-                nombreUsuario=request.nombreUsuario, 
+                nombreUsuario=request.nombreUsuario,
                 nombre=request.nombre,
                 apellido=request.apellido,
                 telefono=request.telefono,
                 email=request.email,
-                rol=request.rol,
+                rol=rol_normalizado,
                 estaActivo=request.activo,
             )
+
+            print(f"🟢 Datos recibidos por gRPC ModificarUsuario:\n"
+                f"ID: {request.id}\n"
+                f"nombreUsuario: {request.nombreUsuario}\n"
+                f"nombre: {request.nombre}\n"
+                f"apellido: {request.apellido}\n"
+                f"telefono: {request.telefono}\n"
+                f"email: {request.email}\n"
+                f"rol: {rol_normalizado}\n"
+                f"activo: {request.activo}")
+
+            # 👉 Asegurate de que esta llamada esté presente:
             usuarioUpdate = crud_usuario.modificar_usuario(db, request.id, usuario_update)
 
-            # Mapear correctamente al response de update/delete
+            print(f"✅ Resultado del CRUD: {usuarioUpdate.mensaje if hasattr(usuarioUpdate, 'mensaje') else 'Sin mensaje'}")
+
             return mapper.ProtoMapper.usuario_to_usuario_delete_and_update_response_proto(usuarioUpdate)
+
         finally:
             db.close()
+
 
     # Baja usuario
     def BajaUsuario(self, request, context):

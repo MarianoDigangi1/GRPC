@@ -1,12 +1,8 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
-import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserRequestDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.CreateUserResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.user.UpdateAndDeleteUserResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
+import com.sistemas.distribuidos.grpc_gateway.dto.user.*;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,74 +19,89 @@ public class UsuarioViewController {
         this.usuarioService = usuarioService;
     }
 
-    // ✅ Vista principal de administración
+    // 🔹 Listar todos los usuarios
     @GetMapping
-    public String listarUsuarios(Model model,
-                                 @RequestParam(required = false) String exitoMessage,
-                                 @RequestParam(required = false) String errorMessage) {
-        var usuarios = usuarioService.listarUsuarios().getUsuarios();
-        model.addAttribute("usuarios", usuarios);
+    public String listarUsuarios(Model model) {
+        ListarUsuariosResponseDto response = usuarioService.listarUsuarios();
+        model.addAttribute("usuarios", response.getUsuarios());
         model.addAttribute("title", "Administración de Usuarios");
-        if (exitoMessage != null) model.addAttribute("exitoMessage", exitoMessage);
-        if (errorMessage != null) model.addAttribute("errorMessage", errorMessage);
-        return "usuarios/usuarios";
+        return "usuarios/usuarios"; // <-- Ajuste: tu archivo se llama usuarios.html
     }
 
-    // ✅ Formulario para crear usuario
+    // 🔹 Formulario para crear usuario
     @GetMapping("/crear")
-    public String mostrarFormularioCrear(Model model) {
+    public String crearUsuario(Model model) {
         model.addAttribute("title", "Crear usuario");
+        model.addAttribute("usuario", new UpdateUserRequestDto());
         return "usuarios/crear";
     }
 
-    // ✅ Formulario para editar usuario
+    // 🔹 Formulario de edición
     @GetMapping("/editar/{id}")
     public String mostrarFormularioEditar(@PathVariable int id, Model model) {
+        try {
+            UserResponseDto usuario = usuarioService.traerUsuarioPorId(id);
+            model.addAttribute("usuario", usuario);
+            model.addAttribute("title", "Editar Usuario");
+            return "usuarios/modificar";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "No se pudo obtener el usuario: " + e.getMessage());
+            return "redirect:/usuarios";
+        }
+    }
+
+    // 🔹 Guardar cambios de edición (POST)
+    @PostMapping("/editar")
+public String editarUsuario(
+        @ModelAttribute UpdateUserRequestDto updateUserRequestDto,
+        RedirectAttributes redirectAttributes
+) {
     try {
-        var usuario = usuarioService.traerUsuarioPorId(id);
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("title", "Editar Usuario");
-        return "usuarios/modificar";
+        // 🧩 Debug: Ver qué llega desde el formulario
+        System.out.println("🟢 ID recibido en formulario: " + updateUserRequestDto.getId());
+        System.out.println("🟢 Nombre recibido: " + updateUserRequestDto.getNombre());
+        System.out.println("🟢 Apellido recibido: " + updateUserRequestDto.getApellido());
+        System.out.println("🟢 Email recibido: " + updateUserRequestDto.getEmail());
+        System.out.println("🟢 Rol recibido: " + updateUserRequestDto.getRol());
+        System.out.println("🟢 Activo: " + updateUserRequestDto.isActivo());
+        UpdateAndDeleteUserResponseDto response =
+                usuarioService.modificarUsuario(updateUserRequestDto, updateUserRequestDto.getId());
+
+        if (response.getMensaje() != null &&
+            response.getMensaje().toLowerCase().contains("editado")) {
+
+            redirectAttributes.addFlashAttribute("mensaje", "✅ Usuario editado correctamente");
+            return "redirect:/usuarios";
+        } else {
+            redirectAttributes.addFlashAttribute("error",
+                    "⚠️ No se pudo actualizar el usuario: " + response.getMensaje());
+            return "redirect:/usuarios";
+        }
+
     } catch (Exception e) {
-        model.addAttribute("errorMessage", "No se pudo obtener el usuario: " + e.getMessage());
+        redirectAttributes.addFlashAttribute("error",
+                "❌ Error al actualizar usuario: " + e.getMessage());
         return "redirect:/usuarios";
     }
 }
 
 
-    // ✅ Crear usuario (POST)
-    @PostMapping("/crear")
-    public String crearUsuario(@ModelAttribute CreateUserRequestDto createUserRequestDto,
-                               RedirectAttributes redirectAttributes) {
-        try {
-            CreateUserResponseDto response = usuarioService.crearUsuario(createUserRequestDto);
-            if (response.getMensaje() != null && response.getMensaje().toLowerCase().contains("correctamente")) {
-                redirectAttributes.addFlashAttribute("exitoMessage", response.getMensaje());
-            } else {
-                redirectAttributes.addFlashAttribute("errorMessage", response.getMensaje());
-            }
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al crear usuario: " + e.getMessage());
-        }
-        return "redirect:/usuarios";
-    }
-
-    // ✅ Baja lógica del usuario (POST)
+    // 🔹 Dar de baja un usuario (POST con método oculto)
     @PostMapping("/eliminar/{id}")
-    public String eliminarUsuario(@PathVariable int id,
-                                  @AuthenticationPrincipal CustomUserPrincipal user,
-                                  RedirectAttributes redirectAttributes) {
+    public String darBajaUsuario(@PathVariable int id, Model model) {
         try {
             UpdateAndDeleteUserResponseDto response = usuarioService.bajaUsuario(id);
-            if (response != null && response.getMensaje() != null) {
-                redirectAttributes.addFlashAttribute("exitoMessage", response.getMensaje());
+
+            if (response.getMensaje() != null && response.getMensaje().toLowerCase().contains("baja")) {
+                return "redirect:/usuarios";
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "No se pudo eliminar el usuario.");
+                model.addAttribute("errorMessage", response.getMensaje());
+                return "redirect:/usuarios";
             }
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error al eliminar usuario: " + e.getMessage());
+            model.addAttribute("errorMessage", "Error al dar de baja usuario: " + e.getMessage());
+            return "redirect:/usuarios";
         }
-        return "redirect:/usuarios";
     }
 }

@@ -31,8 +31,6 @@
       <div class="col-md-6">
         <label for="rol" class="form-label">Rol</label>
         <select id="rol" name="rol" class="form-select bg-secondary text-light border-0" required>
-          <option value="ADMIN" th:selected="${usuario.rol == 'ADMIN'}">ADMIN</option>
-          <option value="USER" th:selected="${usuario.rol == 'USER'}">USER</option>
           <option value="PRESIDENTE" th:selected="${usuario.rol == 'PRESIDENTE'}">PRESIDENTE</option>
           <option value="VOCAL" th:selected="${usuario.rol == 'VOCAL'}">VOCAL</option>
           <option value="COORDINADOR" th:selected="${usuario.rol == 'COORDINADOR'}">COORDINADOR</option>
