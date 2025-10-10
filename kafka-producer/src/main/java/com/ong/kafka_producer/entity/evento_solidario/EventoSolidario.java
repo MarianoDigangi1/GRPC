@@ -7,11 +7,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+/*@Entity
 @Table(name = "evento_solidario")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class EventoSolidraio {
+@Builder*/
+
+
+public class EventoSolidario {
 }
