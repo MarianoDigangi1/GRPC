@@ -1,5 +1,7 @@
-app/__pycache__/**
-app/proto/__pycache__/**
+grpc-client/app/__pycache__/
+grpc-client/app/crud/__pycache__/
+grpc-client/app/proto/__pycache__/
+grpc-client/app/services/__pycache__/
 grpc-gateway/.gitattributes
 grpc-gateway/target/**
 grpc-gateway/.idea
