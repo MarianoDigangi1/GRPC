@@ -1,7 +1,6 @@
 package com.ong.kafka_producer.consumer;
 
-import com.ong.kafka_producer.service.consumer.evento_solidario.SolicitudEventoSolidarioService;
-import com.ong.kafka_producer.service.consumer.solicitud_donacion.SolicitudDonacionExternaService;
+import com.ong.kafka_producer.service.consumer.evento_solidario.SolicitudEventoSolidarioExternalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +14,7 @@ public class EventoSolidarioExternalConsumer {
     @Value("${spring.kafka.topic.publicar.eventos}")
     private String solicitudEvento;
 
-    private final SolicitudEventoSolidarioService solicitudEventosService;
+    private final SolicitudEventoSolidarioExternalService solicitudEventosService;
 
     @KafkaListener(topics = "${spring.kafka.topic.publicar.eventos}", groupId = "ong-group")
     public void consumirSolicitudEventos(String mensaje) {

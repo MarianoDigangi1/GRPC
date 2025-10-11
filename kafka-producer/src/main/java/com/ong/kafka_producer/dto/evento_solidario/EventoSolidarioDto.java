@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventoExternoDto {
+public class EventoSolidarioDto {
     private Long idOrganizacion;
     private String idEvento;
     private String nombre;

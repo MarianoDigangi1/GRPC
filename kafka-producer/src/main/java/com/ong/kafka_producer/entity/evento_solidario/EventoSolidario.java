@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "evento_externo", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id_evento", "id_organizacion"})
 })
-public class EventoExterno {
+public class EventoSolidario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
