@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Table(name = "evento_externo", uniqueConstraints = {
@@ -37,5 +36,5 @@ public class EventoExterno {
     private LocalDateTime fechaEvento;
 
     @Column(name = "vigente")
-    private Boolean vigente = true;
+    private Boolean vigente;
 }

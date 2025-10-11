@@ -33,29 +33,29 @@ public class EventoSolidarioService {
             solicitudDto.setDonaciones(solicitudDto.getDonaciones());
 
             // TODO: Esto quizas moverlo a un converter si hay tiempo
-            SolicitudDonacion solicitudEntity = SolicitudDonacion.builder().idSolicitud(idSolicitud)
-                    .idOrganizacionSolicitante(solicitudDto.getIdOrganizacionSolicitante())
-                    .fechaSolicitud(LocalDateTime.now())
-                    .activa(true)
-                    .esExterna(false).build();
-
-            // crear items para donacion
-            List<SolicitudDonacionItem> items = solicitudDto.getDonaciones().stream()
-                    .map(donacion -> {
-                        SolicitudDonacionItem item = new SolicitudDonacionItem();
-                        item.setCategoria(donacion.getCategoria());
-                        item.setDescripcion(donacion.getDescripcion());
-                        item.setSolicitudDonacion(solicitudEntity);
-                        return item;
-                    })
-                    .collect(Collectors.toList());
-
-            solicitudEntity.setItems(items);
-
-            repository.save(solicitudEntity);
+//            SolicitudDonacion solicitudEntity = SolicitudDonacion.builder().idSolicitud(idSolicitud)
+//                    .idOrganizacionSolicitante(solicitudDto.getIdOrganizacionSolicitante())
+//                    .fechaSolicitud(LocalDateTime.now())
+//                    .activa(true)
+//                    .esExterna(false).build();
+//
+//            // crear items para donacion
+//            List<SolicitudDonacionItem> items = solicitudDto.getDonaciones().stream()
+//                    .map(donacion -> {
+//                        SolicitudDonacionItem item = new SolicitudDonacionItem();
+//                        item.setCategoria(donacion.getCategoria());
+//                        item.setDescripcion(donacion.getDescripcion());
+//                        item.setSolicitudDonacion(solicitudEntity);
+//                        return item;
+//                    })
+//                    .collect(Collectors.toList());
+//
+//            solicitudEntity.setItems(items);
+//
+//            repository.save(solicitudEntity);
 
             String mensaje = objectMapper.writeValueAsString(solicitudDto);
-            kafkaTemplate.send(solicitudDonacionesTopic, mensaje);
+            //kafkaTemplate.send(solicitudDonacionesTopic, mensaje);
 
             log.info("Solicitud de donación publicada: {}", idSolicitud);
             return new ResponseDto<String>("", true, "Solicitud de donacion publicada: " + idSolicitud);
