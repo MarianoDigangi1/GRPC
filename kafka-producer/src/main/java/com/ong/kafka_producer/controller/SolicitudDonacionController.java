@@ -1,6 +1,7 @@
 package com.ong.kafka_producer.controller;
 
 import com.ong.kafka_producer.dto.ResponseDto;
+import com.ong.kafka_producer.dto.baja_donacion.BajaDonacionDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.service.producer.solicitud_donacion.SolicitudDonacionService;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +18,22 @@ public class SolicitudDonacionController {
 
     private final SolicitudDonacionService service;
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<String> crearSolicitud(@RequestBody SolicitudDonacionDto solicitud) {
         ResponseDto<String> response = service.crearSolicitudDonacion(solicitud);
 
         if(response.isOk()){
+            return ResponseEntity.ok().body(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+    }
+
+    @PostMapping("/baja")
+    public ResponseEntity<String> darBajaSolicitudDonacion(@RequestBody BajaDonacionDto bajaDonacionDto) {
+        ResponseDto<String> response = service.bajaSolicitudDonacion(bajaDonacionDto);
+
+        if(response.isOk()) {
             return ResponseEntity.ok().body(response.getMessage());
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());

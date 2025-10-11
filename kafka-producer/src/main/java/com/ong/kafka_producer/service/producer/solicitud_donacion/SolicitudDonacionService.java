@@ -2,6 +2,7 @@ package com.ong.kafka_producer.service.producer.solicitud_donacion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.ResponseDto;
+import com.ong.kafka_producer.dto.baja_donacion.BajaDonacionDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacion;
 import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacionItem;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,9 @@ public class SolicitudDonacionService {
 
     @Value("${spring.kafka.topic.solicitud.donaciones}")
     private String solicitudDonacionesTopic;
+
+    @Value("${spring.kafka.topic.solicitud.donaciones.baja}")
+    private String bajaDonacionesTopic;
 
     @Transactional
     public ResponseDto<String> crearSolicitudDonacion(SolicitudDonacionDto solicitudDto) {
@@ -68,5 +73,42 @@ public class SolicitudDonacionService {
             log.error(e.getMessage());
             return new ResponseDto<>("", false, "Ocurrio un error inesperado");
         }
+    }
+
+    public ResponseDto<String> bajaSolicitudDonacion(BajaDonacionDto bajaDonacionDto) {
+        try {
+            Optional<SolicitudDonacion> solicitudOpt = repository.findByIdSolicitud(bajaDonacionDto.getIdSolicitud());
+
+            if (solicitudOpt.isEmpty()) {
+                log.warn("solicitud con id {} no existe en la bdd", bajaDonacionDto.getIdSolicitud());
+                return new ResponseDto<String>("", false, "solicitud no encontrada");
+            }
+
+            SolicitudDonacion solicitud = solicitudOpt.get();
+
+            if (!solicitud.getIdOrganizacionSolicitante().equals(bajaDonacionDto.getIdOrganizacionSolicitante())) {
+                log.warn("intenta dar de baja solicitud de otra organizacion con id {}", solicitud.getIdOrganizacionSolicitante());
+                return new ResponseDto<String>("", false, "no tenes permisos para dar de baja esta solicitud");
+            }
+
+            if (!solicitud.getActiva()) {
+                log.info("solicitud con id {} ya esta dada de baja en BDD", bajaDonacionDto.getIdSolicitud());
+                return new ResponseDto<String>("", false, "la solicitud ya esta dada de baja");
+            }
+
+            solicitud.setActiva(false);
+            repository.save(solicitud);
+
+            String mensajeJson = objectMapper.writeValueAsString(bajaDonacionDto);
+            kafkaTemplate.send(bajaDonacionesTopic, mensajeJson);
+
+            log.info("baja de solicitud con id: {} publicada exitosamente", bajaDonacionDto.getIdSolicitud());
+        } catch (Exception e) {
+            log.error("Error al dar de baja solicitud: {}", e.getMessage(), e);
+            return new ResponseDto<String>("", true, "error al dar de baja la solicitud");
+        }
+
+        return new ResponseDto<String>("", true, "la solicitud se dio de baja correctamente");
+
     }
 }

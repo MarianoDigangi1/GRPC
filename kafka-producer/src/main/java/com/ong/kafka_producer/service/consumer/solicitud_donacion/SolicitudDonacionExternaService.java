@@ -5,6 +5,7 @@ import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacion;
 import com.ong.kafka_producer.entity.solicitud_donacion.SolicitudDonacionItem;
 import com.ong.kafka_producer.repository.solicitud_donacion.SolicitudDonacionRepository;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ public class SolicitudDonacionExternaService {
     @Value("${spring.kafka.idOrganizacion}")
     private Integer idOrganizacion;
 
+    @Transactional
     public void procesarSolicitudExterna(String mensaje) {
         try {
 
