@@ -12,5 +12,5 @@ import java.util.List;
 public class SolicitudEventoSolidarioDto {
     private String idSolicitud;
     private Integer idOrganizacionSolicitante;
-    private List<EventoSolidarioDto> donaciones;
+    private List<EventoExternoDto> donaciones;
 }

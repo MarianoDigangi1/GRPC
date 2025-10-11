@@ -9,8 +9,11 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventoSolidarioDto {
-    private String nombreEvento;
+public class EventoExternoDto {
+    private Long idOrganizacion;
+    private String idEvento;
+    private String nombre;
     private String descripcion;
-    private LocalDateTime fechaHoraEvento;
+    private LocalDateTime fechaEvento;
+    //private Boolean vigente;
 }

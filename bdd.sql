@@ -1,65 +1,76 @@
 create DATABASE empuje_comunitario_db;
 use empuje_comunitario_db;
 
-
+-- ============================================================
+-- 🧍 TABLA DE USUARIOS
+-- ============================================================
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombreUsuario VARCHAR(50) NOT NULL UNIQUE,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
     telefono VARCHAR(20),
-    clave VARCHAR(255) NOT NULL, -- se guarda encriptada (hash)
-    email VARCHAR(100) NOT NULL UNIQUE,
-    rol ENUM('Presidente', 'Vocal', 'Coordinador', 'Voluntario') NOT NULL,
-    estaActivo BOOLEAN NOT NULL DEFAULT TRUE
+    clave VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    rol ENUM('PRESIDENTE', 'COORDINADOR', 'VOCAL', 'VOLUNTARIO') NOT NULL,
+    estaActivo TINYINT(1) DEFAULT 1
 );
 
+-- ============================================================
+-- 📦 TABLA DE INVENTARIO LOCAL
+-- ============================================================
 CREATE TABLE inventario (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    categoria ENUM('ROPA','ALIMENTOS','JUGUETES','UTILES_ESCOLARES') NOT NULL,
-    descripcion VARCHAR(200),
-    cantidad INT NOT NULL CHECK (cantidad >= 0),
-    eliminado BOOLEAN DEFAULT FALSE,
+    categoria ENUM('ALIMENTOS', 'ROPA', 'HIGIENE', 'OTROS') NOT NULL,
+    descripcion VARCHAR(200) NOT NULL,
+    cantidad INT DEFAULT 0,
+    eliminado TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INT,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
     updated_by INT,
     FOREIGN KEY (created_by) REFERENCES usuarios(id),
     FOREIGN KEY (updated_by) REFERENCES usuarios(id)
 );
 
+-- ============================================================
+-- 🎉 EVENTOS INTERNOS DE LA ORGANIZACIÓN
+-- ============================================================
 CREATE TABLE evento (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL,
     descripcion TEXT,
-    fecha_evento DATETIME NOT NULL
+    fecha_evento DATETIME NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
 );
 
--- Relación Evento - Usuario (muchos a muchos)
 CREATE TABLE evento_usuario (
     evento_id INT,
     usuario_id INT,
     PRIMARY KEY (evento_id, usuario_id),
-    FOREIGN KEY (evento_id) REFERENCES evento(id),
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    FOREIGN KEY (evento_id) REFERENCES evento(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
--- Relación Evento - Inventario (opcional, si se reparten donaciones)
+
 CREATE TABLE evento_inventario (
     evento_id INT,
     inventario_id INT,
-    cantidad_usada INT NOT NULL CHECK (cantidad_usada >= 0),
+    cantidad_usada INT,
     PRIMARY KEY (evento_id, inventario_id),
     FOREIGN KEY (evento_id) REFERENCES evento(id),
     FOREIGN KEY (inventario_id) REFERENCES inventario(id)
 );
 
+-- ============================================================
+-- 📨 SOLICITUDES DE DONACIÓN (Kafka Topic: /solicitud-donaciones)
+-- ============================================================
 CREATE TABLE solicitud_donacion_externa (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_solicitud VARCHAR(100) NOT NULL UNIQUE,
+    id_solicitud VARCHAR(100) NOT NULL,
     id_organizacion_solicitante INT NOT NULL,
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activa BOOLEAN DEFAULT TRUE,
-    es_externa boolean DEFAULT FALSE,
+    es_externa BOOLEAN DEFAULT TRUE,
     UNIQUE KEY unique_solicitud (id_solicitud, id_organizacion_solicitante)
 );
 
@@ -71,13 +82,72 @@ CREATE TABLE solicitud_donacion_externa_item (
     FOREIGN KEY (solicitud_id) REFERENCES solicitud_donacion_externa(id)
 );
 
-INSERT INTO usuarios (nombreUsuario, nombre, apellido, telefono, clave, email, rol, estaActivo)
-VALUES
-('jpresidente', 'Juan', 'Pérez', '+541112345678', 'hash_ejemplo1', 'juan.perez@email.com', 'Presidente', TRUE),
-('mvocal', 'María', 'Vocales', '+541198765432', 'hash_ejemplo2', 'maria.vocales@email.com', 'Vocal', TRUE),
-('cconsejero', 'Carlos', 'Consejo', '+549112233445', 'hash_ejemplo3', 'carlos.consejo@email.com', 'Coordinador', FALSE),
-('otrousuario', 'Ana', 'Gómez', '+541167788990', 'hash_ejemplo4', 'ana.gomez@email.com', 'Voluntario', TRUE),
-('usuarioinactivo', 'Luis', 'Ramírez', '+549112299887', 'hash_ejemplo5', 'luis.ramirez@email.com', 'Voluntario', FALSE);
+-- ============================================================
+-- 🎁 OFERTAS DE DONACIÓN (Kafka Topic: /oferta-donaciones)
+-- ============================================================
+CREATE TABLE oferta_donacion_externa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_oferta VARCHAR(100) NOT NULL,
+    id_organizacion_donante INT NOT NULL,
+    fecha_oferta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_oferta (id_oferta, id_organizacion_donante)
+);
 
-select * from empuje_comunitario_db.usuarios;
+CREATE TABLE oferta_donacion_externa_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    oferta_id INT NOT NULL,
+    categoria VARCHAR(100),
+    descripcion VARCHAR(200),
+    cantidad VARCHAR(50),
+    FOREIGN KEY (oferta_id) REFERENCES oferta_donacion_externa(id)
+);
 
+-- ============================================================
+-- 🔄 TRANSFERENCIAS ENTRE ORGANIZACIONES
+-- (Kafka Topic: /transferencia-donaciones/{id-org})
+-- ============================================================
+CREATE TABLE transferencia_donacion (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_solicitud VARCHAR(100) NOT NULL,
+    id_organizacion_donante INT NOT NULL,
+    id_organizacion_receptora INT NOT NULL,
+    fecha_transferencia TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE transferencia_donacion_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    transferencia_id INT NOT NULL,
+    categoria VARCHAR(100),
+    descripcion VARCHAR(200),
+    cantidad VARCHAR(50),
+    FOREIGN KEY (transferencia_id) REFERENCES transferencia_donacion(id)
+);
+
+-- ============================================================
+-- 🌍 EVENTOS EXTERNOS (Kafka Topic: /eventos-solidarios)
+-- ============================================================
+CREATE TABLE evento_externo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evento VARCHAR(100) NOT NULL,
+    id_organizacion INT NOT NULL,
+    nombre VARCHAR(200),
+    descripcion TEXT,
+    fecha_evento DATETIME,
+    vigente BOOLEAN DEFAULT TRUE,
+    UNIQUE KEY unique_evento (id_evento, id_organizacion)
+);
+
+-- ============================================================
+-- 🤝 ADHESIONES A EVENTOS EXTERNOS (Kafka Topic: /adhesion-evento/{id-organizador})
+-- ============================================================
+CREATE TABLE adhesion_evento_externo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evento VARCHAR(100) NOT NULL,
+    id_organizacion_voluntario INT NOT NULL,
+    id_voluntario INT NOT NULL,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    telefono VARCHAR(50),
+    email VARCHAR(100),
+    fecha_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
