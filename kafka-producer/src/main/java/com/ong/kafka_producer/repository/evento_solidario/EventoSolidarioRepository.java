@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface EventoSolidarioRepository extends JpaRepository<EventoSolidario, Long> {
     Optional<EventoSolidario> findByIdEvento(String idEvento);
-    Optional<EventoSolidario> findByIdEventoAndIdOrganizacion(String idEvento, Long idOrganizacion);
+    Optional<EventoSolidario> findByIdEventoAndIdOrganizacion(String idEvento, Integer idOrganizacion);
     List<EventoSolidario> findAllByOrderByFechaEventoAsc();
 }

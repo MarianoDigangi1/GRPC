@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class EventoSolidario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(name = "id_evento", length = 100, nullable = false)
     private String idEvento;
