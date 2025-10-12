@@ -142,4 +142,27 @@ public class InventarioViewController {
         }
     }
 
+    @GetMapping("/baja-solicitud-donacion")
+    public String darBajaSolicitudDonacion(Model model) {
+        return "inventario/externas/bajaSolicitudDonacion";
+    }
+
+    @PostMapping("/baja-solicitud-donacion")
+    public String procesarBajaSolicitudDonacion(@RequestParam("solicitudId") String solicitudId,
+                                                RedirectAttributes redirectAttributes,
+                                                Model model) {
+        try {
+            kafkaProducerSolicitudDonaciones.darBajaSolicitudDonacion(solicitudId);
+
+            redirectAttributes.addFlashAttribute("mensaje", "Solicitud de donación dada de baja exitosamente");
+            redirectAttributes.addFlashAttribute("tipo", "success");
+            return "redirect:/inventario/solicitudes-externas";
+
+        } catch (Exception e) {
+            model.addAttribute("mensaje", "Error al dar de baja la solicitud: " + e.getMessage());
+            model.addAttribute("tipo", "error");
+            return "inventario/externas/bajaSolicitudDonacion";
+        }
+    }
+
 }
