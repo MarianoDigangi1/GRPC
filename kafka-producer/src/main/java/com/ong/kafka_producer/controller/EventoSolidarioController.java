@@ -1,9 +1,9 @@
 package com.ong.kafka_producer.controller;
 
 import com.ong.kafka_producer.dto.ResponseDto;
+import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
 import com.ong.kafka_producer.dto.evento_solidario.BajaEventoSolidarioDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
-import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.service.producer.evento_solidario.EventoSolidarioService;
 import com.ong.kafka_producer.service.producer.evento_solidario.SolicitudEventoSolidarioService;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +58,5 @@ public class EventoSolidarioController {
 
         return ResponseEntity.ok("Evento dado de baja publicado en Kafka.");
     }
-
 
 }
