@@ -16,6 +16,18 @@ CREATE TABLE usuarios (
     estaActivo TINYINT(1) DEFAULT 1
 );
 
+
+CREATE TABLE evento_voluntario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evento VARCHAR(100) NOT NULL,         -- ID del evento
+    id_organizacion_voluntario INT NOT NULL, -- Organización del voluntario
+    id_voluntario INT NOT NULL,              -- ID dentro de SU organización
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    telefono VARCHAR(50),
+    email VARCHAR(100),
+    fecha_adhesion DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 -- ============================================================
 -- 📦 TABLA DE INVENTARIO LOCAL
 -- ============================================================

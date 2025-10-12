@@ -30,6 +30,7 @@ public class SolicitudEventoSolidarioService {
     private String solicitudEventosTopic;
     @Value("${spring.kafka.topic.baja.eventos}")
     private String bajaEventoTopic;
+
     @Value("${spring.kafka.topic.adhesion.eventos}")
     private String adhesionEventoTopic;
 
@@ -69,8 +70,7 @@ public class SolicitudEventoSolidarioService {
         try {
 
             String mensaje = objectMapper.writeValueAsString(adhesionEventoDto);
-            String topic = adhesionEventoTopic + "-" + idOrganizador.toString();
-            kafkaTemplate.send(topic, mensaje);
+            kafkaTemplate.send(adhesionEventoTopic, mensaje);
 
             log.info("Solicitud de donación publicada: {}", adhesionEventoDto.getIdEvento());
             return new ResponseDto<String>("", true, "Solicitud de crear evento: " + adhesionEventoDto.getIdEvento());

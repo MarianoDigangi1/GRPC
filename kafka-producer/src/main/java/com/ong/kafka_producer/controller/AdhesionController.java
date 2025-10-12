@@ -1,7 +1,7 @@
 package com.ong.kafka_producer.controller;
 
+import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
-import com.ong.kafka_producer.service.producer.evento_solidario.EventoSolidarioService;
 import com.ong.kafka_producer.service.producer.evento_solidario.SolicitudEventoSolidarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,12 @@ public class AdhesionController {
 
     @PostMapping
     public ResponseEntity<?> adherirVoluntario(@RequestBody AdhesionEventoDto adhesion, @RequestParam Integer idOrganizador) {
-        service.publicarAdhesion(adhesion, idOrganizador);
-        return ResponseEntity.ok("Adhesión enviada.");
+        ResponseDto<String> response = service.publicarAdhesion(adhesion, idOrganizador);
+
+        if (response.isOk()) {
+            return ResponseEntity.ok(response.getMessage());
+        } else {
+            return ResponseEntity.internalServerError().body(response.getMessage());
+        }
     }
 }
