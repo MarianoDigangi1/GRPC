@@ -1,6 +1,7 @@
 package com.sistemas.distribuidos.grpc_gateway.configuration;
 
 import com.sistemas.distribuidos.grpc_gateway.security.CustomAuthProvider;
+import com.sistemas.distribuidos.grpc_gateway.security.CustomAuthenticationFailureHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,8 @@ public class SecurityConfig {
 
     @Autowired
     private CustomAuthProvider customAuthProvider;
+    @Autowired
+    private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,6 +38,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                     .usernameParameter("identificador")
                     .passwordParameter("clave")
                     .defaultSuccessUrl("/", true)
+                    .failureHandler(customAuthenticationFailureHandler)
                     .permitAll()
             )
             .logout(logout -> logout
