@@ -1,6 +1,7 @@
 package com.ong.kafka_producer.controller;
 
 import com.ong.kafka_producer.dto.ResponseDto;
+import com.ong.kafka_producer.dto.evento_solidario.BajaEventoSolidarioDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.service.producer.evento_solidario.EventoSolidarioService;
@@ -47,7 +48,16 @@ public class EventoSolidarioController {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
     }
+    @DeleteMapping
+    public ResponseEntity<?> bajaEvento(@RequestBody BajaEventoSolidarioDto solicitud) {
 
+        //eventoSolidarioService.darDeBajaEventoInterno(idEvento, idOrganizacion);
+
+        // 2. Publicar mensaje de baja a Kafka para informar a otras organizaciones
+        ResponseDto<String> response = service.darDeBajaEvento(solicitud);
+
+        return ResponseEntity.ok("Evento dado de baja publicado en Kafka.");
+    }
 
 
 }

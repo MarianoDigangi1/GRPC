@@ -2,6 +2,7 @@ package com.ong.kafka_producer.service.producer.evento_solidario;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.ResponseDto;
+import com.ong.kafka_producer.dto.evento_solidario.BajaEventoSolidarioDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.entity.evento_solidario.EventoSolidario;
@@ -26,6 +27,9 @@ public class SolicitudEventoSolidarioService {
     @Value("${spring.kafka.topic.publicar.eventos}")
     private String solicitudEventosTopic;
 
+    @Value("${spring.kafka.topic.baja.eventos}")
+    private String bajaEventoTopic;
+
     @Transactional
     public ResponseDto<String> crearSolicitudEvento(EventoSolidarioDto solicitudDto) {
         try {
@@ -40,5 +44,23 @@ public class SolicitudEventoSolidarioService {
             return new ResponseDto<>("", false, "Ocurrio un error inesperado");
         }
     }
+
+
+    @Transactional
+    public ResponseDto<String> darDeBajaEvento(BajaEventoSolidarioDto bajaEventoDto) {
+        try {
+
+            String mensaje = objectMapper.writeValueAsString(bajaEventoDto);
+            kafkaTemplate.send(bajaEventoTopic, mensaje);
+
+            log.info("Solicitud de baja publicada: {}", bajaEventoDto.getIdEvento());
+            return new ResponseDto<String>("", true, "Solicitud de baja de evento: " + bajaEventoDto.getIdEvento());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseDto<>("", false, "Ocurrio un error inesperado");
+        }
+    }
+
+
 }
 
