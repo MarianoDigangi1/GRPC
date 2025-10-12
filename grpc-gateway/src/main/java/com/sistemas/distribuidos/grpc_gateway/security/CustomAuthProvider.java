@@ -57,7 +57,7 @@ public class CustomAuthProvider implements AuthenticationProvider {
 
         if (response.getResult() != LoginResponseDto.LoginResultCode.LOGIN_OK) {
             log.info("Login rechazado para {}: result={} mensaje={} ", identificador, response.getResult(), response.getMensaje());
-            throw new BadCredentialsException("Credenciales inválidas");
+            throw new BadCredentialsException(response.getMensaje());
         }
 
         UsuarioDto usuario = response.getUsuario();
