@@ -3,10 +3,13 @@ package com.ong.kafka_producer.controller;
 import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
+import com.ong.kafka_producer.service.producer.evento_solidario.EventoSolidarioService;
 import com.ong.kafka_producer.service.producer.evento_solidario.SolicitudEventoSolidarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,8 @@ public class EventoSolidarioController {
 
     @Autowired
     private SolicitudEventoSolidarioService service;
+    private final EventoSolidarioService eventoSolidarioService;
+
     @PostMapping
     public ResponseEntity<String> crearSolicitud(@RequestBody EventoSolidarioDto solicitud) {
 
@@ -30,4 +35,19 @@ public class EventoSolidarioController {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
     }
+
+    // Nueva baja de evento
+    @DeleteMapping("/{idEvento}/baja")
+    public ResponseEntity<String> darDeBajaEvento(@PathVariable String idEvento) {
+        ResponseDto<String> response = eventoSolidarioService.darDeBajaEvento(idEvento);
+
+        if (response.isOk()) {
+            return ResponseEntity.ok(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+    }
+
+
+
 }
