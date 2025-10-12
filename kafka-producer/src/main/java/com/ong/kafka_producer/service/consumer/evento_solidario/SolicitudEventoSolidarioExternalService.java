@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 public class SolicitudEventoSolidarioExternalService {
@@ -21,19 +23,24 @@ public class SolicitudEventoSolidarioExternalService {
 
     public void procesarSolicitudEventos(String mensaje) {
         try {
-            log.info("Procesando solicitud externa de evento solidario...");
+
             EventoSolidarioDto eventoSolidarioDto = objectMapper.readValue(mensaje, EventoSolidarioDto.class);
 
             if (checkearSiEsSolicitudDePropiaOrganizacion(eventoSolidarioDto, idOrganizacion)) return;
-            if (checkearSiElEventoSolidarioEstaVigente(eventoSolidarioDto)) return;
+            boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
+
+            if (!vigente) {
+                log.info("Evento externo descartado por no estar vigente: {}", eventoSolidarioDto.getIdEvento());
+                return;
+            }
 
             EventoSolidario eventoSolidario = EventoSolidario.builder()
-                    .idEvento(eventoSolidarioDto.getIdEvento())
+                    .idEvento(String.valueOf(eventoSolidarioDto.getIdEvento()))
                     .idOrganizacion(eventoSolidarioDto.getIdOrganizacion().intValue())
                     .nombre(eventoSolidarioDto.getNombre())
                     .descripcion(eventoSolidarioDto.getDescripcion())
                     .fechaEvento(eventoSolidarioDto.getFechaEvento())
-                    .vigente(true)
+                    .vigente(vigente)
                     .build();
 
             eventoSolidarioRepository.save(eventoSolidario);
@@ -46,23 +53,27 @@ public class SolicitudEventoSolidarioExternalService {
     }
 
     private static boolean checkearSiEsSolicitudDePropiaOrganizacion(EventoSolidarioDto eventoSolidarioDto, Integer idOrganizacion) {
-        if (eventoSolidarioDto.getIdOrganizacion().equals(idOrganizacion.toString())) {
+
+        if (eventoSolidarioDto.getIdOrganizacion().equals(idOrganizacion)) {
             log.info("Ignorando solicitud propia de organización: {}", idOrganizacion);
             return true;
         }
         return false;
     }
 
+    /*
     private boolean checkearSiElEventoSolidarioEstaVigente(EventoSolidarioDto solicitudDto) {
-        if (eventoSolidarioRepository.findByIdEvento(solicitudDto.getIdEvento()).isPresent()) {
+        if (eventoSolidarioRepository.findByIdEvento(String.valueOf(solicitudDto.getIdEvento())).isPresent()) {
             log.info("solicitud con id {} ya existe", solicitudDto.getIdEvento());
             return true;
         }
-        EventoSolidario eventoSolidario = eventoSolidarioRepository.findByIdEvento(solicitudDto.getIdEvento()).orElse(null);
+        EventoSolidario eventoSolidario = eventoSolidarioRepository.findByIdEvento(String.valueOf(solicitudDto.getIdEvento())).orElse(null);
         if (eventoSolidario != null && !eventoSolidario.getVigente()) {
             log.info("El evento solidario con id {} no está vigente", solicitudDto.getIdEvento());
             return true;
         }
         return false;
     }
+
+     */
 }

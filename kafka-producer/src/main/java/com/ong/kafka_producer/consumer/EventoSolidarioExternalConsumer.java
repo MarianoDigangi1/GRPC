@@ -14,10 +14,13 @@ public class EventoSolidarioExternalConsumer {
     @Value("${spring.kafka.topic.publicar.eventos}")
     private String solicitudEvento;
 
+    @Value("${spring.kafka.idOrganizacion}")
+    private int organizacionLocalId;
+
     private final SolicitudEventoSolidarioExternalService solicitudEventosService;
 
     @KafkaListener(topics = "${spring.kafka.topic.publicar.eventos}", groupId = "ong-group")
-    public void consumirSolicitudEventos(String mensaje) {
+    public void procesarEventoExterno(String mensaje) {
         log.info("Mensaje recibido en topic solicitud-eventos: {}", mensaje);
         solicitudEventosService.procesarSolicitudEventos(mensaje);
     }

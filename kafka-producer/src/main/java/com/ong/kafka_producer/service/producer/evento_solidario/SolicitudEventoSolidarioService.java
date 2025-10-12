@@ -29,29 +29,16 @@ public class SolicitudEventoSolidarioService {
     @Transactional
     public ResponseDto<String> crearSolicitudEvento(EventoSolidarioDto solicitudDto) {
         try {
-            String idSolicitud = UUID.randomUUID().toString();
-
-            solicitudDto.setIdEvento(idSolicitud);
-
-            EventoSolidario eventoSolidarioEntity = EventoSolidario.builder()
-                    .idEvento(idSolicitud)
-                    .idOrganizacion(1)
-                    .nombre("Evento de Donación " + idSolicitud)
-                    .descripcion("Evento generado para la solicitud de donación " + idSolicitud)
-                    .vigente(true)
-                    .build();
-
-            repository.save(eventoSolidarioEntity);
-
 
             String mensaje = objectMapper.writeValueAsString(solicitudDto);
             kafkaTemplate.send(solicitudEventosTopic, mensaje);
 
-            log.info("Solicitud de donación publicada: {}", idSolicitud);
-            return new ResponseDto<String>("", true, "Solicitud de donacion publicada: " + idSolicitud);
+            log.info("Solicitud de donación publicada: {}", solicitudDto.getIdEvento());
+            return new ResponseDto<String>("", true, "Solicitud de crear evento: " + solicitudDto.getIdEvento());
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseDto<>("", false, "Ocurrio un error inesperado");
         }
     }
 }
+
