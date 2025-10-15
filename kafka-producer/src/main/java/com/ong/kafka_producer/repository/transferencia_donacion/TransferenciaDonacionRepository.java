@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TransferenciaDonacionRepository extends JpaRepository<TransferenciaDonacion, String> {
+public interface TransferenciaDonacionRepository extends JpaRepository<TransferenciaDonacion, Integer> {
     Optional<TransferenciaDonacion> findByIdTransferencia(String idTransferencia);
 }

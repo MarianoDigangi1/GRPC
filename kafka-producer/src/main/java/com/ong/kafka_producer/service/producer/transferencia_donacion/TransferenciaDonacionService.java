@@ -3,6 +3,7 @@ package com.ong.kafka_producer.service.producer.transferencia_donacion;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.transferencia_donacion.TransferenciaDonacionDto;
+import com.ong.kafka_producer.entity.transferencia_donacion.Inventario;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacion;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacionItem;
 import com.ong.kafka_producer.repository.transferencia_donacion.TransferenciaDonacionRepository;
@@ -53,8 +54,16 @@ public class TransferenciaDonacionService {
             List<TransferenciaDonacionItem> items = new ArrayList<>();
             if (transferenciaDto.getDonaciones() != null) {
                 transferenciaDto.getDonaciones().forEach(donacion -> {
+                    Inventario.Categoria categoriaEnum;
+                    try {
+                        categoriaEnum = Inventario.Categoria.valueOf(donacion.getCategoria().toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        log.warn("⚠️ Categoria inválida '{}', se ignora el item: {}", donacion.getCategoria(), donacion.getDescripcion());
+                        return; // ignora este item
+                    }
+
                     TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
-                            .categoria(donacion.getCategoria())
+                            .categoria(categoriaEnum)
                             .descripcion(donacion.getDescripcion())
                             .transferenciaDonacion(transferenciaEntity)
                             .build();
@@ -82,6 +91,7 @@ public class TransferenciaDonacionService {
         }
     }
 }
+
 
 
 

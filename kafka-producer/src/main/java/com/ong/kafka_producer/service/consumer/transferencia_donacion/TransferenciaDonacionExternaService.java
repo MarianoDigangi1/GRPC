@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.transferencia_donacion.TransferenciaDonacionDto;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacion;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacionItem;
+import com.ong.kafka_producer.entity.transferencia_donacion.Inventario;
 import com.ong.kafka_producer.repository.transferencia_donacion.TransferenciaDonacionRepository;
+import com.ong.kafka_producer.repository.transferencia_donacion.InventarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class TransferenciaDonacionExternaService {
     private TransferenciaDonacionRepository transferenciaDonacionRepository;
 
     @Autowired
+    private InventarioRepository inventarioRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Value("${spring.kafka.idOrganizacion}")
@@ -33,50 +38,105 @@ public class TransferenciaDonacionExternaService {
         try {
             TransferenciaDonacionDto transferenciaDto = objectMapper.readValue(mensaje, TransferenciaDonacionDto.class);
 
+            // ⚠️ Comparación segura para evitar NullPointerException
             if (esTransferenciaPropia(transferenciaDto, idOrganizacion)) return;
             if (existeTransferenciaEnBDD(transferenciaDto)) return;
 
-            // Crear entity
+            // 🔒 Validar campos obligatorios antes de persistir
+            if (transferenciaDto.getIdOrganizacionOrigen() == null ||
+                transferenciaDto.getIdOrganizacionDestino() == null ||
+                transferenciaDto.getIdTransferencia() == null) {
+                log.error("❌ Campos obligatorios nulos en la transferencia: {}", transferenciaDto);
+                return;
+            }
+
+            // Crear entidad principal
             TransferenciaDonacion transferenciaExterna = TransferenciaDonacion.builder()
                     .idTransferencia(transferenciaDto.getIdTransferencia())
                     .idOrganizacionOrigen(transferenciaDto.getIdOrganizacionOrigen())
                     .idOrganizacionDestino(transferenciaDto.getIdOrganizacionDestino())
                     .fechaTransferencia(LocalDateTime.now())
+                    .activa(true)
+                    .esExterna(true)
                     .build();
 
             // Crear items
             List<TransferenciaDonacionItem> items = new ArrayList<>();
-            transferenciaDto.getDonaciones().forEach(donacion -> {
-                TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
-                        .categoria(donacion.getCategoria())
-                        .descripcion(donacion.getDescripcion())
-                        .transferenciaDonacion(transferenciaExterna)
-                        .build();
-                items.add(item);
-            });
+            if (transferenciaDto.getDonaciones() != null) {
+                transferenciaDto.getDonaciones().forEach(donacion -> {
+                    Inventario.Categoria categoriaEnum;
+                    try {
+                        categoriaEnum = Inventario.Categoria.valueOf(donacion.getCategoria().toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        log.warn("⚠️ Categoria inválida '{}', se ignora el item: {}", donacion.getCategoria(), donacion.getDescripcion());
+                        return;
+                    }
+
+                    TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
+                            .categoria(categoriaEnum)
+                            .descripcion(donacion.getDescripcion())
+                            .cantidad(donacion.getCantidad())
+                            .transferenciaDonacion(transferenciaExterna)
+                            .build();
+                    items.add(item);
+                });
+            }
 
             transferenciaExterna.setItems(items);
-
-            // Guardar en base de datos (ahora dentro de @Transactional)
             transferenciaDonacionRepository.save(transferenciaExterna);
 
-            log.info("Transferencia externa guardada: {}", transferenciaDto.getIdTransferencia());
+            // 🔁 Actualizar inventario
+            actualizarInventario(items);
+
+            log.info("✅ Transferencia externa guardada y stock actualizado: {}", transferenciaDto.getIdTransferencia());
 
         } catch (Exception e) {
-            log.error("Error al procesar transferencia externa: {}", e.getMessage(), e);
+            log.error("❌ Error al procesar transferencia externa: {}", e.getMessage(), e);
         }
     }
 
     private boolean existeTransferenciaEnBDD(TransferenciaDonacionDto transferenciaDto) {
         return transferenciaDonacionRepository.findByIdTransferencia(transferenciaDto.getIdTransferencia())
                 .map(existing -> {
-                    log.info("Transferencia con id {} ya existe", transferenciaDto.getIdTransferencia());
+                    log.info("⚠️ Transferencia con id {} ya existe", transferenciaDto.getIdTransferencia());
                     return true;
                 }).orElse(false);
     }
 
     private static boolean esTransferenciaPropia(TransferenciaDonacionDto transferenciaDto, Integer idOrganizacion) {
-        return transferenciaDto.getIdOrganizacionOrigen().equals(idOrganizacion);
+        // 🔒 Comparación segura: primero verificamos que el campo no sea null
+        Integer origen = transferenciaDto.getIdOrganizacionOrigen();
+        return origen != null && origen.equals(idOrganizacion);
+    }
+
+    private void actualizarInventario(List<TransferenciaDonacionItem> items) {
+        items.forEach(item -> {
+            Inventario.Categoria categoriaEnum = item.getCategoria();
+
+            inventarioRepository.findByCategoriaAndDescripcion(categoriaEnum, item.getDescripcion())
+                    .ifPresentOrElse(
+                            inventario -> {
+                                inventario.setCantidad(inventario.getCantidad() + item.getCantidad());
+                                inventario.setUpdatedAt(LocalDateTime.now());
+                                inventario.setUpdatedBy(idOrganizacion);
+                                inventarioRepository.save(inventario);
+                                log.info("🔁 Inventario actualizado: {} +{}", item.getDescripcion(), item.getCantidad());
+                            },
+                            () -> {
+                                inventarioRepository.save(
+                                        Inventario.builder()
+                                                .categoria(categoriaEnum)
+                                                .descripcion(item.getDescripcion())
+                                                .cantidad(item.getCantidad())
+                                                .eliminado(false)
+                                                .createdAt(LocalDateTime.now())
+                                                .createdBy(idOrganizacion)
+                                                .build()
+                                );
+                                log.info("🆕 Inventario creado: {} ({} unidades)", item.getDescripcion(), item.getCantidad());
+                            }
+                    );
+        });
     }
 }
 

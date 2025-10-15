@@ -10,5 +10,8 @@ import lombok.NoArgsConstructor;
 public class DonacionDto {
     private String categoria;
     private String descripcion;
-    
+    private Integer cantidad;
 }
+
+
+

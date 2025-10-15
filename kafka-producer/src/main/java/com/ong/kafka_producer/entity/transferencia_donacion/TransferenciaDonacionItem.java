@@ -18,17 +18,21 @@ public class TransferenciaDonacionItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String categoria;
+    private Inventario.Categoria categoria; // ahora es enum
 
     @Column(nullable = false)
     private String descripcion;
 
     @Column(nullable = false)
-    @Builder.Default
-    private Integer cantidad = 0; // ahora tenemos cantidad, para que el service funcione
+    private Integer cantidad;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transferencia_id")
     private TransferenciaDonacion transferenciaDonacion;
 }
+
+
+
+
