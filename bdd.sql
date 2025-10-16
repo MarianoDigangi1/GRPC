@@ -16,6 +16,9 @@ CREATE TABLE organizaciones (
     nombre VARCHAR(200) NOT NULL
 );
 
+INSERT INTO organizaciones (external_org_id, nombre) VALUES ('ong-1', 'Ong comunitaria');
+INSERT INTO organizaciones (external_org_id, nombre) VALUES ('ong-2', 'ONG Patitos');
+INSERT INTO organizaciones (external_org_id, nombre) VALUES ('ong-3', 'ONG Sonrisas');
 -- =========================================================
 -- Tabla: usuarios
 -- =========================================================
