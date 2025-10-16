@@ -38,11 +38,19 @@ public class TransferenciaDonacionExternaService {
         try {
             TransferenciaDonacionDto transferenciaDto = objectMapper.readValue(mensaje, TransferenciaDonacionDto.class);
 
-            // ⚠️ Comparación segura para evitar NullPointerException
-            if (esTransferenciaPropia(transferenciaDto, idOrganizacion)) return;
-            if (existeTransferenciaEnBDD(transferenciaDto)) return;
+            // Evitar procesar transferencias propias
+            if (esTransferenciaPropia(transferenciaDto, idOrganizacion)) {
+                log.info("⏩ Ignorando transferencia propia: {}", transferenciaDto.getIdTransferencia());
+                return;
+            }
 
-            // 🔒 Validar campos obligatorios antes de persistir
+            // Evitar duplicados
+            if (existeTransferenciaEnBDD(transferenciaDto)) {
+                log.info("⏩ Transferencia {} ya fue procesada. Se ignora.", transferenciaDto.getIdTransferencia());
+                return;
+            }
+
+            // Validar campos obligatorios
             if (transferenciaDto.getIdOrganizacionOrigen() == null ||
                 transferenciaDto.getIdOrganizacionDestino() == null ||
                 transferenciaDto.getIdTransferencia() == null) {
@@ -69,7 +77,7 @@ public class TransferenciaDonacionExternaService {
                         categoriaEnum = Inventario.Categoria.valueOf(donacion.getCategoria().toUpperCase());
                     } catch (IllegalArgumentException e) {
                         log.warn("⚠️ Categoria inválida '{}', se ignora el item: {}", donacion.getCategoria(), donacion.getDescripcion());
-                        return;
+                        return; // se ignora el item
                     }
 
                     TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
@@ -84,11 +92,19 @@ public class TransferenciaDonacionExternaService {
 
             transferenciaExterna.setItems(items);
             transferenciaDonacionRepository.save(transferenciaExterna);
+            log.info("✅ Transferencia externa guardada: {}", transferenciaDto.getIdTransferencia());
 
-            // 🔁 Actualizar inventario
-            actualizarInventario(items);
-
-            log.info("✅ Transferencia externa guardada y stock actualizado: {}", transferenciaDto.getIdTransferencia());
+            // Actualizar inventario si somos el destino
+            if (transferenciaDto.getIdOrganizacionDestino().equals(idOrganizacion)) {
+                if (!items.isEmpty()) {
+                    actualizarInventario(items, true); // sumar stock
+                    log.info("🔁 Inventario actualizado para {} items de la transferencia {}", items.size(), transferenciaDto.getIdTransferencia());
+                } else {
+                    log.warn("⚠️ No hay items válidos para actualizar en inventario de la transferencia {}", transferenciaDto.getIdTransferencia());
+                }
+            } else {
+                log.info("⏩ Transferencia no es hacia nuestra organización (Destino: {}), no se actualiza inventario", transferenciaDto.getIdOrganizacionDestino());
+            }
 
         } catch (Exception e) {
             log.error("❌ Error al procesar transferencia externa: {}", e.getMessage(), e);
@@ -97,48 +113,52 @@ public class TransferenciaDonacionExternaService {
 
     private boolean existeTransferenciaEnBDD(TransferenciaDonacionDto transferenciaDto) {
         return transferenciaDonacionRepository.findByIdTransferencia(transferenciaDto.getIdTransferencia())
-                .map(existing -> {
-                    log.info("⚠️ Transferencia con id {} ya existe", transferenciaDto.getIdTransferencia());
-                    return true;
-                }).orElse(false);
+                .map(existing -> true).orElse(false);
     }
 
     private static boolean esTransferenciaPropia(TransferenciaDonacionDto transferenciaDto, Integer idOrganizacion) {
-        // 🔒 Comparación segura: primero verificamos que el campo no sea null
         Integer origen = transferenciaDto.getIdOrganizacionOrigen();
         return origen != null && origen.equals(idOrganizacion);
     }
 
-    private void actualizarInventario(List<TransferenciaDonacionItem> items) {
+    private void actualizarInventario(List<TransferenciaDonacionItem> items, boolean sumar) {
         items.forEach(item -> {
             Inventario.Categoria categoriaEnum = item.getCategoria();
 
             inventarioRepository.findByCategoriaAndDescripcion(categoriaEnum, item.getDescripcion())
                     .ifPresentOrElse(
                             inventario -> {
-                                inventario.setCantidad(inventario.getCantidad() + item.getCantidad());
+                                int nuevaCantidad = sumar
+                                        ? inventario.getCantidad() + item.getCantidad()
+                                        : Math.max(0, inventario.getCantidad() - item.getCantidad());
+                                inventario.setCantidad(nuevaCantidad);
                                 inventario.setUpdatedAt(LocalDateTime.now());
                                 inventario.setUpdatedBy(idOrganizacion);
                                 inventarioRepository.save(inventario);
-                                log.info("🔁 Inventario actualizado: {} +{}", item.getDescripcion(), item.getCantidad());
+                                log.info("🔁 Inventario actualizado: {} {}{}", item.getDescripcion(), sumar ? "+" : "-", item.getCantidad());
                             },
                             () -> {
-                                inventarioRepository.save(
-                                        Inventario.builder()
-                                                .categoria(categoriaEnum)
-                                                .descripcion(item.getDescripcion())
-                                                .cantidad(item.getCantidad())
-                                                .eliminado(false)
-                                                .createdAt(LocalDateTime.now())
-                                                .createdBy(idOrganizacion)
-                                                .build()
-                                );
-                                log.info("🆕 Inventario creado: {} ({} unidades)", item.getDescripcion(), item.getCantidad());
+                                if (sumar) {
+                                    inventarioRepository.save(
+                                            Inventario.builder()
+                                                    .categoria(categoriaEnum)
+                                                    .descripcion(item.getDescripcion())
+                                                    .cantidad(item.getCantidad())
+                                                    .createdAt(LocalDateTime.now())
+                                                    .createdBy(idOrganizacion)
+                                                    .eliminado(false)
+                                                    .build()
+                                    );
+                                    log.info("🆕 Inventario creado: {} ({} unidades)", item.getDescripcion(), item.getCantidad());
+                                }
                             }
                     );
         });
     }
 }
+
+
+
 
 
 

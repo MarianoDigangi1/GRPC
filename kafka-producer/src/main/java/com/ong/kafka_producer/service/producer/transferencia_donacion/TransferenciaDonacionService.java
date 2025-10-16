@@ -7,6 +7,7 @@ import com.ong.kafka_producer.entity.transferencia_donacion.Inventario;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacion;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacionItem;
 import com.ong.kafka_producer.repository.transferencia_donacion.TransferenciaDonacionRepository;
+import com.ong.kafka_producer.repository.transferencia_donacion.InventarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class TransferenciaDonacionService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final TransferenciaDonacionRepository repository;
+    private final InventarioRepository inventarioRepository;
     private final ObjectMapper objectMapper;
 
     @Value("${spring.kafka.topic.transferencia.donaciones}")
@@ -65,6 +67,7 @@ public class TransferenciaDonacionService {
                     TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
                             .categoria(categoriaEnum)
                             .descripcion(donacion.getDescripcion())
+                            .cantidad(donacion.getCantidad())
                             .transferenciaDonacion(transferenciaEntity)
                             .build();
                     items.add(item);
@@ -73,24 +76,44 @@ public class TransferenciaDonacionService {
 
             transferenciaEntity.setItems(items);
 
+            // 🔽 Descontar stock antes de publicar
+            actualizarInventario(items);
+
             // Guardar en base de datos
             repository.save(transferenciaEntity);
 
             // Publicar en Kafka
             String mensaje = objectMapper.writeValueAsString(transferenciaDto);
             String topicDestino = transferenciaDonacionesTopic + "-" + transferenciaDto.getIdOrganizacionDestino();
-
             kafkaTemplate.send(topicDestino, mensaje);
-            log.info("Transferencia de donación publicada: {}", idTransferencia);
+            log.info("📤 Transferencia de donación publicada: {}", idTransferencia);
 
             return new ResponseDto<>("", true, "Transferencia de donación publicada: " + idTransferencia);
 
         } catch (Exception e) {
-            log.error("Error al transferir donación: {}", e.getMessage(), e);
+            log.error("❌ Error al transferir donación: {}", e.getMessage(), e);
             return new ResponseDto<>("", false, "Ocurrió un error inesperado al transferir la donación");
         }
     }
+
+    private void actualizarInventario(List<TransferenciaDonacionItem> items) {
+        items.forEach(item -> {
+            inventarioRepository.findByCategoriaAndDescripcion(item.getCategoria(), item.getDescripcion())
+                    .ifPresentOrElse(
+                            inventario -> {
+                                int nuevaCantidad = Math.max(0, inventario.getCantidad() - item.getCantidad());
+                                inventario.setCantidad(nuevaCantidad);
+                                inventario.setUpdatedAt(LocalDateTime.now());
+                                inventario.setUpdatedBy(idOrganizacionDonante);
+                                inventarioRepository.save(inventario);
+                                log.info("📉 Inventario reducido: {} -{}", item.getDescripcion(), item.getCantidad());
+                            },
+                            () -> log.warn("⚠️ No existe inventario para {} - no se pudo descontar.", item.getDescripcion())
+                    );
+        });
+    }
 }
+
 
 
 

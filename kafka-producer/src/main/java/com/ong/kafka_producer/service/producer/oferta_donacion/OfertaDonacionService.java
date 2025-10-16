@@ -20,7 +20,7 @@ public class OfertaDonacionService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${sping.kafka.topic.oferta.donaciones}")
+    @Value("${spring.kafka.topic.oferta.donaciones}")
     private String ofertaDonacionesTopic;
 
 

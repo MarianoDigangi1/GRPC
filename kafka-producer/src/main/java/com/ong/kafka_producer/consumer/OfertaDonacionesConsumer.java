@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class OfertaDonacionesConsumer {
-    @Value("${sping.kafka.topic.oferta.donaciones}")
+    @Value("${spring.kafka.topic.oferta.donaciones}")
     private String ofertaDonacionesTopic;
 
     private final OfertaDonacionExternaService ofertaDonacionExternaService;
 
-    @KafkaListener(topics = "${sping.kafka.topic.oferta.donaciones}", groupId = "ong-group")
+    @KafkaListener(topics = "${spring.kafka.topic.oferta.donaciones}", groupId = "ong-group")
     public void consumirSolicitudDonacion(String mensaje) {
         log.info("Mensaje recibido en topic solicitud-donaciones: {}", mensaje);
         ofertaDonacionExternaService.crearOfertaDonacionExterna(mensaje);
