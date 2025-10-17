@@ -49,13 +49,13 @@ public class BajaEventoSolidarioExternalService {
                 eventoRepository.save(evento);
                 log.info("✅ Evento externo dado de baja correctamente: id={}, org={}",
                         dto.getIdEvento(), dto.getIdOrganizacion());
-                                
-                     */
+
+
             } else {
                 log.warn("⚠️ Evento externo no encontrado con id={} y organizacion={}",
                         dto.getIdEvento(), dto.getIdOrganizacion());
             }
-
+            */
         } catch (Exception e) {
             log.error("❌ Error al procesar baja de evento externo: {}", e.getMessage(), e);
         }
