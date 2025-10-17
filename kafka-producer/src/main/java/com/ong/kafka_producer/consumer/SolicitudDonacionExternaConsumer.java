@@ -12,9 +12,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SolicitudDonacionExternaConsumer {
 
-    @Value("${spring.kafka.topic.solicitud.donaciones}")
-    private String solicitudDonacionesTopic;
-
     private final SolicitudDonacionExternaService solicitudDonacionExternaService;
 
     @KafkaListener(topics = "${spring.kafka.topic.solicitud.donaciones}", groupId = "ong-group")

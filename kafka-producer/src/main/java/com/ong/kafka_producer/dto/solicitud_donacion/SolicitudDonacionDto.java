@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class SolicitudDonacionDto {
     private String idSolicitud;
-    private Integer idOrganizacionSolicitante;
-    private List<DonacionDto> donaciones;
+    private String idOrganizacionSolicitante;
+    private List<ContenidoDto> contenido;
 }
