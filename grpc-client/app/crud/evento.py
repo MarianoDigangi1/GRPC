@@ -1,8 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from datetime import datetime
-from app import models, schemas
+from app import models, schemas, settings
 from app.mapper import SchemaMapper
+
+
+
 
 
 # ---------- Helpers ----------
@@ -16,27 +19,55 @@ def _miembro_activo(db: Session, usuario_id: int) -> bool:
 
 # ---------- Crear ----------
 def crear_evento(db: Session, data: schemas.EventoCreate):
-    fecha = datetime.fromisoformat(data.fecha_evento_iso)
+    print("🔎 ORG_ID actual:", getattr(settings, "ORG_ID", None))
+    print("🚀 Entrando en crear_evento()")
+    try:
+        print("📦 Data recibida:", data)
+        print("🕒 Fecha ISO:", data.fecha_evento_iso)
+
+        # Validar formato de fecha
+        fecha = datetime.fromisoformat(data.fecha_evento_iso)
+    except Exception as e:
+        print("❌ Error al parsear fecha_evento_iso:", data.fecha_evento_iso, e)
+        return None, f"Formato de fecha inválido: {e}"
+
+    # Validar que la fecha sea futura
     if not _es_futuro(fecha):
+        print("⚠️ Fecha no es a futuro:", fecha)
         return None, "La fecha del evento debe ser a futuro."
 
-    evento = models.Evento(
-        nombre=data.nombre,
-        descripcion=data.descripcion,
-        fecha_evento=fecha
-    )
-    db.add(evento)
-    db.flush()
+    try:
+        print("✅ Creando evento en BD...")
 
-    for uid in set(data.miembros_ids or []):
-        if _miembro_activo(db, uid):
-            db.add(models.EventoUsuario(evento_id=evento.id, usuario_id=uid))
+        evento = models.Evento(
+            nombre=data.nombre,
+            descripcion=data.descripcion,
+            fecha_evento=fecha,
+            vigente=True,  # si tu modelo tiene este campo
+            origen_organizacion_id= settings.ORG_ID,  # solo si lo estás usando
+        )
 
-    db.commit()
-    db.refresh(evento)
+        db.add(evento)
+        db.flush()
 
-    miembros_ids = [eu.usuario_id for eu in evento.participantes]
-    return SchemaMapper.evento_model_to_response(evento, miembros_ids, "Evento creado correctamente"), None
+        # Asociar miembros (si existen)
+        for uid in set(data.miembros_ids or []):
+            if _miembro_activo(db, uid):
+                db.add(models.EventoUsuario(evento_id=evento.id, usuario_id=uid))
+
+        db.commit()
+        db.refresh(evento)
+
+        miembros_ids = [eu.usuario_id for eu in evento.participantes]
+
+        print("🎉 Evento creado correctamente con ID:", evento.id)
+        return SchemaMapper.evento_model_to_response(evento, miembros_ids, "Evento creado correctamente"), None
+
+    except Exception as e:
+        print("❌ Error interno al crear evento:", e)
+        db.rollback()
+        return None, f"Error al crear evento: {e}"
+
 
 
 # ---------- Modificar ----------
@@ -191,7 +222,7 @@ def quitar_usuario_de_eventos_futuros(db: Session, usuario_id: int):
 
 # ---------- Listar eventos disponibles ----------
 def listar_eventos_disponibles(db: Session):
-    eventos = db.query(models.Evento).all()
+    eventos = db.query(models.Evento).filter(models.Evento.origen_organizacion_id == settings.ORG_ID).all()
     result = []
     for ev in eventos:
         miembros_ids = [eu.usuario_id for eu in ev.participantes]

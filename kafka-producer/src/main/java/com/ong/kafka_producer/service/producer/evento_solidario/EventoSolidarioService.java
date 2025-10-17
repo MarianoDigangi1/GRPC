@@ -21,26 +21,22 @@ public class EventoSolidarioService {
     private String bajaEventosTopic;
 
     @Value("${spring.kafka.idOrganizacion}")
-    private Integer idOrganizacion;
+    private String idOrganizacion; // ej: "ong-2"
 
-    /**
-     * Publica en Kafka la baja de un evento solidario local.
-     */
-    public ResponseDto<String> darDeBajaEvento(String idEvento) {
+    public ResponseDto<String> darDeBajaEvento(Integer idEvento) {
         try {
             BajaEventoSolidarioDto dto = new BajaEventoSolidarioDto();
             dto.setIdEvento(idEvento);
-            dto.setIdOrganizacion(2);
+            dto.setIdOrganizacion(idOrganizacion);
 
             String mensaje = objectMapper.writeValueAsString(dto);
             kafkaTemplate.send(bajaEventosTopic, mensaje);
-            log.info("Baja de evento publicada en Kafka: {}", mensaje);
 
-            return new ResponseDto<String>("", true, "Evento dado de baja y publicado correctamente.");
+            log.info("📤 Publicada baja de evento en Kafka: {}", mensaje);
+            return new ResponseDto<>("", true, "Evento dado de baja y publicado correctamente.");
         } catch (Exception e) {
-            log.error("Error al publicar baja de evento: {}", e.getMessage(), e);
-            return new ResponseDto<String>("", false, "Error al publicar baja de evento.");
+            log.error("❌ Error al publicar baja de evento: {}", e.getMessage(), e);
+            return new ResponseDto<>("", false, "Error al publicar baja de evento.");
         }
     }
-
 }

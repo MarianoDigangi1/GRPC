@@ -58,12 +58,14 @@ class Evento(Base):
     nombre = Column(String(200), nullable=False)
     descripcion = Column(Text)
     fecha_evento = Column(DateTime, nullable=False)
+    origen_organizacion_id = Column(String(100), nullable=False)
+    evento_id_organizacion_externa = Column(String(100), nullable=True)
+    vigente = Column(Boolean, default=True)
 
     # Relaciones
-    participantes = relationship("EventoUsuario", cascade="all, delete-orphan",
-                                 back_populates="evento")
-    donaciones = relationship("EventoInventario", cascade="all, delete-orphan",
-                              back_populates="evento")
+    participantes = relationship("EventoUsuario", cascade="all, delete-orphan", back_populates="evento")
+    donaciones = relationship("EventoInventario", cascade="all, delete-orphan", back_populates="evento")
+
 
 class EventoUsuario(Base):
     __tablename__ = "evento_usuario"

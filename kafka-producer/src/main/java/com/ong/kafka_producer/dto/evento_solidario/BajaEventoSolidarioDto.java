@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class BajaEventoSolidarioDto {
-    private Integer idOrganizacion;
-    private String idEvento;
+    private Integer idEvento;
+    private String idOrganizacion;
 }
+

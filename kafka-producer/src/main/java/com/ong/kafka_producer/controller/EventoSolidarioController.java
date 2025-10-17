@@ -40,7 +40,7 @@ public class EventoSolidarioController {
     // Nueva baja de evento
     @DeleteMapping("/{idEvento}/baja")
     public ResponseEntity<String> darDeBajaEvento(@PathVariable String idEvento) {
-        ResponseDto<String> response = eventoSolidarioService.darDeBajaEvento(idEvento);
+        ResponseDto<String> response = eventoSolidarioService.darDeBajaEvento(Integer.valueOf(idEvento)); //FIXEADO PARA PRUEBAS, REVISAR
 
         if (response.isOk()) {
             return ResponseEntity.ok(response.getMessage());

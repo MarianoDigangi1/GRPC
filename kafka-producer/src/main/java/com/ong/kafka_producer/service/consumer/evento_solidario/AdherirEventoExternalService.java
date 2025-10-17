@@ -42,10 +42,10 @@ public class AdherirEventoExternalService {
                 return;
             }
 
-            if(!evento.orElseThrow().getActivo()){
+           /* if(!evento.orElseThrow().getActivo()){
                 log.error("El evento con id {} no esta activo", eventoSolidarioDto.getIdEvento());
                 return;
-            }
+            }/*
 
             EventoVoluntario eventoVoluntario = EventoVoluntario.builder()
                     .idEvento(eventoSolidarioDto.getIdEvento())
