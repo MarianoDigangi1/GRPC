@@ -42,8 +42,10 @@ public class AdherirEventoExternalService {
                 return;
             }
 
-            if(!evento.orElseThrow().getVigente()){
-                log.error("El evento con id {} no esta activo", eventoSolidarioDto.getIdEvento());
+            // Fix para evitar NullPointerException si vigente es null
+            Evento ev = evento.orElseThrow();
+            if (!Boolean.TRUE.equals(ev.getVigente())) {
+                log.error("El evento con id {} no está activo o el campo 'vigente' es null", eventoSolidarioDto.getIdEvento());
                 return;
             }
 
@@ -70,8 +72,6 @@ public class AdherirEventoExternalService {
 
             //boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
 
-
-
             log.info("solicitud externa guardada: {}", eventoSolidarioDto.getIdEvento());
 
         } catch (Exception e) {
@@ -79,3 +79,4 @@ public class AdherirEventoExternalService {
         }
     }
 }
+
