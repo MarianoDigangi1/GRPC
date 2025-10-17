@@ -20,10 +20,10 @@ public class Evento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 200, nullable = false)
+    @Column(name = "nombre", length = 200, nullable = false)
     private String nombre;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
     @Column(name = "fecha_evento", nullable = false)
@@ -31,6 +31,9 @@ public class Evento {
 
     @Column(name = "origen_organizacion_id", length = 100)
     private String origenOrganizacionId;
+
+    @Column(name = "evento_id_organizacion_externa", length = 100)
+    private String eventoIdOrganizacionExterna;
 
     @Column(name = "vigente")
     private Boolean vigente;

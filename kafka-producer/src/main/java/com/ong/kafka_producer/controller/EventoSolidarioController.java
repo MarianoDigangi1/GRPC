@@ -23,6 +23,8 @@ public class EventoSolidarioController {
 
     @Autowired
     private SolicitudEventoSolidarioService service;
+
+    @Autowired
     private final EventoSolidarioService eventoSolidarioService;
 
     @PostMapping

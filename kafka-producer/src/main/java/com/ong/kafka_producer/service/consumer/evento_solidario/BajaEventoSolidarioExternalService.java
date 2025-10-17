@@ -26,6 +26,7 @@ public class BajaEventoSolidarioExternalService {
 
     public void procesarBajaExterna(String mensaje) {
         try {
+                    /*
             // Parsear el mensaje recibido
             BajaEventoSolidarioDto dto = objectMapper.readValue(mensaje, BajaEventoSolidarioDto.class);
             log.info("📥 Procesando baja de evento externo: {}", dto);
@@ -48,6 +49,8 @@ public class BajaEventoSolidarioExternalService {
                 eventoRepository.save(evento);
                 log.info("✅ Evento externo dado de baja correctamente: id={}, org={}",
                         dto.getIdEvento(), dto.getIdOrganizacion());
+                                
+                     */
             } else {
                 log.warn("⚠️ Evento externo no encontrado con id={} y organizacion={}",
                         dto.getIdEvento(), dto.getIdOrganizacion());

@@ -8,5 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface EventoRepository extends JpaRepository<Evento, Integer> {
-    Optional<Evento> findByIdAndOrigenOrganizacionId(Integer id, String origenOrganizacionId);
+    Optional<Evento> findById(Integer id);
+    Optional<Evento> findByOrigenOrganizacionIdAndEventoIdOrganizacionExterna(String origenOrganizacionId, String eventoIdOrganizacionExterna);
 }
+
