@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,7 +27,6 @@ public class SolicitudDonacionExternaService {
     @Transactional
     public void procesarSolicitudExterna(String mensaje) {
         try {
-
             SolicitudDonacionDto solicitudDto = objectMapper.readValue(mensaje, SolicitudDonacionDto.class);
 
             if (checkearSiSolicitudExisteEnBDD(solicitudDto)) return;
