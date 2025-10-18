@@ -44,7 +44,7 @@ public class BajaDonacionExternaService {
 
     private SolicitudExterna checkearSiExisteEnBDD(BajaDonacionDto bajaDonacionDto) {
         SolicitudExterna solicitud = solicitudDonacionRepository
-                .findBySolicitudIdAndExternalOrgId(bajaDonacionDto.getIdSolicitud(), bajaDonacionDto.getIdOrganizacionSolicitante())
+                .findBySolicitudIdAndExternalOrgId(bajaDonacionDto.getIdSolicitud(), String.valueOf(bajaDonacionDto.getIdOrganizacionSolicitante()))
                 .orElse(null);
         return solicitud;
     }

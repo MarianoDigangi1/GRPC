@@ -67,7 +67,7 @@ public class SolicitudDonacionService {
                 return new ResponseDto<String>("", false, "la solicitud ya esta dada de baja");
             }
 
-            bajaDonacionDto.setIdOrganizacionSolicitante(idOrganizacion);
+            bajaDonacionDto.setIdOrganizacionSolicitante(Integer.valueOf(idOrganizacion));
 
             String mensajeJson = objectMapper.writeValueAsString(bajaDonacionDto);
             kafkaTemplate.send(bajaDonacionesTopic, mensajeJson);

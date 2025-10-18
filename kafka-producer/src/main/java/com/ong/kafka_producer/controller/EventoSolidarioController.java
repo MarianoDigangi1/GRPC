@@ -53,12 +53,13 @@ public class EventoSolidarioController {
     @DeleteMapping
     public ResponseEntity<?> bajaEvento(@RequestBody BajaEventoSolidarioDto solicitud) {
 
-        //eventoSolidarioService.darDeBajaEventoInterno(idEvento, idOrganizacion);
-
-        // 2. Publicar mensaje de baja a Kafka para informar a otras organizaciones
         ResponseDto<String> response = service.darDeBajaEvento(solicitud);
 
-        return ResponseEntity.ok("Evento dado de baja publicado en Kafka.");
+        if (response.isOk()) {
+            return ResponseEntity.ok(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
     }
 
 }

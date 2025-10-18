@@ -5,6 +5,7 @@ import com.ong.kafka_producer.dto.baja_donacion.BajaDonacionDto;
 import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
 import com.ong.kafka_producer.service.producer.solicitud_donacion.SolicitudDonacionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SolicitudDonacionController {
 
+    @Autowired
     private final SolicitudDonacionService service;
 
     @PostMapping("/crear")

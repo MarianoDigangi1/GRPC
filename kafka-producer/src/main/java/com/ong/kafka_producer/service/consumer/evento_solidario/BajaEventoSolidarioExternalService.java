@@ -26,8 +26,7 @@ public class BajaEventoSolidarioExternalService {
 
     public void procesarBajaExterna(String mensaje) {
         try {
-                    /*
-            // Parsear el mensaje recibido
+
             BajaEventoSolidarioDto dto = objectMapper.readValue(mensaje, BajaEventoSolidarioDto.class);
             log.info("📥 Procesando baja de evento externo: {}", dto);
 
@@ -38,10 +37,8 @@ public class BajaEventoSolidarioExternalService {
             }
 
             // Buscar evento por id y organización origen
-            Optional<Evento> eventoOpt = eventoRepository.findByIdAndOrigenOrganizacionId(
-                    dto.getIdEvento(),
-                    dto.getIdOrganizacion()
-            );
+            Optional<Evento> eventoOpt = eventoRepository.findByOrigenOrganizacionIdAndEventoIdOrganizacionExterna(dto.getIdOrganizacion(), String.valueOf(dto.getIdEvento()));
+
 
             if (eventoOpt.isPresent()) {
                 Evento evento = eventoOpt.get();
@@ -55,7 +52,6 @@ public class BajaEventoSolidarioExternalService {
                 log.warn("⚠️ Evento externo no encontrado con id={} y organizacion={}",
                         dto.getIdEvento(), dto.getIdOrganizacion());
             }
-            */
         } catch (Exception e) {
             log.error("❌ Error al procesar baja de evento externo: {}", e.getMessage(), e);
         }
