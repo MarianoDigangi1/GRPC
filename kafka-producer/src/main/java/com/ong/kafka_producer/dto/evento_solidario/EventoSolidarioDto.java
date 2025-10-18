@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventoSolidarioDto {
-    private Integer idOrganizacion;
+    private String idOrganizacion;
     private Integer idEvento;
     private String nombre;
     private String descripcion;

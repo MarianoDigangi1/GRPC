@@ -2,11 +2,15 @@ package com.ong.kafka_producer.service.consumer.evento_solidario;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
+import com.ong.kafka_producer.entity.evento_solidario.Evento;
 import com.ong.kafka_producer.repository.evento_solidario.EventoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -25,7 +29,7 @@ public class SolicitudEventoSolidarioExternalService {
 
 
             EventoSolidarioDto eventoSolidarioDto = objectMapper.readValue(mensaje, EventoSolidarioDto.class);
-        /*
+
             if (checkearSiEsSolicitudDePropiaOrganizacion(eventoSolidarioDto, idOrganizacion)) return;
             boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
 
@@ -51,9 +55,6 @@ public class SolicitudEventoSolidarioExternalService {
 
             eventoRepository.save(eventoSolidario);
 
-
-            eventoSolidarioRepository.save(eventoSolidario);
-*/
             log.info("solicitud externa guardada: {}", eventoSolidarioDto.getIdEvento());
 
         } catch (Exception e) {
@@ -61,7 +62,7 @@ public class SolicitudEventoSolidarioExternalService {
         }
     }
 
-    private static boolean checkearSiEsSolicitudDePropiaOrganizacion(EventoSolidarioDto eventoSolidarioDto, Integer idOrganizacion) {
+    private static boolean checkearSiEsSolicitudDePropiaOrganizacion(EventoSolidarioDto eventoSolidarioDto, String idOrganizacion) {
 
         if (eventoSolidarioDto.getIdOrganizacion().equals(idOrganizacion)) {
             log.info("Ignorando solicitud propia de organización: {}", idOrganizacion);
