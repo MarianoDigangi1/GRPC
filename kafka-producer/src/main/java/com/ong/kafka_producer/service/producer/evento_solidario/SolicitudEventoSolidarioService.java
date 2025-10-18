@@ -5,9 +5,6 @@ import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
 import com.ong.kafka_producer.dto.evento_solidario.BajaEventoSolidarioDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
-import com.ong.kafka_producer.dto.solicitud_donacion.SolicitudDonacionDto;
-import com.ong.kafka_producer.entity.evento_solidario.EventoSolidario;
-import com.ong.kafka_producer.repository.evento_solidario.EventoSolidarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

@@ -2,17 +2,11 @@ package com.ong.kafka_producer.service.consumer.evento_solidario;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
-import com.ong.kafka_producer.entity.evento_solidario.Evento;
-import com.ong.kafka_producer.entity.evento_solidario.EventoSolidario;
 import com.ong.kafka_producer.repository.evento_solidario.EventoRepository;
-import com.ong.kafka_producer.repository.evento_solidario.EventoSolidarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @Slf4j

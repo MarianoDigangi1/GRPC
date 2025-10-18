@@ -2,13 +2,8 @@ package com.ong.kafka_producer.service.consumer.evento_solidario;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
-import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
 import com.ong.kafka_producer.entity.evento_solidario.Evento;
-import com.ong.kafka_producer.entity.evento_solidario.EventoSolidario;
-import com.ong.kafka_producer.entity.evento_solidario.EventoVoluntario;
 import com.ong.kafka_producer.repository.evento_solidario.EventoRepository;
-import com.ong.kafka_producer.repository.evento_solidario.EventoSolidarioRepository;
-import com.ong.kafka_producer.repository.evento_solidario.EventoVoluntarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +27,7 @@ public class AdherirEventoExternalService {
 
     public void procesarAdherirUsuario(String mensaje) {
         try {
-
+/*
             AdhesionEventoDto eventoSolidarioDto = objectMapper.readValue(mensaje, AdhesionEventoDto.class);
 
             Optional<Evento> evento = eventoRepository.findById(Integer.valueOf(eventoSolidarioDto.getIdEvento()));
@@ -72,7 +67,7 @@ public class AdherirEventoExternalService {
 
             //boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
 
-            log.info("solicitud externa guardada: {}", eventoSolidarioDto.getIdEvento());
+           // log.info("solicitud externa guardada: {}", eventoSolidarioDto.getIdEvento());*/
 
         } catch (Exception e) {
             log.error("error al procesar solicitud externa: {}", e.getMessage(), e);
