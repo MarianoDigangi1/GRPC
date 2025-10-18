@@ -5,6 +5,7 @@ import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
 import com.ong.kafka_producer.dto.evento_solidario.BajaEventoSolidarioDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
+import com.ong.kafka_producer.repository.evento_solidario.EventoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Slf4j
 public class SolicitudEventoSolidarioService {
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final EventoSolidarioRepository repository;
     private final ObjectMapper objectMapper;
 
     @Value("${spring.kafka.topic.publicar.eventos}")

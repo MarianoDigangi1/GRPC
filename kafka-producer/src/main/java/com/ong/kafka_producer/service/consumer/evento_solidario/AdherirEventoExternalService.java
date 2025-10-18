@@ -18,7 +18,7 @@ public class AdherirEventoExternalService {
     @Autowired
     private EventoRepository eventoRepository;
     @Autowired
-    private EventoVoluntarioRepository eventoVoluntarioRepository;
+    private EventoRepository eventoVoluntarioRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
