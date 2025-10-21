@@ -1,6 +1,7 @@
-from app.proto import usuarios_pb2, eventos_pb2, inventario_pb2
+from app.proto import usuarios_pb2, eventos_pb2, inventario_pb2, solicitudesExternas_pb2
 from app import schemas
 from datetime import datetime
+import json
 
 
 class ProtoMapper:
@@ -126,6 +127,22 @@ class ProtoMapper:
                 cantidad=getattr(request, "cantidad", 0) or 0
             ),
             message=mensaje
+        )
+    
+    @staticmethod
+    def solicitud_to_solicitud_list_response_proto(request):
+        
+        # Convierte contenido a JSON valido con comillas dobles
+        contenido = getattr(request, "contenido", {})
+        contenido_json = json.dumps(contenido) if contenido else ""
+        
+        return solicitudesExternas_pb2.SolicitudesExternasResponse(
+            id=getattr(request, "id", 0) or 0,
+            external_org_id=getattr(request, "external_org_id", "") or "",
+            solicitud_id=getattr(request, "solicitud_id", "") or "",
+            contenido=contenido_json,
+            recibida_en=str(getattr(request, "recibida_en", "")) or "",
+            vigente=getattr(request, "vigente", True)
         )
 
 

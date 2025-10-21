@@ -10,5 +10,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SolicitudDonacionDto {
-    private List<DonacionDto> donaciones;
+    private List<DonacionDto> contenido;
 }

@@ -53,6 +53,7 @@ public class SolicitudDonacionService {
 
     public ResponseDto<String> bajaSolicitudDonacion(BajaDonacionDto bajaDonacionDto) {
         try {
+            bajaDonacionDto.setIdOrganizacionSolicitante(Integer.valueOf(idOrganizacion));
             Optional<SolicitudExterna> solicitudOpt = repository.findBySolicitudIdAndExternalOrgId(bajaDonacionDto.getIdSolicitud(), idOrganizacion);
 
             if (solicitudOpt.isEmpty()) {
@@ -66,8 +67,6 @@ public class SolicitudDonacionService {
                 log.info("solicitud con id {} ya esta dada de baja en BDD", bajaDonacionDto.getIdSolicitud());
                 return new ResponseDto<String>("", false, "la solicitud ya esta dada de baja");
             }
-
-            bajaDonacionDto.setIdOrganizacionSolicitante(Integer.valueOf(idOrganizacion));
 
             String mensajeJson = objectMapper.writeValueAsString(bajaDonacionDto);
             kafkaTemplate.send(bajaDonacionesTopic, mensajeJson);

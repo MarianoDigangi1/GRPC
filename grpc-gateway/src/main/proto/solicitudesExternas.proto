@@ -1,0 +1,25 @@
+syntax = "proto3";
+package solicitudesExternas;
+
+option java_multiple_files = true;
+option java_package = "com.sistemas.distribuidos.grpc_gateway.stubs.solicitudes_externas";
+option java_outer_classname = "SolicitudesExternasProto";
+
+message Empty {}
+
+message SolicitudesExternasResponse {
+  int32 id = 1;
+  string external_org_id = 2;
+  string solicitud_id = 3;
+  string contenido = 4;
+  string recibida_en = 5;
+  bool vigente = 6;
+}
+
+message ListarSolicitudesExternasResponse {
+  repeated SolicitudesExternasResponse solicitudes = 1;
+}
+
+service SolicitudesExternasService {
+  rpc listarSolicitudesVigentes(Empty) returns (ListarSolicitudesExternasResponse);
+}

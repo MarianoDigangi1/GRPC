@@ -23,12 +23,10 @@ import java.util.Map;
 public class InventarioViewController {
 
     private final InventarioService inventarioService;
-    private final KafkaProducerSolicitudDonaciones kafkaProducerSolicitudDonaciones;
 
     @Autowired
-    public InventarioViewController(InventarioService inventarioService, KafkaProducerSolicitudDonaciones kafkaProducerSolicitudDonaciones) {
+    public InventarioViewController(InventarioService inventarioService) {
         this.inventarioService = inventarioService;
-        this.kafkaProducerSolicitudDonaciones = kafkaProducerSolicitudDonaciones;
     }
 
     @GetMapping
@@ -109,59 +107,6 @@ public class InventarioViewController {
             redirectAttributes.addFlashAttribute("mensaje", "Error al eliminar inventario");
             redirectAttributes.addFlashAttribute("tipo", "error");
             return "redirect:/inventario";
-        }
-    }
-
-    // TODO: aca tendria que ir la vista de solicitudes externas
-    @GetMapping("/solicitudes-externas")
-    public String visualizarSolicitudesExternas(Model model) {
-        return "inventario/externas/listarSolicitudesExternas";
-    }
-
-    @GetMapping("/solicitar-donacion")
-    public String solicitarDonacion(Model model) {
-        model.addAttribute("solicitudDonacion", new SolicitudDonacionDto());
-        return "inventario/externas/solicitarDonaciones";
-    }
-
-    @PostMapping("/solicitar-donacion")
-    public String solicitarDonaciones(@ModelAttribute SolicitudDonacionDto solicitudDonacion,
-                                     RedirectAttributes redirectAttributes,
-                                     Model model) {
-        try {
-            kafkaProducerSolicitudDonaciones.solicitarDonaciones(solicitudDonacion);
-            redirectAttributes.addFlashAttribute("mensaje", "Solicitud de donación enviada exitosamente");
-            redirectAttributes.addFlashAttribute("tipo", "success");
-            return "redirect:/inventario/solicitudes-externas";
-
-        } catch (Exception e) {
-            model.addAttribute("mensaje", "Error al enviar la solicitud: ");
-            model.addAttribute("tipo", "error");
-            model.addAttribute("solicitudDonacion", solicitudDonacion);
-            return "inventario/externas/solicitarDonaciones";
-        }
-    }
-
-    @GetMapping("/baja-solicitud-donacion")
-    public String darBajaSolicitudDonacion(Model model) {
-        return "inventario/externas/bajaSolicitudDonacion";
-    }
-
-    @PostMapping("/baja-solicitud-donacion")
-    public String procesarBajaSolicitudDonacion(@RequestParam("solicitudId") String solicitudId,
-                                                RedirectAttributes redirectAttributes,
-                                                Model model) {
-        try {
-            kafkaProducerSolicitudDonaciones.darBajaSolicitudDonacion(solicitudId);
-
-            redirectAttributes.addFlashAttribute("mensaje", "Solicitud de donación dada de baja exitosamente");
-            redirectAttributes.addFlashAttribute("tipo", "success");
-            return "redirect:/inventario/solicitudes-externas";
-
-        } catch (Exception e) {
-            model.addAttribute("mensaje", "Error al dar de baja la solicitud: " + e.getMessage());
-            model.addAttribute("tipo", "error");
-            return "inventario/externas/bajaSolicitudDonacion";
         }
     }
 

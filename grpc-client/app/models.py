@@ -2,7 +2,7 @@ from sqlalchemy.orm import relationship
 from .database import Base
 import enum
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Enum, Date, DateTime, ForeignKey, Text, Float, func
+    JSON, Column, Integer, String, Boolean, Enum, Date, DateTime, ForeignKey, Text, Float, func, UniqueConstraint
 )
 
 
@@ -84,6 +84,38 @@ class EventoInventario(Base):
     cantidad_usada = Column(Integer, nullable=False)
 
     evento = relationship("Evento", back_populates="donaciones")
+
+
+# ---------------- MODELO ORGANIZACIONES ---------------- #
+class Organizacion(Base):
+    __tablename__ = "organizaciones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    external_org_id = Column(String(100), unique=True, nullable=False)
+    nombre = Column(String(200), nullable=False)
+
+    # Relaciones
+    solicitudes = relationship("SolicitudExterna", back_populates="organizacion")
+
+# ---------------- MODELO SOLICITUDES EXTERNAS ---------------- #
+class SolicitudExterna(Base):
+    __tablename__ = "solicitud_externa"
+    __table_args__ = (
+        UniqueConstraint("external_org_id", "solicitud_id", name="uq_solicitud_externa_org_sol"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    external_org_id = Column(String(100), ForeignKey("organizaciones.external_org_id"), nullable=False)
+    solicitud_id = Column(String(100), nullable=False)
+    contenido = Column(JSON, nullable=False)
+    recibida_en = Column(DateTime, default=func.now())
+    vigente = Column(Boolean, default=True)
+
+    # Relaciones
+    organizacion = relationship("Organizacion", back_populates="solicitudes")
+
+
+
 
 # ---------------- MODELO EMAIL ---------------- #
 

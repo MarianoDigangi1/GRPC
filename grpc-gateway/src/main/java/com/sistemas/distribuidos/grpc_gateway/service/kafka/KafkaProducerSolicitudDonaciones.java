@@ -26,7 +26,7 @@ public class KafkaProducerSolicitudDonaciones {
     private String bajaUrl;
 
     @Value("${kafka.producer.server.idOrganizacion}")
-    private Integer idOrganizacion;
+    private String idOrganizacion;
 
     @Autowired
     public KafkaProducerSolicitudDonaciones(RestTemplate restTemplate) {
@@ -38,14 +38,12 @@ public class KafkaProducerSolicitudDonaciones {
         String kafkaProducerUrl = baseUrl + donacionesUrl;
 
         Map<String, Object> payload = new HashMap<>();
-        payload.put("donaciones", solicitudDonacion.getDonaciones());
-        payload.put("idOrganizacionSolicitante", idOrganizacion);
+        payload.put("contenido", solicitudDonacion.getContenido());
 
         ResponseEntity<String> response = restTemplate.postForEntity(kafkaProducerUrl, payload, String.class);
         if(!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
             throw new RuntimeException("Error al enviar la solicitud: " + response.getBody());
         }
-
 
     }
 
