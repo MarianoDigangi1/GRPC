@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class KafkaProducerSolicitudDonaciones {
+public class SolicitudDonacionesRestService {
 
     private final RestTemplate restTemplate;
 
@@ -29,7 +29,7 @@ public class KafkaProducerSolicitudDonaciones {
     private String idOrganizacion;
 
     @Autowired
-    public KafkaProducerSolicitudDonaciones(RestTemplate restTemplate) {
+    public SolicitudDonacionesRestService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

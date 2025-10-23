@@ -1,4 +1,4 @@
-from app.proto import usuarios_pb2, eventos_pb2, inventario_pb2, solicitudesExternas_pb2
+from app.proto import usuarios_pb2, eventos_pb2, inventario_pb2, solicitudesExternas_pb2, donacionesOfrecidas_pb2
 from app import schemas
 from datetime import datetime
 import json
@@ -143,6 +143,20 @@ class ProtoMapper:
             contenido=contenido_json,
             recibida_en=str(getattr(request, "recibida_en", "")) or "",
             vigente=getattr(request, "vigente", True)
+        )
+
+    @staticmethod
+    def oferta_to_oferta_list_response_proto(request):
+        # Convierte contenido a JSON valido con comillas dobles
+        contenido = getattr(request, "contenido", {})
+        contenido_json = json.dumps(contenido) if contenido else ""
+
+        return donacionesOfrecidas_pb2.DonacionesOfrecidasResponse(
+            id=getattr(request, "id", 0) or 0,
+            external_org_id=getattr(request, "external_org_id", "") or "",
+            oferta_id=getattr(request, "oferta_id", "") or "",
+            contenido=contenido_json,
+            recibida_en=str(getattr(request, "recibida_en", "")) or ""
         )
 
 

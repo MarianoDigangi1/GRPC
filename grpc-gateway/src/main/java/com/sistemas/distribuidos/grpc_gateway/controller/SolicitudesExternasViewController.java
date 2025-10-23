@@ -3,7 +3,7 @@ package com.sistemas.distribuidos.grpc_gateway.controller;
 import com.sistemas.distribuidos.grpc_gateway.dto.kafka.donacion.SolicitudDonacionDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.solicitud_donacion_externa.SolicitudesExternasAgrupadas;
 import com.sistemas.distribuidos.grpc_gateway.service.SolicitudDonacionesExternasService;
-import com.sistemas.distribuidos.grpc_gateway.service.kafka.KafkaProducerSolicitudDonaciones;
+import com.sistemas.distribuidos.grpc_gateway.service.kafka.SolicitudDonacionesRestService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +12,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/solicitudes-externas")
 public class SolicitudesExternasViewController {
-    private final KafkaProducerSolicitudDonaciones kafkaProducerSolicitudDonaciones;
+    private final SolicitudDonacionesRestService solicitudDonacionesRestService;
     private final SolicitudDonacionesExternasService service;
 
-    public SolicitudesExternasViewController(KafkaProducerSolicitudDonaciones kafkaProducerSolicitudDonaciones, SolicitudDonacionesExternasService service) {
-        this.kafkaProducerSolicitudDonaciones = kafkaProducerSolicitudDonaciones;
+    public SolicitudesExternasViewController(SolicitudDonacionesRestService solicitudDonacionesRestService, SolicitudDonacionesExternasService service) {
+        this.solicitudDonacionesRestService = solicitudDonacionesRestService;
         this.service = service;
     }
 
@@ -40,7 +40,7 @@ public class SolicitudesExternasViewController {
                                       RedirectAttributes redirectAttributes,
                                       Model model) {
         try {
-            kafkaProducerSolicitudDonaciones.solicitarDonaciones(solicitudDonacion);
+            solicitudDonacionesRestService.solicitarDonaciones(solicitudDonacion);
             redirectAttributes.addFlashAttribute("mensaje", "Solicitud de donación enviada exitosamente");
             redirectAttributes.addFlashAttribute("tipo", "success");
             return "redirect:/solicitudes-externas/listar";
@@ -64,7 +64,7 @@ public class SolicitudesExternasViewController {
                                                 RedirectAttributes redirectAttributes,
                                                 Model model) {
         try {
-            kafkaProducerSolicitudDonaciones.darBajaSolicitudDonacion(solicitudId);
+            solicitudDonacionesRestService.darBajaSolicitudDonacion(solicitudId);
 
             redirectAttributes.addFlashAttribute("mensaje", "Solicitud de donación dada de baja exitosamente");
             redirectAttributes.addFlashAttribute("tipo", "success");

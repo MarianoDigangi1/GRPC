@@ -96,6 +96,7 @@ class Organizacion(Base):
 
     # Relaciones
     solicitudes = relationship("SolicitudExterna", back_populates="organizacion")
+    ofertas = relationship("OfertaExterna", back_populates="organizacion")
 
 # ---------------- MODELO SOLICITUDES EXTERNAS ---------------- #
 class SolicitudExterna(Base):
@@ -115,6 +116,19 @@ class SolicitudExterna(Base):
     organizacion = relationship("Organizacion", back_populates="solicitudes")
 
 
+# ---------------- MODELO OFERTAS EXTERNAS ---------------- #
+
+class OfertaExterna(Base):
+    __tablename__ = "oferta_externa"
+
+    id = Column(Integer, primary_key=True, index=True)
+    external_org_id = Column(String(100), ForeignKey("organizaciones.external_org_id"), nullable=False)
+    oferta_id = Column(String(100), nullable=False)
+    contenido = Column(JSON, nullable=False)
+    recibida_en = Column(DateTime, default=func.now())
+
+    # Relaciones
+    organizacion = relationship("Organizacion", back_populates="ofertas")
 
 
 # ---------------- MODELO EMAIL ---------------- #

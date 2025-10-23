@@ -1,0 +1,24 @@
+syntax = "proto3";
+package donacionesOfrecidas;
+
+option java_multiple_files = true;
+option java_package = "com.sistemas.distribuidos.grpc_gateway.stubs.donaciones_ofrecidas";
+option java_outer_classname = "DonacionesOfrecidasProto";
+
+message Empty {}
+
+message DonacionesOfrecidasResponse {
+  int32 id = 1;
+  string external_org_id = 2;
+  string oferta_id = 3;
+  string contenido = 4;
+  string recibida_en = 5;
+}
+
+message ListarDonacionesOfrecidasResponse {
+  repeated DonacionesOfrecidasResponse solicitudes = 1;
+}
+
+service DonacionesOfrecidasService {
+  rpc listarSolicitudesVigentes(Empty) returns (ListarDonacionesOfrecidasResponse);
+}
