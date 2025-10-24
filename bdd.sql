@@ -115,3 +115,13 @@ CREATE TABLE oferta_externa (
     UNIQUE (external_org_id, oferta_id),
     FOREIGN KEY (external_org_id) REFERENCES organizaciones(external_org_id) 
 );
+
+CREATE TABLE filtros_eventos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    parametros JSON NOT NULL,
+    usuario_id INT NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
