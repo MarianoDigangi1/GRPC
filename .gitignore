@@ -5,6 +5,7 @@ grpc-client/app/services/__pycache__/
 grpc-gateway/.gitattributes
 grpc-gateway/target/**
 grpc-gateway/.idea
-
+ong-soap/target/**
+ong-soap/.idea
 *.cpython-313.pyc
 *.pyc
