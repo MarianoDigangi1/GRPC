@@ -11,7 +11,6 @@ class Evento(Base):
     descripcion = Column(Text)
     fecha_evento = Column(DateTime, nullable=False)
     origen_organizacion_id = Column(String(100), nullable=False)
-    evento_id_organizacion_externa = Column(String(100), nullable=True)
     vigente = Column(Boolean, default=True)
     publicado = Column(Boolean, default=False)
     evento_id_organizacion_externa = Column(String(100), nullable=True)
