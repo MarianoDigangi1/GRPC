@@ -140,3 +140,12 @@ CREATE TABLE transferencia_donacion_externa (
     FOREIGN KEY (id_organizacion_origen) REFERENCES organizaciones(external_org_id),
     FOREIGN KEY (id_organizacion_destino) REFERENCES organizaciones(external_org_id)
 );
+
+CREATE TABLE filtros_guardados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    filtros JSON NOT NULL,
+    id_usuario INT NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+  
+);
