@@ -9,4 +9,4 @@ ong-soap/target/**
 ong-soap/.idea
 *.cpython-313.pyc
 *.pyc
-graphql-client/app/__pycache__/
+graphql-services/app/__pycache__/
