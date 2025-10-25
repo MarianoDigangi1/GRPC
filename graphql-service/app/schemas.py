@@ -17,5 +17,4 @@ class DonacionInformeType(graphene.ObjectType):
 
 class FiltroGuardadoInput(graphene.InputObjectType):
     nombre = graphene.String(required=True)
-    filtros = graphene.JSONString(required=True)  
-    id_usuario = graphene.Int(required=True)
+    filtros = graphene.String(required=True)

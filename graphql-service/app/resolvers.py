@@ -4,7 +4,7 @@ from .models import Inventario, FiltroGuardado
 from .database import SessionLocal
 from .schemas import DonacionInformeType, FiltroGuardadoType, FiltroGuardadoInput
 import graphene
-HARDCODED_USER_ID = 1
+
 class Query(graphene.ObjectType):
     informe_donaciones = graphene.List(
         DonacionInformeType,
