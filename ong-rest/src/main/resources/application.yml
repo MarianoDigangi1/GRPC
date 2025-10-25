@@ -1,0 +1,62 @@
+# ==============================
+# CONFIGURACIÓN BÁSICA DE SPRING
+# ==============================
+spring:
+  application:
+    name: ong-rest
+  datasource:
+    url: jdbc:mysql://localhost:3306/empuje_comunitario_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# ==============================
+# CONFIGURACIÓN KAFKA
+# ==============================
+kafka:
+  bootstrap-servers: localhost:9092
+  consumer:
+    group-id: ong-rest-group
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    properties:
+      spring:
+        json:
+          trusted-packages: "*"
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# ==============================
+# LOGGING
+# ==============================
+logging:
+  level:
+    org.springframework: DEBUG
+    com.ong: DEBUG
+debug: true
+
+# ==============================
+# PUERTO DEL SERVICIO
+# ==============================
+server:
+  port: 8081
+
+
+    
+
+
+
+
+

@@ -28,6 +28,14 @@
     <div class="card bg-dark border-0 shadow-lg p-4">
       <h1 class="h4 mb-4 text-center">📦 Administración de Inventario</h1>
 
+      <!-- Botón Descargar en Excel -->
+<div class="text-end mb-3">
+  <a href="/inventario/descargar-excel" class="btn btn-success">
+    📊 Descargar en formato Excel
+  </a>
+</div>
+
+
       <!-- Mensajes -->
       <div th:if="${mensaje}"
            th:classappend="${tipo == 'success' ? 'alert alert-success' : 'alert alert-danger'}"

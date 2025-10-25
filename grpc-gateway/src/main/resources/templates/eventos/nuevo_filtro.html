@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear Filtro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-dark text-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/eventos">Eventos Solidarios</a>
+      <div class="ms-auto">
+        <a href="/" class="btn btn-outline-light">🏠 Ir al Inicio</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido -->
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-5">
+        <div class="card bg-dark border-0 shadow-lg p-4">
+          <h1 class="h4 mb-4 text-center">Crear nuevo filtro</h1>
+
+          <!-- Mensajes -->
+          <div th:if="${exitoMessage}" class="alert alert-success text-center" th:text="${exitoMessage}"></div>
+          <div th:if="${errorMessage}" class="alert alert-danger text-center" th:text="${errorMessage}"></div>
+
+          <!-- Formulario -->
+          <form th:action="@{'/filtros-eventos/usuario/' + ${userId}}" 
+                th:object="${filtroEventoDto}" 
+                method="post" 
+                onsubmit="return buildParametrosJSON()">
+
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre del filtro</label>
+              <input type="text" id="nombre" th:field="*{nombre}" class="form-control" placeholder="Ej: Próximos eventos" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Rango de fechas</label>
+              <div class="d-flex gap-2">
+                <input type="date" id="fechaDesde" class="form-control">
+                <input type="date" id="fechaHasta" class="form-control">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="vigente" class="form-label">Estado del evento</label>
+              <select id="vigente" class="form-select">
+                <option value="">Todos</option>
+                <option value="1">Vigentes</option>
+                <option value="0">No vigentes</option>
+              </select>
+            </div>
+
+            <!-- Campo oculto -->
+            <input type="hidden" id="parametros" name="parametros" th:field="*{parametros}">
+
+            <button type="submit" class="btn btn-primary w-100">💾 Guardar filtro</button>
+            <a href="/eventos" class="btn btn-outline-light w-100 mt-2">↩️ Volver</a>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function buildParametrosJSON() {
+      const params = {
+        fechaDesde: document.getElementById('fechaDesde').value || null,
+        fechaHasta: document.getElementById('fechaHasta').value || null,
+        vigente: document.getElementById('vigente').value || null
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => v !== null && v !== "")
+      );
+
+      document.getElementById('parametros').value = JSON.stringify(cleanParams);
+      return true;
+    }
+  </script>
+
+</body>
+</html>
+
+
+
+

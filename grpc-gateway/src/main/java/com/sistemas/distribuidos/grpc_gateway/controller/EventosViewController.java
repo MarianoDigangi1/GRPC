@@ -8,6 +8,19 @@ import com.sistemas.distribuidos.grpc_gateway.service.EventosService;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import com.sistemas.distribuidos.grpc_gateway.service.InventarioService;
 import com.sistemas.distribuidos.grpc_gateway.service.kafka.EventosRestService;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+
+
+import com.sistemas.distribuidos.grpc_gateway.service.FiltroEventoService;
+
+import org.springframework.http.HttpStatus;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -21,44 +34,68 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+
+
 
 @Controller
 public class EventosViewController {
 
-    private final EventosService eventosService;
-    private final UsuarioService usuarioService;
-    private final InventarioService inventarioService;
-    private final EventosRestService eventosRestService;
+    
 
-    private static final DateTimeFormatter HTML_DT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-    private static final DateTimeFormatter HTML_DT_SEC = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+private final EventosService eventosService;
+private final UsuarioService usuarioService;
+private final InventarioService inventarioService;
+private final EventosRestService eventosRestService;
+private final FiltroEventoService filtroEventoService;
 
-    @Autowired
-    public EventosViewController(EventosService eventosService, UsuarioService usuarioService, InventarioService inventarioService, EventosRestService eventosRestService) {
-        this.eventosService = eventosService;
-        this.usuarioService = usuarioService;
-        this.inventarioService = inventarioService;
-        this.eventosRestService = eventosRestService;
-    }
 
-    @GetMapping("/eventos")
+
+
+private static final DateTimeFormatter HTML_DT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+private static final DateTimeFormatter HTML_DT_SEC = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+@Autowired
+public EventosViewController(
+        EventosService eventosService,
+        UsuarioService usuarioService,
+        InventarioService inventarioService,
+        EventosRestService eventosRestService,
+        FiltroEventoService filtroEventoService
+       ) {
+
+    this.eventosService = eventosService;
+    this.usuarioService = usuarioService;
+    this.inventarioService = inventarioService;
+    this.eventosRestService = eventosRestService;
+    this.filtroEventoService = filtroEventoService;
+
+}
+
+
+  @GetMapping("/eventos")
 public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Model model) {
+    // Listar todos los eventos
     List<EventoDto> eventos = eventosService.listarEventos();
     List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
 
-    // Mapa de nombre completo por ID
+    // Map de nombres por ID
     Map<Integer, String> nombresPorId = usuarios.stream()
-            .collect(Collectors.toMap(UserResponseDto::getId, 
+            .collect(Collectors.toMap(UserResponseDto::getId,
                     u -> u.getNombre() + " " + u.getApellido()));
 
-    // 🧩 Filtrar solo IDs de usuarios activos
+    // IDs de usuarios activos
     Set<Integer> idsActivos = usuarios.stream()
             .filter(UserResponseDto::isActivo)
             .map(UserResponseDto::getId)
             .collect(Collectors.toSet());
 
+    // Filtrar miembros inactivos y reconstruir nombres
     for (EventoDto ev : eventos) {
-        // 🧹 Eliminar miembros inactivos
         if (ev.getMiembrosIds() != null) {
             List<Integer> filtrados = ev.getMiembrosIds().stream()
                     .filter(idsActivos::contains)
@@ -66,7 +103,6 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
             ev.setMiembrosIds(filtrados);
         }
 
-        // Reconstruir nombres
         List<Integer> ids = ev.getMiembrosIds();
         if (ids != null && !ids.isEmpty()) {
             List<String> nombres = ids.stream()
@@ -79,29 +115,41 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
         }
     }
 
-    // Particionar eventos: propios (sin id externo) vs externos (con id externo)
+    // Particionar eventos: propios vs externos
     List<EventoDto> eventosPropios = eventos.stream()
-        .filter(ev -> ev.getEventoIdOrganizacionExterna() == null || ev.getEventoIdOrganizacionExterna().isBlank())
-        .collect(Collectors.toList());
+            .filter(ev -> ev.getEventoIdOrganizacionExterna() == null || ev.getEventoIdOrganizacionExterna().isBlank())
+            .collect(Collectors.toList());
 
     List<EventoDto> eventosExternos = eventos.stream()
-        .filter(ev -> ev.getEventoIdOrganizacionExterna() != null && !ev.getEventoIdOrganizacionExterna().isBlank())
-        .collect(Collectors.toList());
+            .filter(ev -> ev.getEventoIdOrganizacionExterna() != null && !ev.getEventoIdOrganizacionExterna().isBlank())
+            .collect(Collectors.toList());
 
-    // tus atributos del modelo existentes
+    // Roles del usuario
     String role = (user != null ? user.getRole() : null);
     model.addAttribute("isPresiOrCoord", "Presidente".equalsIgnoreCase(role) || "Coordinador".equalsIgnoreCase(role));
     model.addAttribute("isVocal", "Vocal".equalsIgnoreCase(role));
     model.addAttribute("isVoluntario", "Voluntario".equalsIgnoreCase(role));
     model.addAttribute("userId", (user != null ? user.getId() : null));
 
-    // Listas diferenciadas
+    // Agregar eventos al modelo
     model.addAttribute("eventosPropios", eventosPropios);
     model.addAttribute("eventosExternos", eventosExternos);
-    // Para compatibilidad con vistas existentes
     model.addAttribute("eventos", eventos);
+
+    // ==== CARGAR FILTROS DEL USUARIO ====
+    try {
+        List<FiltroEventoDto> filtrosUsuario = (user != null)
+                ? filtroEventoService.obtenerFiltrosPorUsuario(user.getId())
+                : Collections.emptyList();
+        model.addAttribute("filtrosUsuario", filtrosUsuario);
+    } catch (GrpcConnectionException e) {
+        model.addAttribute("errorFiltros", "No se pudieron cargar los filtros del usuario.");
+        model.addAttribute("filtrosUsuario", Collections.emptyList());
+    }
+
     return "eventos/eventos";
 }
+
 
 
 
@@ -451,4 +499,115 @@ public String salirEvento(@PathVariable int id,
         }
     }
 
+// =========================
+// VISTA CREAR FILTRO (FORMULARIO)
+// =========================
+@GetMapping("/filtros-eventos/nuevo")
+public String nuevoFiltro(Model model, @AuthenticationPrincipal CustomUserPrincipal user) {
+    model.addAttribute("userId", user.getId());
+    model.addAttribute("filtroEventoDto", new FiltroEventoDto());
+    return "eventos/nuevo_filtro"; // Ruta del template
 }
+
+// =========================
+// CREAR FILTRO - FORMULARIO
+// =========================
+@PostMapping("/filtros-eventos/usuario/{usuarioId}")
+public String crearFiltroVista(@PathVariable int usuarioId,
+                               @ModelAttribute FiltroEventoDto filtroEventoDto,
+                               Model model) {
+    try {
+        if (filtroEventoDto.getParametros() == null || filtroEventoDto.getParametros().isBlank()) {
+            filtroEventoDto.setParametros("{}");
+        }
+        filtroEventoDto.setUsuarioId(usuarioId);
+        filtroEventoService.crearFiltro(filtroEventoDto);
+        model.addAttribute("exitoMessage", "Filtro creado correctamente: " + filtroEventoDto.getNombre());
+        return "redirect:/eventos";
+    } catch (Exception e) {
+        e.printStackTrace();
+        model.addAttribute("errorMessage", "Error al crear filtro: " + e.getMessage());
+        return "eventos/nuevo_filtro";
+    }
+}
+
+@GetMapping("/filtros-eventos/ver/{id}")
+public String verFiltro(@PathVariable int id, Model model) {
+    try {
+        FiltroEventoDto filtro = filtroEventoService.obtenerFiltroPorId(id);
+        System.out.println("DEBUG - filtro obtenido: " + filtro); // <--- esto
+        model.addAttribute("filtroEventoDto", filtro);
+        return "eventos/ver_filtro";
+    } catch (Exception e) {
+        System.out.println("DEBUG - Exception: " + e.getMessage());
+        model.addAttribute("errorMessage", "No se pudo cargar el filtro: " + e.getMessage());
+        return "redirect:/eventos";
+    }
+}
+
+
+
+
+// =========================
+// EDITAR FILTRO (formulario)
+// =========================
+@GetMapping("/filtros-eventos/editar/{id}")
+public String editarFiltro(@PathVariable int id, Model model) {
+    try {
+        FiltroEventoDto filtro = filtroEventoService.obtenerFiltroPorId(id);
+        model.addAttribute("filtroEventoDto", filtro);
+        return "eventos/editar_filtro";
+    } catch (Exception e) {
+        model.addAttribute("errorMessage", "No se pudo cargar el filtro para editar: " + e.getMessage());
+        return "redirect:/eventos";
+    }
+}
+
+// =========================
+// ACTUALIZAR FILTRO (procesar formulario)
+// =========================
+@PostMapping("/filtros-eventos/actualizar/{id}")
+public String actualizarFiltro(@PathVariable int id,
+                               @ModelAttribute FiltroEventoDto filtroEventoDto,
+                               Model model) {
+    try {
+        if (filtroEventoDto.getParametros() == null || filtroEventoDto.getParametros().isBlank()) {
+            filtroEventoDto.setParametros("{}");
+        }
+        filtroEventoService.actualizarFiltro(id, filtroEventoDto);
+        model.addAttribute("exitoMessage", "Filtro actualizado correctamente: " + filtroEventoDto.getNombre());
+        return "redirect:/eventos";
+    } catch (Exception e) {
+        model.addAttribute("errorMessage", "Error al actualizar filtro: " + e.getMessage());
+        return "eventos/editar_filtro";
+    }
+}
+
+
+// =========================
+// ELIMINAR FILTRO (botón desde vista)
+// =========================
+@PostMapping("/filtros-eventos/eliminar/{id}")
+public String eliminarFiltroVista(@PathVariable int id, Model model) {
+    try {
+        filtroEventoService.eliminarFiltro(id);
+        model.addAttribute("exitoMessage", "Filtro eliminado correctamente.");
+    } catch (Exception e) {
+        model.addAttribute("errorMessage", "Error al eliminar filtro: " + e.getMessage());
+    }
+    return "redirect:/eventos";
+}
+
+
+
+
+
+
+}
+
+
+
+
+
+
+

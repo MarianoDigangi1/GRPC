@@ -4,6 +4,7 @@ import com.sistemas.distribuidos.grpc_gateway.dto.inventario.*;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.InventarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -104,4 +105,19 @@ public class InventarioViewController {
         }
     }
 
+    @GetMapping("/descargar-excel")
+    public ResponseEntity<byte[]> descargarExcel(@AuthenticationPrincipal CustomUserPrincipal user) {
+        try {
+            byte[] excelBytes = inventarioService.descargarInventarioExcel(user);
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=Inventario.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(excelBytes);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
+
