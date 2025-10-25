@@ -1,5 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, JSON
+from sqlalchemy.orm import relationship
+
 
 Base = declarative_base()
 
@@ -23,3 +25,17 @@ class Inventario(Base):
     cantidad = Column(Integer, nullable=False)
     creado_en = Column(DateTime, nullable=False)
     eliminado = Column(Boolean, default=False)
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+    id = Column(Integer, primary_key=True)
+
+
+class FiltroGuardado(Base):
+    __tablename__ = "filtros_guardados"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False)
+    filtros = Column(JSON, nullable=False)   
+    id_usuario = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario = relationship("Usuario")

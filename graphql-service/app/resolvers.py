@@ -1,10 +1,10 @@
 import graphene
 from sqlalchemy import func
-from .models import Inventario
+from .models import Inventario, FiltroGuardado
 from .database import SessionLocal
-from .schemas import DonacionInformeType
+from .schemas import DonacionInformeType, FiltroGuardadoType, FiltroGuardadoInput
 import graphene
-
+HARDCODED_USER_ID = 1
 class Query(graphene.ObjectType):
     informe_donaciones = graphene.List(
         DonacionInformeType,
@@ -45,3 +45,130 @@ class Query(graphene.ObjectType):
                 total_cantidad=r.total_cantidad
             ) for r in resultados
         ]
+    mis_filtros = graphene.List(FiltroGuardadoType)
+
+def resolve_mis_filtros(self, info):
+        session = SessionLocal()
+        try:
+            current_user_id = info.context.get("user_id")
+            if not current_user_id:
+                raise Exception("Usuario no autenticado.")
+
+            filtros = session.query(FiltroGuardado).filter(
+                FiltroGuardado.id_usuario == current_user_id
+            ).all()
+            return filtros
+        finally:
+            session.close()
+
+
+# ==========================================================
+#  MUTATIONS
+# ==========================================================
+
+# ---------- Crear Filtro ----------
+class CrearFiltro(graphene.Mutation):
+    class Arguments:
+        filtro_data = FiltroGuardadoInput(required=True)
+
+    filtro = graphene.Field(FiltroGuardadoType)
+
+    def mutate(self, info, filtro_data):
+        session = SessionLocal()
+        try:
+            current_user_id = info.context.get("user_id")
+            if not current_user_id:
+                raise Exception("Usuario no autenticado.")
+
+            nuevo_filtro = FiltroGuardado(
+                nombre=filtro_data.nombre,
+                filtros=filtro_data.filtros,
+                id_usuario=current_user_id
+            )
+            session.add(nuevo_filtro)
+            session.commit()
+            session.refresh(nuevo_filtro)
+            return CrearFiltro(filtro=nuevo_filtro)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+
+# ---------- Actualizar Filtro ----------
+class ActualizarFiltro(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        filtro_data = FiltroGuardadoInput(required=True)
+
+    filtro = graphene.Field(FiltroGuardadoType)
+
+    def mutate(self, info, id, filtro_data):
+        session = SessionLocal()
+        try:
+            current_user_id = info.context.get("user_id")
+            if not current_user_id:
+                raise Exception("Usuario no autenticado.")
+
+            filtro = session.query(FiltroGuardado).filter(
+                FiltroGuardado.id == id,
+                FiltroGuardado.id_usuario == current_user_id
+            ).first()
+
+            if not filtro:
+                raise Exception("Filtro no encontrado o no te pertenece.")
+
+            filtro.nombre = filtro_data.nombre
+            filtro.filtros = filtro_data.filtros
+
+            session.commit()
+            session.refresh(filtro)
+            return ActualizarFiltro(filtro=filtro)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+
+# ---------- Eliminar Filtro ----------
+class EliminarFiltro(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    id_eliminado = graphene.ID()
+    mensaje = graphene.String()
+
+    def mutate(self, info, id):
+        session = SessionLocal()
+        try:
+            current_user_id = info.context.get("user_id")
+            if not current_user_id:
+                raise Exception("Usuario no autenticado.")
+
+            filtro = session.query(FiltroGuardado).filter(
+                FiltroGuardado.id == id,
+                FiltroGuardado.id_usuario == current_user_id
+            ).first()
+
+            if not filtro:
+                raise Exception("Filtro no encontrado o no te pertenece.")
+
+            session.delete(filtro)
+            session.commit()
+            return EliminarFiltro(id_eliminado=id, mensaje="Filtro eliminado exitosamente.")
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+
+# ==========================================================
+# REGISTRO DE MUTATIONS
+# ==========================================================
+class Mutation(graphene.ObjectType):
+    crear_filtro = CrearFiltro.Field()
+    actualizar_filtro = ActualizarFiltro.Field()
+    eliminar_filtro = EliminarFiltro.Field()
