@@ -1,5 +1,6 @@
-from sqlalchemy import func, and_
-from .models import Donacion
+import graphene
+from sqlalchemy import func
+from .models import Inventario
 from .database import SessionLocal
 from .schemas import DonacionInformeType
 import graphene
@@ -8,43 +9,39 @@ class Query(graphene.ObjectType):
     informe_donaciones = graphene.List(
         DonacionInformeType,
         categoria=graphene.String(),
-        fecha_inicio=graphene.DateTime(),
-        fecha_fin=graphene.DateTime(),
+        fecha_inicio=graphene.String(),
+        fecha_fin=graphene.String(),
         eliminado=graphene.String()  # "si", "no", "ambos"
     )
 
     def resolve_informe_donaciones(self, info, categoria=None, fecha_inicio=None, fecha_fin=None, eliminado=None):
         session = SessionLocal()
         query = session.query(
-            Donacion.categoria,
-            Donacion.eliminado,
-            func.sum(Donacion.cantidad).label("total_cantidad")
+            Inventario.categoria,
+            Inventario.eliminado,
+            func.sum(Inventario.cantidad).label('total_cantidad')
         )
 
-        filters = []
+        # Filtros dinámicos
         if categoria:
-            filters.append(Donacion.categoria == categoria)
+            query = query.filter(Inventario.categoria == categoria)
         if fecha_inicio:
-            filters.append(Donacion.fecha_alta >= fecha_inicio)
+            query = query.filter(Inventario.created_at >= fecha_inicio)
         if fecha_fin:
-            filters.append(Donacion.fecha_alta <= fecha_fin)
+            query = query.filter(Inventario.created_at <= fecha_fin)
         if eliminado == "si":
-            filters.append(Donacion.eliminado == True)
+            query = query.filter(Inventario.eliminado == True)
         elif eliminado == "no":
-            filters.append(Donacion.eliminado == False)
-        # Si "ambos", no se filtra por eliminado
+            query = query.filter(Inventario.eliminado == False)
+        # Si es "ambos" o None, no se filtra
 
-        if filters:
-            query = query.filter(and_(*filters))
-
-        query = query.group_by(Donacion.categoria, Donacion.eliminado)
-        results = query.all()
+        query = query.group_by(Inventario.categoria, Inventario.eliminado)
+        resultados = query.all()
 
         return [
             DonacionInformeType(
-                categoria=row.categoria,
-                eliminado=row.eliminado,
-                total_cantidad=row.total_cantidad
-            )
-            for row in results
+                categoria=r.categoria,
+                eliminado=r.eliminado,
+                total_cantidad=r.total_cantidad
+            ) for r in resultados
         ]
