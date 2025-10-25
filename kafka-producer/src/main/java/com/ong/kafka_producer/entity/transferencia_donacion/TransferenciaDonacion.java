@@ -28,22 +28,17 @@ public class TransferenciaDonacion {
     private String idOrganizacionOrigen;
 
     @Column(name = "id_organizacion_destino", nullable = false)
-    private Integer idOrganizacionDestino;
+    private String idOrganizacionDestino;
 
     @Column(name = "fecha_transferencia")
     private LocalDateTime fechaTransferencia;
 
-    @Column(name = "activa")
-    @Builder.Default
-    private Boolean activa = true;
+    @Column(columnDefinition = "json", nullable = false)
+    private String contenido;
 
     @Column(name = "es_externa", nullable = false)
     @Builder.Default
     private Boolean esExterna = true;
-
-    @OneToMany(mappedBy = "transferenciaDonacion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<TransferenciaDonacionItem> items = new ArrayList<>();
 }
 
 

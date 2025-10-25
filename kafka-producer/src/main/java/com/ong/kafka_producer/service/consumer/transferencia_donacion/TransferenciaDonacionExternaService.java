@@ -1,9 +1,9 @@
 package com.ong.kafka_producer.service.consumer.transferencia_donacion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ong.kafka_producer.dto.transferencia_donacion.DonacionDto;
 import com.ong.kafka_producer.dto.transferencia_donacion.TransferenciaDonacionDto;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacion;
-import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacionItem;
 import com.ong.kafka_producer.entity.transferencia_donacion.Inventario;
 import com.ong.kafka_producer.repository.transferencia_donacion.TransferenciaDonacionRepository;
 import com.ong.kafka_producer.repository.transferencia_donacion.InventarioRepository;
@@ -58,18 +58,20 @@ public class TransferenciaDonacionExternaService {
                 return;
             }
 
+            String contenidoJson = objectMapper.writeValueAsString(transferenciaDto.getDonaciones());
+
             // Crear entidad principal
             TransferenciaDonacion transferenciaExterna = TransferenciaDonacion.builder()
                     .idTransferencia(transferenciaDto.getIdTransferencia())
                     .idOrganizacionOrigen(transferenciaDto.getIdOrganizacionOrigen())
                     .idOrganizacionDestino(transferenciaDto.getIdOrganizacionDestino())
                     .fechaTransferencia(LocalDateTime.now())
-                    .activa(true)
+                    .contenido(contenidoJson)
                     .esExterna(true)
                     .build();
 
             // Crear items
-            List<TransferenciaDonacionItem> items = new ArrayList<>();
+            List<DonacionDto> items = new ArrayList<>();
             if (transferenciaDto.getDonaciones() != null) {
                 transferenciaDto.getDonaciones().forEach(donacion -> {
                     Inventario.Categoria categoriaEnum;
@@ -80,17 +82,17 @@ public class TransferenciaDonacionExternaService {
                         return; // se ignora el item
                     }
 
-                    TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
-                            .categoria(categoriaEnum)
-                            .descripcion(donacion.getDescripcion())
-                            .cantidad(donacion.getCantidad())
-                            .transferenciaDonacion(transferenciaExterna)
-                            .build();
-                    items.add(item);
+//                    TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
+//                            .categoria(categoriaEnum)
+//                            .descripcion(donacion.getDescripcion())
+//                            .cantidad(donacion.getCantidad())
+//                            .transferenciaDonacion(transferenciaExterna)
+//                            .build();
+                    items.add(donacion);
                 });
             }
 
-            transferenciaExterna.setItems(items);
+            //transferenciaExterna.setItems(items);
             transferenciaDonacionRepository.save(transferenciaExterna);
             log.info("✅ Transferencia externa guardada: {}", transferenciaDto.getIdTransferencia());
 
@@ -121,9 +123,9 @@ public class TransferenciaDonacionExternaService {
         return origen != null && origen.equals(idOrganizacion);
     }
 
-    private void actualizarInventario(List<TransferenciaDonacionItem> items, boolean sumar) {
+    private void actualizarInventario(List<DonacionDto> items, boolean sumar) {
         items.forEach(item -> {
-            Inventario.Categoria categoriaEnum = item.getCategoria();
+            Inventario.Categoria categoriaEnum = Inventario.Categoria.valueOf(item.getCategoria());
 
             inventarioRepository.findByCategoriaAndDescripcion(categoriaEnum, item.getDescripcion())
                     .ifPresentOrElse(

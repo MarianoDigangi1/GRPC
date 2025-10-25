@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BajaDonacionDto {
     private String idSolicitud;
-    private Integer idOrganizacionSolicitante;
+    private String idOrganizacionSolicitante;
 }

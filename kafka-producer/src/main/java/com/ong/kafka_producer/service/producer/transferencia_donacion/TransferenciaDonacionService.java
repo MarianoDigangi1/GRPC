@@ -2,10 +2,10 @@ package com.ong.kafka_producer.service.producer.transferencia_donacion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.ResponseDto;
+import com.ong.kafka_producer.dto.transferencia_donacion.DonacionDto;
 import com.ong.kafka_producer.dto.transferencia_donacion.TransferenciaDonacionDto;
 import com.ong.kafka_producer.entity.transferencia_donacion.Inventario;
 import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacion;
-import com.ong.kafka_producer.entity.transferencia_donacion.TransferenciaDonacionItem;
 import com.ong.kafka_producer.repository.transferencia_donacion.TransferenciaDonacionRepository;
 import com.ong.kafka_producer.repository.transferencia_donacion.InventarioRepository;
 import jakarta.transaction.Transactional;
@@ -50,33 +50,28 @@ public class TransferenciaDonacionService {
                     .idOrganizacionOrigen(idOrganizacionDonante)
                     .idOrganizacionDestino(transferenciaDto.getIdOrganizacionDestino())
                     .fechaTransferencia(LocalDateTime.now())
+                    .esExterna(false)
                     .build();
 
             // Crear items
-            List<TransferenciaDonacionItem> items = new ArrayList<>();
+            List<DonacionDto> items = new ArrayList<>();
             if (transferenciaDto.getDonaciones() != null) {
                 transferenciaDto.getDonaciones().forEach(donacion -> {
-                    Inventario.Categoria categoriaEnum;
-                    try {
-                        categoriaEnum = Inventario.Categoria.valueOf(donacion.getCategoria().toUpperCase());
-                    } catch (IllegalArgumentException e) {
-                        log.warn("⚠️ Categoria inválida '{}', se ignora el item: {}", donacion.getCategoria(), donacion.getDescripcion());
-                        return; // ignora este item
-                    }
-
-                    TransferenciaDonacionItem item = TransferenciaDonacionItem.builder()
-                            .categoria(categoriaEnum)
-                            .descripcion(donacion.getDescripcion())
-                            .cantidad(donacion.getCantidad())
-                            .transferenciaDonacion(transferenciaEntity)
-                            .build();
-                    items.add(item);
+                            Inventario.Categoria categoriaEnum;
+                            try {
+                                categoriaEnum = Inventario.Categoria.valueOf(donacion.getCategoria().toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                log.warn("⚠️ Categoria inválida '{}', se ignora el item: {}", donacion.getCategoria(), donacion.getDescripcion());
+                                return; // ignora este item
+                            }
+                    items.add(donacion);
                 });
             }
 
-            transferenciaEntity.setItems(items);
+            String contenidoJson = objectMapper.writeValueAsString(items);
+            transferenciaEntity.setContenido(contenidoJson);
 
-            // 🔽 Descontar stock antes de publicar
+            // 🔽 Descontar stock del inventario antes de publicar
             actualizarInventario(items);
 
             // Guardar en base de datos
@@ -96,9 +91,9 @@ public class TransferenciaDonacionService {
         }
     }
 
-    private void actualizarInventario(List<TransferenciaDonacionItem> items) {
+    private void actualizarInventario(List<DonacionDto> items) {
         items.forEach(item -> {
-            inventarioRepository.findByCategoriaAndDescripcion(item.getCategoria(), item.getDescripcion())
+            inventarioRepository.findByCategoriaAndDescripcion(Inventario.Categoria.valueOf(item.getCategoria().toUpperCase()), item.getDescripcion())
                     .ifPresentOrElse(
                             inventario -> {
                                 int nuevaCantidad = Math.max(0, inventario.getCantidad() - item.getCantidad());
@@ -110,6 +105,7 @@ public class TransferenciaDonacionService {
                             },
                             () -> log.warn("⚠️ No existe inventario para {} - no se pudo descontar.", item.getDescripcion())
                     );
+            //TODO: Aca falta retornar los que se van a transferir y existen en inventario. Tambien chequear si la cantidad es negativa
         });
     }
 }

@@ -52,7 +52,6 @@ public class SolicitudDonacionesRestService {
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("idSolicitud", idSolicitud);
-        payload.put("idOrganizacionSolicitante", idOrganizacion);
 
         ResponseEntity<String> response = restTemplate.postForEntity(kafkaProducerUrl, payload, String.class);
         if(!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
