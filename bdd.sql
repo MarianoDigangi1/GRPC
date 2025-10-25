@@ -135,6 +135,7 @@ CREATE TABLE transferencia_donacion_externa (
     fecha_transferencia DATETIME DEFAULT CURRENT_TIMESTAMP,
 	contenido JSON NOT NULL, -- lista de pedidos: [{categoria, descripcion}] 
     es_externa BOOLEAN DEFAULT TRUE, -- Quizas no haga falta
+    vigente BOOLEAN DEFAULT TRUE,
     UNIQUE (id_transferencia, id_organizacion_origen),
     FOREIGN KEY (id_organizacion_origen) REFERENCES organizaciones(external_org_id),
     FOREIGN KEY (id_organizacion_destino) REFERENCES organizaciones(external_org_id)
