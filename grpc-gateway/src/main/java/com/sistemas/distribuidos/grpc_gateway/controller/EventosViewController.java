@@ -188,6 +188,8 @@ public String crearEvento(@RequestParam String nombre,
             return "redirect:/eventos";
         } catch (GrpcConnectionException e) {
             model.addAttribute("error", e.getMessage());
+            model.addAttribute("evento", dto);
+
             return "eventos/editar_evento";
         }
 
