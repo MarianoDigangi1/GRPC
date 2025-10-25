@@ -18,7 +18,8 @@ public class EventoDto {
     private String descripcion;
     private LocalDateTime fechaEventoIso;
     private List<Integer> miembrosIds;
-
+    private boolean publicado;
+    private String eventoIdOrganizacionExterna;
     private String miembrosNombres;
 
 

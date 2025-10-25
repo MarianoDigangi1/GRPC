@@ -115,6 +115,8 @@ public class EventoConverter {
                                 .id(response.getId())
                                 .nombre(response.getNombre())
                                 .descripcion(response.getDescripcion())
+                                .publicado(response.getPublicado())
+                                .eventoIdOrganizacionExterna(response.getEventoIdOrganizacionExterna())
                                 .fechaEventoIso(!response.getFechaEventoIso().isEmpty()
                                                 ? LocalDateTime.parse(response.getFechaEventoIso(), FORMATTER)
                                                 : null)

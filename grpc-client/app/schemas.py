@@ -103,6 +103,8 @@ class EventoResponse(BaseModel):
     fecha_evento_iso: str
     miembros_ids: List[int] = []
     mensaje: Optional[str] = None
+    publicado: bool
+    evento_id_organizacion_externa: Optional[str] = None
 
     class Config:
         orm_mode = True

@@ -37,4 +37,7 @@ public class Evento {
 
     @Column(name = "vigente")
     private Boolean vigente;
+
+    @Column(name = "publicado")
+    private Boolean publicado;
 }

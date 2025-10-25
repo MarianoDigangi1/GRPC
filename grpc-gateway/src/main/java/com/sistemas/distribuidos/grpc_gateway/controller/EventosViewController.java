@@ -1,15 +1,13 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.evento.*;
-import com.sistemas.distribuidos.grpc_gateway.dto.inventario.InventarioDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.inventario.InventarioListResponseDto;
-import com.sistemas.distribuidos.grpc_gateway.dto.inventario.ModificarInventarioRequestDto;
 import com.sistemas.distribuidos.grpc_gateway.dto.user.UserResponseDto;
 import com.sistemas.distribuidos.grpc_gateway.exception.GrpcConnectionException;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.EventosService;
 import com.sistemas.distribuidos.grpc_gateway.service.UsuarioService;
 import com.sistemas.distribuidos.grpc_gateway.service.InventarioService;
+import com.sistemas.distribuidos.grpc_gateway.service.kafka.EventosRestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -30,16 +28,17 @@ public class EventosViewController {
     private final EventosService eventosService;
     private final UsuarioService usuarioService;
     private final InventarioService inventarioService;
+    private final EventosRestService eventosRestService;
 
     private static final DateTimeFormatter HTML_DT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private static final DateTimeFormatter HTML_DT_SEC = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @Autowired
-    public EventosViewController(EventosService eventosService, UsuarioService usuarioService, InventarioService inventarioService) {
-
+    public EventosViewController(EventosService eventosService, UsuarioService usuarioService, InventarioService inventarioService, EventosRestService eventosRestService) {
         this.eventosService = eventosService;
         this.usuarioService = usuarioService;
         this.inventarioService = inventarioService;
+        this.eventosRestService = eventosRestService;
     }
 
     @GetMapping("/eventos")
@@ -80,6 +79,15 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
         }
     }
 
+    // Particionar eventos: propios (sin id externo) vs externos (con id externo)
+    List<EventoDto> eventosPropios = eventos.stream()
+        .filter(ev -> ev.getEventoIdOrganizacionExterna() == null || ev.getEventoIdOrganizacionExterna().isBlank())
+        .collect(Collectors.toList());
+
+    List<EventoDto> eventosExternos = eventos.stream()
+        .filter(ev -> ev.getEventoIdOrganizacionExterna() != null && !ev.getEventoIdOrganizacionExterna().isBlank())
+        .collect(Collectors.toList());
+
     // tus atributos del modelo existentes
     String role = (user != null ? user.getRole() : null);
     model.addAttribute("isPresiOrCoord", "Presidente".equalsIgnoreCase(role) || "Coordinador".equalsIgnoreCase(role));
@@ -87,6 +95,10 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
     model.addAttribute("isVoluntario", "Voluntario".equalsIgnoreCase(role));
     model.addAttribute("userId", (user != null ? user.getId() : null));
 
+    // Listas diferenciadas
+    model.addAttribute("eventosPropios", eventosPropios);
+    model.addAttribute("eventosExternos", eventosExternos);
+    // Para compatibilidad con vistas existentes
     model.addAttribute("eventos", eventos);
     return "eventos/eventos";
 }
@@ -223,6 +235,7 @@ public String crearEvento(@RequestParam String nombre,
             dto.setActorUsuarioId(user.getId());
             dto.setActorRol(user.getRole());
 
+            eventosService.darBajaEvento(dto);
         
             return "redirect:/eventos";
         } catch (GrpcConnectionException e) {
@@ -364,8 +377,78 @@ public String salirEvento(@PathVariable int id,
     return "redirect:/eventos";
 }
 
+    @GetMapping("/publicarEvento")
+    public String mostrarFormularioNuevoEventoExterno(@RequestParam(required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("errorMessage", error);
+        }
+        return "eventos/externos/publicar_evento";
+    }
+
+    @PostMapping("/publicarEvento")
+    public String publicarEvento(@RequestParam String nombre,
+                              @RequestParam String descripcion,
+                              @RequestParam String fechaEventoIso,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            LocalDateTime fecha;
+            try {
+                fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT);
+            } catch (Exception e) {
+                fecha = LocalDateTime.parse(fechaEventoIso, HTML_DT_SEC);
+            }
+
+            CrearEventoRequestDto dto = new CrearEventoRequestDto();
+            dto.setNombre(nombre);
+            dto.setDescripcion(descripcion);
+            dto.setFechaEventoIso(fecha);
+
+            eventosRestService.publicarEvento(dto);
 
 
+            redirectAttributes.addFlashAttribute("exitoMessage", "Evento creado correctamente");
+            return "redirect:/eventos";
 
+        } catch (Exception e) {
+            // Error de negocio (ej: fecha pasada)
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/publicarEvento";
+
+        }
+    }
+
+
+    @GetMapping("/darBajaEventoAlExterior/{id}")
+    public String mostrarBajaEventoExterior(@PathVariable int id, Model model) {
+        EventoDto evento = eventosService.buscarEventoPorId(id);
+
+        if (evento == null) {
+            model.addAttribute("error", "Evento no encontrado");
+            return "eventos/eventos";
+        }
+
+        if (evento.getFechaEventoIso() != null && evento.getFechaEventoIso().isBefore(LocalDateTime.now())) {
+            model.addAttribute("error", "Solo se pueden dar de baja eventos a futuro");
+            return "eventos/eventos";
+        }
+
+        model.addAttribute("evento", evento);
+        return "eventos/externos/dar_baja_evento";
+    }
+
+    @PostMapping("/darBajaEventoAlExterior/{id}")
+    public String eliminarEventoAlExterior(@PathVariable int id,
+                                 @AuthenticationPrincipal CustomUserPrincipal user,
+                                 Model model) {
+        try {
+            eventosRestService.darBajaEvento(id);
+            //eventosService.darBajaEvento(dto);
+
+            return "redirect:/eventos";
+        } catch (GrpcConnectionException e) {
+            model.addAttribute("error", e.getMessage());
+            return "eventos/eventos";
+        }
+    }
 
 }

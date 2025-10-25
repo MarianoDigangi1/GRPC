@@ -31,7 +31,7 @@ public class TransferenciaDonacionExternaService {
     private ObjectMapper objectMapper;
 
     @Value("${spring.kafka.idOrganizacion}")
-    private Integer idOrganizacion;
+    private String idOrganizacion;
 
     @Transactional
     public void procesarTransferenciaExterna(String mensaje) {
@@ -116,8 +116,8 @@ public class TransferenciaDonacionExternaService {
                 .map(existing -> true).orElse(false);
     }
 
-    private static boolean esTransferenciaPropia(TransferenciaDonacionDto transferenciaDto, Integer idOrganizacion) {
-        Integer origen = transferenciaDto.getIdOrganizacionOrigen();
+    private static boolean esTransferenciaPropia(TransferenciaDonacionDto transferenciaDto, String idOrganizacion) {
+        String origen = transferenciaDto.getIdOrganizacionOrigen();
         return origen != null && origen.equals(idOrganizacion);
     }
 
@@ -133,7 +133,7 @@ public class TransferenciaDonacionExternaService {
                                         : Math.max(0, inventario.getCantidad() - item.getCantidad());
                                 inventario.setCantidad(nuevaCantidad);
                                 inventario.setUpdatedAt(LocalDateTime.now());
-                                inventario.setUpdatedBy(idOrganizacion);
+                                //inventario.setUpdatedBy(idOrganizacion); Esto no deberia romper
                                 inventarioRepository.save(inventario);
                                 log.info("🔁 Inventario actualizado: {} {}{}", item.getDescripcion(), sumar ? "+" : "-", item.getCantidad());
                             },
@@ -145,7 +145,7 @@ public class TransferenciaDonacionExternaService {
                                                     .descripcion(item.getDescripcion())
                                                     .cantidad(item.getCantidad())
                                                     .createdAt(LocalDateTime.now())
-                                                    .createdBy(idOrganizacion)
+                                                    //.createdBy(idOrganizacion) esto no deberia romper
                                                     .eliminado(false)
                                                     .build()
                                     );

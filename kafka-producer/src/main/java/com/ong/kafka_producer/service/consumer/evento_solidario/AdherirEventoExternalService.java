@@ -22,8 +22,8 @@ public class AdherirEventoExternalService {
 
     @Autowired
     private ObjectMapper objectMapper;
-    @Value("${spring.kafka.idOrganizacion}")
-    private Integer idOrganizacion;
+
+    private String idOrganizacion;
 
     public void procesarAdherirUsuario(String mensaje) {
         try {

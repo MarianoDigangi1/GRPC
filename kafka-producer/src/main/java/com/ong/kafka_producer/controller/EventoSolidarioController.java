@@ -50,7 +50,7 @@ public class EventoSolidarioController {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
     }
-    @DeleteMapping
+    @DeleteMapping("/baja")
     public ResponseEntity<?> bajaEvento(@RequestBody BajaEventoSolidarioDto solicitud) {
 
         ResponseDto<String> response = service.darDeBajaEvento(solicitud);

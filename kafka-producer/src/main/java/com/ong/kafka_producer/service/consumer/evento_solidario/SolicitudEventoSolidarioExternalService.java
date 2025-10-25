@@ -19,18 +19,15 @@ public class SolicitudEventoSolidarioExternalService {
     private EventoRepository eventoRepository;
     @Autowired
     private ObjectMapper objectMapper;
-    @Value("${spring.kafka.idOrganizacionString}")
+    @Value("${spring.kafka.idOrganizacion}")
     private String idOrganizacion;
-
-
 
     public void procesarSolicitudEventos(String mensaje) {
         try {
 
 
             EventoSolidarioDto eventoSolidarioDto = objectMapper.readValue(mensaje, EventoSolidarioDto.class);
-
-            if (checkearSiEsSolicitudDePropiaOrganizacion(eventoSolidarioDto, idOrganizacion)) return;
+            
             boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
 
             if (!vigente) {
@@ -49,9 +46,13 @@ public class SolicitudEventoSolidarioExternalService {
                     .descripcion(eventoSolidarioDto.getDescripcion())
                     .fechaEvento(eventoSolidarioDto.getFechaEvento())
                     .origenOrganizacionId(eventoSolidarioDto.getIdOrganizacion())
-                    .eventoIdOrganizacionExterna(String.valueOf(eventoSolidarioDto.getIdEvento()))
+                    .publicado(true)
                     .vigente(true)
                     .build();
+
+            if(!eventoSolidarioDto.getIdOrganizacion().equals(idOrganizacion)){
+                eventoSolidario.setEventoIdOrganizacionExterna(String.valueOf(eventoSolidarioDto.getIdEvento()));
+            }
 
             eventoRepository.save(eventoSolidario);
 
@@ -61,29 +62,4 @@ public class SolicitudEventoSolidarioExternalService {
             log.error("error al procesar solicitud externa: {}", e.getMessage(), e);
         }
     }
-
-    private static boolean checkearSiEsSolicitudDePropiaOrganizacion(EventoSolidarioDto eventoSolidarioDto, String idOrganizacion) {
-
-        if (eventoSolidarioDto.getIdOrganizacion().equals(idOrganizacion)) {
-            log.info("Ignorando solicitud propia de organización: {}", idOrganizacion);
-            return true;
-        }
-        return false;
-    }
-
-    /*
-    private boolean checkearSiElEventoSolidarioEstaVigente(EventoSolidarioDto solicitudDto) {
-        if (eventoSolidarioRepository.findByIdEvento(String.valueOf(solicitudDto.getIdEvento())).isPresent()) {
-            log.info("solicitud con id {} ya existe", solicitudDto.getIdEvento());
-            return true;
-        }
-        EventoSolidario eventoSolidario = eventoSolidarioRepository.findByIdEvento(String.valueOf(solicitudDto.getIdEvento())).orElse(null);
-        if (eventoSolidario != null && !eventoSolidario.getVigente()) {
-            log.info("El evento solidario con id {} no está vigente", solicitudDto.getIdEvento());
-            return true;
-        }
-        return false;
-    }
-
-     */
 }

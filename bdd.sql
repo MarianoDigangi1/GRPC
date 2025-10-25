@@ -62,6 +62,7 @@ CREATE TABLE evento (
     origen_organizacion_id VARCHAR(100) NULL,  -- NULL = evento local; valor = evento externo
     vigente BOOLEAN DEFAULT TRUE,
     evento_id_organizacion_externa VARCHAR(100) NULL, -- ID del evento en la ONG externa
+    publicado BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (origen_organizacion_id) REFERENCES organizaciones(external_org_id) ON DELETE SET NULL
 );
 -- =========================================================

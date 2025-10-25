@@ -20,7 +20,7 @@ public class SolicitudDonacionesExternasService {
     private final SolicitudesExternasServiceGrpc.SolicitudesExternasServiceBlockingStub stubBlocking;
 
     @Value("${kafka.producer.server.idOrganizacion}")
-    private Integer idOrganizacion;
+    private String idOrganizacion;
 
     @Autowired
     public SolicitudDonacionesExternasService(ManagedChannel grpcChannel) {

@@ -74,7 +74,9 @@ message EventoResponse {
   string descripcion = 3;
   string fecha_evento_iso = 4;
   repeated int32 miembros_ids = 5;
-  bool pasado = 6; 
+  bool pasado = 6;
+  bool publicado = 7;
+  string evento_id_organizacion_externa = 8;
 }
 
 message ListarEventosResponse {

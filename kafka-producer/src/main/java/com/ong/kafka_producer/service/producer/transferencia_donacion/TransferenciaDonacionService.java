@@ -34,7 +34,7 @@ public class TransferenciaDonacionService {
     private String transferenciaDonacionesTopic;
 
     @Value("${spring.kafka.idOrganizacion}")
-    private Integer idOrganizacionDonante;
+    private String idOrganizacionDonante;
 
     @Transactional
     public ResponseDto<String> transferirDonacion(TransferenciaDonacionDto transferenciaDto) {
@@ -104,7 +104,7 @@ public class TransferenciaDonacionService {
                                 int nuevaCantidad = Math.max(0, inventario.getCantidad() - item.getCantidad());
                                 inventario.setCantidad(nuevaCantidad);
                                 inventario.setUpdatedAt(LocalDateTime.now());
-                                inventario.setUpdatedBy(idOrganizacionDonante);
+                                //inventario.setUpdatedBy(idOrganizacionDonante); con esto no deberia fallar
                                 inventarioRepository.save(inventario);
                                 log.info("📉 Inventario reducido: {} -{}", item.getDescripcion(), item.getCantidad());
                             },

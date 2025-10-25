@@ -14,8 +14,8 @@ public class EventoSolidarioExternalConsumer {
     @Value("${spring.kafka.topic.publicar.eventos}")
     private String solicitudEvento;
 
-    @Value("${spring.kafka.idOrganizacion}")
-    private int organizacionLocalId;
+
+    private String organizacionLocalId;
 
     private final SolicitudEventoSolidarioExternalService solicitudEventosService;
 

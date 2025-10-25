@@ -222,7 +222,7 @@ def quitar_usuario_de_eventos_futuros(db: Session, usuario_id: int):
 
 # ---------- Listar eventos disponibles ----------
 def listar_eventos_disponibles(db: Session):
-    eventos = db.query(models.Evento).filter(models.Evento.origen_organizacion_id == settings.ORG_ID).all()
+    eventos = db.query(models.Evento).all()
     result = []
     for ev in eventos:
         miembros_ids = [eu.usuario_id for eu in ev.participantes]

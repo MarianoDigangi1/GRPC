@@ -17,7 +17,10 @@
       <a class="navbar-brand fw-bold" href="/eventos">Eventos Solidarios</a>
       <div class="ms-auto">
         <a href="/" class="btn btn-outline-light">🏠 Ir al Inicio</a>
+        <a th:if="${isPresiOrCoord}" href="/nuevo" class="btn btn-primary">➕ Crear Evento Interno</a>
+        <a href="/publicarEvento" class="btn btn-primary">➕ Publicar nuevo evento</a>
       </div>
+
     </div>
   </nav>
 
@@ -27,7 +30,6 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h4 mb-0">Listado de Eventos</h1>
         <!-- Solo Presidente o Coordinador pueden crear -->
-        <a th:if="${isPresiOrCoord}" href="/nuevo" class="btn btn-primary">➕ Crear Evento</a>
       </div>
 
       <!-- Mensajes -->
@@ -38,7 +40,60 @@
         <span th:text="${errorMessage}"></span>
       </div>
 
-      <!-- Tabla -->
+      <!-- Tabla: Eventos de mi organización -->
+      <h2 class="h5 mt-2">Mis eventos</h2>
+      <div class="table-responsive mb-4">
+        <table class="table table-dark table-hover align-middle text-center">
+          <thead class="table-secondary text-dark">
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Fecha</th>
+              <th>Miembros</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${eventosPropios == null or #lists.isEmpty(eventosPropios)}">
+              <td colspan="5" class="text-muted">No hay eventos propios.</td>
+            </tr>
+            <tr th:each="evento : ${eventosPropios}"
+                th:with="
+                  isFuture=${evento.fechaEventoIso != null and evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())},
+                  joined=${evento.miembrosIds != null and userId != null ? evento.miembrosIds.contains(userId) : false}
+                ">
+              <td th:text="${evento.nombre}">Nombre</td>
+              <td th:text="${evento.descripcion}">Descripción</td>
+              <td th:text="${evento.fechaEventoIso != null ? #temporals.format(evento.fechaEventoIso, 'dd/MM/yyyy HH:mm') : '---'}">Fecha</td>
+              <td><span th:text="${evento.miembrosNombres != null ? evento.miembrosNombres : '-'}">-</span></td>
+              <td>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                  <div th:if="${isPresiOrCoord}">
+                    <a th:if="${isFuture}" th:href="@{'/eventos/editar/' + ${evento.id}}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                    <a th:if="${!isFuture and evento.fechaEventoIso != null}" th:href="@{'/eventos/inventario/' + ${evento.id}}" class="btn btn-sm btn-primary">📦 Inventario</a>
+                    <a th:if="${isFuture}" th:href="@{'/eventos/eliminar/' + ${evento.id}}" class="btn btn-sm btn-danger">🗑️ Eliminar</a>
+                    <a th:if="${isFuture && evento.publicado}" th:href="@{'/darBajaEventoAlExterior/' + ${evento.id}}" class="btn btn-sm btn-danger">❌ Dar baja</a>
+                  </div>
+                  <div th:if="${isVocal}">
+                    <a th:href="@{'/inventario'}" class="btn btn-sm btn-info">📦 Ver Inventario</a>
+                  </div>
+                  <div th:if="${isVoluntario}">
+                    <form th:if="${isFuture and !joined}" th:action="@{'/eventos/unirse/' + ${evento.id}}" method="post">
+                      <button type="submit" class="btn btn-sm btn-success">✅ Unirse</button>
+                    </form>
+                    <form th:if="${isFuture and joined}" th:action="@{'/eventos/salir/' + ${evento.id}}" method="post">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">� Salir</button>
+                    </form>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tabla: Eventos de otras organizaciones -->
+      <h2 class="h5 mt-2">Eventos de otras organizaciones</h2>
       <div class="table-responsive">
         <table class="table table-dark table-hover align-middle text-center">
           <thead class="table-secondary text-dark">
@@ -51,7 +106,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr th:each="evento : ${eventos}"
+            <tr th:if="${eventosExternos == null or #lists.isEmpty(eventosExternos)}">
+              <td colspan="5" class="text-muted">No hay eventos de otras organizaciones.</td>
+            </tr>
+            <tr th:each="evento : ${eventosExternos}"
                 th:with="
                   isFuture=${evento.fechaEventoIso != null and evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())},
                   joined=${evento.miembrosIds != null and userId != null ? evento.miembrosIds.contains(userId) : false}
@@ -60,40 +118,13 @@
               <td th:text="${evento.descripcion}">Descripción</td>
               <td th:text="${evento.fechaEventoIso != null ? #temporals.format(evento.fechaEventoIso, 'dd/MM/yyyy HH:mm') : '---'}">Fecha</td>
               <td><span th:text="${evento.miembrosNombres != null ? evento.miembrosNombres : '-'}">-</span></td>
-
               <td>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-
-                  <!-- 🔸 PRESIDENTE / COORDINADOR -->
-                  <div th:if="${isPresiOrCoord}">
-                    <a th:if="${isFuture}" th:href="@{'/eventos/editar/' + ${evento.id}}"
-                       class="btn btn-sm btn-warning">✏️ Editar</a>
-                    <a th:if="${!isFuture and evento.fechaEventoIso != null}"
-                       th:href="@{'/eventos/inventario/' + ${evento.id}}"
-                       class="btn btn-sm btn-primary">📦 Inventario</a>
-                    <a th:if="${isFuture}" th:href="@{'/eventos/eliminar/' + ${evento.id}}"
-                       class="btn btn-sm btn-danger">🗑️ Eliminar</a>
-                  </div>
-
-                  <!-- 🔸 VOCAL -->
-                  <div th:if="${isVocal}">
-                    <a th:href="@{'/inventario'}" class="btn btn-sm btn-info">📦 Ver Inventario</a>
-                  </div>
-
-                  <!-- 🔸 VOLUNTARIO -->
                   <div th:if="${isVoluntario}">
-                    <!-- Unirse: solo futuro y si NO está unido -->
-                    <form th:if="${isFuture and !joined}"
-                          th:action="@{'/eventos/unirse/' + ${evento.id}}" method="post">
+                    <form th:if="${isFuture and !joined}" th:action="@{'/eventos/unirse/exterior' + ${evento.id}}" method="post">
                       <button type="submit" class="btn btn-sm btn-success">✅ Unirse</button>
                     </form>
-                    <!-- Salir: solo futuro y si YA está unido -->
-                    <form th:if="${isFuture and joined}"
-                          th:action="@{'/eventos/salir/' + ${evento.id}}" method="post">
-                      <button type="submit" class="btn btn-sm btn-outline-danger">🚪 Salir</button>
-                    </form>
                   </div>
-
                 </div>
               </td>
             </tr>

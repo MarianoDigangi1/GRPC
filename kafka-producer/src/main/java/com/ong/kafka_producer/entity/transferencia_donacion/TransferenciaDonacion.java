@@ -25,7 +25,7 @@ public class TransferenciaDonacion {
     private String idTransferencia;
 
     @Column(name = "id_organizacion_origen", nullable = false)
-    private Integer idOrganizacionOrigen;
+    private String idOrganizacionOrigen;
 
     @Column(name = "id_organizacion_destino", nullable = false)
     private Integer idOrganizacionDestino;

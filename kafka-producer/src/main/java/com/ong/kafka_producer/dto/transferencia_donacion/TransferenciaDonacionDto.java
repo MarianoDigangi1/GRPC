@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TransferenciaDonacionDto {
     private String idTransferencia;
-    private Integer idOrganizacionOrigen;
+    private String idOrganizacionOrigen;
     private Integer idOrganizacionDestino;
     private List<DonacionDto> donaciones;
 }

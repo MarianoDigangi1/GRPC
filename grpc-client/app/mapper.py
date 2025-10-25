@@ -94,17 +94,13 @@ class ProtoMapper:
         from datetime import datetime
         fecha_iso = getattr(request, "fecha_evento_iso", "") or ""
 
-
-        #if getattr(request, "fecha_evento", None) is None:
-        #    print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → NO tiene atributo fecha_evento")
-        #else:
-        #    print(f"[DEBUG] evento.id={getattr(request, 'id', None)} → fecha_evento={request.fecha_evento}")
-
         return eventos_pb2.EventoResponse(
         id=getattr(request, "id", 0) or 0,
         nombre=getattr(request, "nombre", "") or "",
         descripcion=getattr(request, "descripcion", "") or "",
         fecha_evento_iso=fecha_iso,
+        publicado=getattr(request, "publicado", False),
+        evento_id_organizacion_externa=getattr(request, "evento_id_organizacion_externa", "") or "",
         miembros_ids=list(getattr(request, "miembros_ids", [])) or [],
         pasado=datetime.fromisoformat(fecha_iso) < datetime.now() if fecha_iso else False
         )
@@ -234,6 +230,8 @@ class SchemaMapper:
             nombre=evento.nombre,
             descripcion=evento.descripcion,
             fecha_evento_iso=evento.fecha_evento.isoformat() if evento.fecha_evento else "",
+            publicado=evento.publicado,
+            evento_id_organizacion_externa=evento.evento_id_organizacion_externa,
             miembros_ids=miembros_ids,
             mensaje=mensaje
         )    
