@@ -27,7 +27,7 @@ public class SolicitudEventoSolidarioExternalService {
 
 
             EventoSolidarioDto eventoSolidarioDto = objectMapper.readValue(mensaje, EventoSolidarioDto.class);
-            
+
             boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
 
             if (!vigente) {

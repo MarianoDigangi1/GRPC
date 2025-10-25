@@ -59,4 +59,19 @@ public class SolicitudDonacionesExternasService {
             throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
         }
     }
+
+    public SolicitudDonacionExternaResponseDto buscaSolicitudPorId(String idSolicitud) {
+        try {
+            ListarSolicitudesExternasResponse response = stubBlocking.listarSolicitudesVigentes(Empty.newBuilder().build());
+            List<SolicitudDonacionExternaResponseDto> todasLasSolicitudes = 
+                    SolicitudDonacionesExternasConverter.convertSolicitudListResponseToDto(response);
+            
+            return todasLasSolicitudes.stream()
+                    .filter(solicitud -> idSolicitud.equals(solicitud.getIdSolicitud()))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            throw new GrpcConnectionException("Error al conectar con gRPC: " + e.getMessage(), e);
+        }
+    }
 }

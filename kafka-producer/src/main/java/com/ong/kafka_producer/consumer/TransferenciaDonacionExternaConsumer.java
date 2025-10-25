@@ -13,13 +13,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class TransferenciaDonacionExternaConsumer {
-
-   @Value("${spring.kafka.topic.transferencia.donaciones}")
-   private String transferenciaDonacionesTopic;
-
    private final TransferenciaDonacionExternaService transferenciaDonacionExternaService;
 
-    @KafkaListener(topics = "${spring.kafka.topic.transferencia.donaciones}", groupId = "ong-group")
+    @KafkaListener(topics = "${spring.kafka.topic.transferencia.donaciones}-${spring.kafka.idOrganizacion}", groupId = "ong-group")
     public void consumirTransferenciaDonacion(String mensaje) {
         log.info("Mensaje recibido en topic transferencia-donaciones: {}", mensaje);
         transferenciaDonacionExternaService.procesarTransferenciaExterna(mensaje);

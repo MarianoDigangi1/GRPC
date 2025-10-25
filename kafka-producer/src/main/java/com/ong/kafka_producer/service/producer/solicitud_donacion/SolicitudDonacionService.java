@@ -53,7 +53,7 @@ public class SolicitudDonacionService {
 
     public ResponseDto<String> bajaSolicitudDonacion(BajaDonacionDto bajaDonacionDto) {
         try {
-            bajaDonacionDto.setIdOrganizacionSolicitante(Integer.valueOf(idOrganizacion));
+            bajaDonacionDto.setIdOrganizacionSolicitante(idOrganizacion);
             Optional<SolicitudExterna> solicitudOpt = repository.findBySolicitudIdAndExternalOrgId(bajaDonacionDto.getIdSolicitud(), idOrganizacion);
 
             if (solicitudOpt.isEmpty()) {
