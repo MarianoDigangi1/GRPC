@@ -62,7 +62,6 @@ class Evento(Base):
     evento_id_organizacion_externa = Column(String(100), nullable=True)
     vigente = Column(Boolean, default=True)
     publicado = Column(Boolean, default=False)
-    evento_id_organizacion_externa = Column(String(100), nullable=True)
 
     # Relaciones
     participantes = relationship("EventoUsuario", cascade="all, delete-orphan", back_populates="evento")

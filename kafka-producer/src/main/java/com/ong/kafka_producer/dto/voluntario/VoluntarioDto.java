@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VoluntarioDto {
-    private Integer idOrganizacion;
-    private Integer idVoluntario;
+    private String idOrganizacion;
+    private String idVoluntario;
     private String nombre;
     private String apellido;
     private String telefono;

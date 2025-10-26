@@ -28,6 +28,9 @@ public class EventosRestService {
     @Value("${kafka.producer.server.eventos.baja}")
     private String bajaEventoUrl;
 
+    @Value("${kafka.producer.server.eventos.adherir}")
+    private String adherirEventoUrl;
+
     @Value("${kafka.producer.server.idOrganizacion}")
     private String idOrganizacion;
 
@@ -65,5 +68,32 @@ public class EventosRestService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         restTemplate.exchange(kafkaProducerUrl, HttpMethod.DELETE, request, String.class);
+    }
+
+    public void adherirEvento(String idEvento,
+                              String idVoluntario,
+                              String nombre,
+                              String apellido,
+                              String telefono,
+                              String email,
+                              String idOrganizacionEvento) throws Exception {
+        String kafkaProducerUrl = baseUrl + adherirEventoUrl;
+
+        Map<String, Object> voluntario = new HashMap<>();
+        voluntario.put("idOrganizacion", idOrganizacion);
+        voluntario.put("idVoluntario", idVoluntario);
+        voluntario.put("nombre", nombre);
+        voluntario.put("apellido", apellido);
+        voluntario.put("telefono", telefono);
+        voluntario.put("email", email);
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("idEvento", idEvento);
+        payload.put("voluntario", voluntario);
+        payload.put("idOrganizacionEvento", idOrganizacionEvento);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(kafkaProducerUrl, payload, String.class);
+        if(!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
+            throw new RuntimeException("Error al adherir al evento: " + response.getBody());
+        }
     }
 }

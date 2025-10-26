@@ -116,6 +116,7 @@
                       isFuture=${evento.fechaEventoIso != null and evento.fechaEventoIso.isAfter(T(java.time.LocalDateTime).now())},
                       joined=${evento.miembrosIds != null and userId != null ? evento.miembrosIds.contains(userId) : false}
                     ">
+                    <span th:text="${evento.eventoIdOrganizacionExterna}"></span>
                   <td th:text="${evento.nombre}">Nombre</td>
                   <td th:text="${evento.descripcion}">Descripción</td>
                   <td th:text="${evento.fechaEventoIso != null ? #temporals.format(evento.fechaEventoIso, 'dd/MM/yyyy HH:mm') : '---'}">Fecha</td>
@@ -123,9 +124,7 @@
                   <td>
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
                       <div th:if="${isVoluntario}">
-                        <form th:if="${isFuture and !joined}" th:action="@{'/eventos/unirse/exterior/' + ${evento.id}}" method="post">
-                          <button type="submit" class="btn btn-sm btn-success">✅ Unirse</button>
-                        </form>
+                        <a th:if="${isFuture and !joined}" th:href="@{'/adherirEventoExterno/' + ${evento.id}}" class="btn btn-sm btn-success">✅ Unirse</a>
                       </div>
                     </div>
                   </td>

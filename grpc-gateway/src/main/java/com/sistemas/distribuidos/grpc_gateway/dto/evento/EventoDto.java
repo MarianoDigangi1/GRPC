@@ -21,6 +21,7 @@ public class EventoDto {
     private boolean publicado;
     private String eventoIdOrganizacionExterna;
     private String miembrosNombres;
+    private String organizacionId;
 
 
 }

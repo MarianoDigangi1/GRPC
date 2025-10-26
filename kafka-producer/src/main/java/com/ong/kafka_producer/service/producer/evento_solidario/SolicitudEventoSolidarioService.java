@@ -5,7 +5,9 @@ import com.ong.kafka_producer.dto.ResponseDto;
 import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
 import com.ong.kafka_producer.dto.evento_solidario.BajaEventoSolidarioDto;
 import com.ong.kafka_producer.dto.evento_solidario.EventoSolidarioDto;
+import com.ong.kafka_producer.entity.evento_solidario.AdhesionEventoExterno;
 import com.ong.kafka_producer.entity.evento_solidario.Evento;
+import com.ong.kafka_producer.repository.evento_solidario.AdhesionEventoRepository;
 import com.ong.kafka_producer.repository.evento_solidario.EventoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class SolicitudEventoSolidarioService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final EventoRepository eventoRepository;
+    private final AdhesionEventoRepository adhesionEventoRepository;
 
     @Value("${spring.kafka.topic.publicar.eventos}")
     private String solicitudEventosTopic;
@@ -39,11 +42,16 @@ public class SolicitudEventoSolidarioService {
     @Transactional
     public ResponseDto<String> crearSolicitudEvento(EventoSolidarioDto solicitudDto) {
         try {
-            Random aleatorio = new Random(System.currentTimeMillis());
-            int intAletorio = aleatorio.nextInt();
-
             solicitudDto.setIdOrganizacion(idOrganizacion);
-            solicitudDto.setIdEvento(intAletorio); // Esto es temporal
+
+            Evento evento = eventoRepository.save(Evento.builder().nombre(solicitudDto.getNombre()).descripcion(solicitudDto.getDescripcion())
+                    .fechaEvento(solicitudDto.getFechaEvento())
+                            .origenOrganizacionId(idOrganizacion)
+                            .vigente(true)
+                            .publicado(true)
+                    .build());
+
+            solicitudDto.setIdEvento(evento.getId()); // Esto es temporal
             String mensaje = objectMapper.writeValueAsString(solicitudDto);
             kafkaTemplate.send(solicitudEventosTopic, mensaje);
 
@@ -86,11 +94,43 @@ public class SolicitudEventoSolidarioService {
     }
 
     @Transactional
-    public ResponseDto<String> publicarAdhesion(AdhesionEventoDto adhesionEventoDto, @RequestParam Integer idOrganizador) {
+    public ResponseDto<String> publicarAdhesion(AdhesionEventoDto adhesionEventoDto) {
         try {
+            // Chequear si el evento existe
+            // y tambien si el id de evento_id_organizacion_externa coincide con el id de organizacion son los mismo
 
+            Optional<Evento> evento = eventoRepository.findByOrigenOrganizacionIdAndEventoIdOrganizacionExterna(adhesionEventoDto.getIdOrganizacionEvento(), adhesionEventoDto.getIdEvento().toString());
+
+            if (evento.isEmpty()) {
+                log.error("El evento con id {} no existe", adhesionEventoDto.getIdEvento());
+                return new ResponseDto<>("", false, "El evento no existe");
+            }
+
+            // Fix para evitar NullPointerException si vigente es null
+            //Evento ev = evento.orElseThrow();
+            if (!Boolean.TRUE.equals(evento.get().getVigente())) {
+                log.error("El evento con id {} no está activo o el campo 'vigente' es null", adhesionEventoDto.getIdEvento());
+                return new ResponseDto<>("", false, "El evento no esta vigente");
+            }
+            AdhesionEventoExterno adhesion = AdhesionEventoExterno.builder()
+                    .eventoId(evento.get().getId())
+                    .organizacionEventoId(adhesionEventoDto.getIdOrganizacionEvento())
+                    .organizacionParticipanteId(idOrganizacion)
+                    .idVoluntarioExterno(adhesionEventoDto.getVoluntario().getIdVoluntario())
+                    .nombre(adhesionEventoDto.getVoluntario().getNombre())
+                    .apellido(adhesionEventoDto.getVoluntario().getApellido())
+                    .telefono(adhesionEventoDto.getVoluntario().getTelefono())
+                    .email(adhesionEventoDto.getVoluntario().getEmail())
+                    .fechaAdhesion(java.time.LocalDateTime.now())
+                    .build();
+
+            // Guardar la adhesión en la base de datos
+            // Suponiendo que existe un repository para AdhesionEventoExterno
+            adhesionEventoRepository.save(adhesion);
+
+            String topic = adhesionEventoTopic + "-" + adhesionEventoDto.getIdOrganizacionEvento();
             String mensaje = objectMapper.writeValueAsString(adhesionEventoDto);
-            kafkaTemplate.send(adhesionEventoTopic, mensaje);
+            kafkaTemplate.send(topic, mensaje);
 
             log.info("Solicitud de donación publicada: {}", adhesionEventoDto.getIdEvento());
             return new ResponseDto<String>("", true, "Solicitud de crear evento: " + adhesionEventoDto.getIdEvento());

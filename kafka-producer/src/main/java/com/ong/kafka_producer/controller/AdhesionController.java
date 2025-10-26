@@ -17,8 +17,8 @@ public class AdhesionController {
     private SolicitudEventoSolidarioService service;
 
     @PostMapping
-    public ResponseEntity<?> adherirVoluntario(@RequestBody AdhesionEventoDto adhesion, @RequestParam Integer idOrganizador) {
-        ResponseDto<String> response = service.publicarAdhesion(adhesion, idOrganizador);
+    public ResponseEntity<?> adherirVoluntario(@RequestBody AdhesionEventoDto adhesion) {
+        ResponseDto<String> response = service.publicarAdhesion(adhesion);
 
         if (response.isOk()) {
             return ResponseEntity.ok(response.getMessage());

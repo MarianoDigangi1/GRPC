@@ -30,6 +30,8 @@ public class SolicitudEventoSolidarioExternalService {
 
             boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
 
+            if (checkearSiEsSolicitudDePropiaOrganizacion(eventoSolidarioDto, idOrganizacion)) return;
+
             if (!vigente) {
                 log.info("Evento externo descartado por no estar vigente: {}", eventoSolidarioDto.getIdEvento());
                 return;
@@ -62,4 +64,14 @@ public class SolicitudEventoSolidarioExternalService {
             log.error("error al procesar solicitud externa: {}", e.getMessage(), e);
         }
     }
+
+    private static boolean checkearSiEsSolicitudDePropiaOrganizacion(EventoSolidarioDto eventoSolidarioDto, String idOrganizacion) {
+
+        if (eventoSolidarioDto.getIdOrganizacion().equals(idOrganizacion)) {
+            log.info("Ignorando solicitud propia de organización: {}", idOrganizacion);
+            return true;
+        }
+        return false;
+    }
 }
+

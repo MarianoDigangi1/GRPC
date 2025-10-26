@@ -147,5 +147,20 @@ CREATE TABLE filtros_guardados (
     filtros JSON NOT NULL,
     id_usuario INT NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-  
+);
+
+CREATE TABLE adhesion_evento_externo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    evento_id INT NOT NULL,
+    organizacion_evento_id VARCHAR(100) NOT NULL,
+    organizacion_participante_id VARCHAR(100) NOT NULL,
+    id_voluntario_externo VARCHAR(100) NOT NULL,  -- ID del voluntario en su organización
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
+    email VARCHAR(100),
+    fecha_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (evento_id) REFERENCES evento(id) ON DELETE CASCADE,
+    FOREIGN KEY (organizacion_evento_id) REFERENCES organizaciones(external_org_id),
+    FOREIGN KEY (organizacion_participante_id) REFERENCES organizaciones(external_org_id)
 );

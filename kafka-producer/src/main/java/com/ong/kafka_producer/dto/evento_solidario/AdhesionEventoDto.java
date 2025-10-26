@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdhesionEventoDto {
-    private String idEvento;
+    private Integer idEvento;
+    private String idOrganizacionEvento;
     private VoluntarioDto voluntario;
 }

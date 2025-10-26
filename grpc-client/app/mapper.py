@@ -101,6 +101,7 @@ class ProtoMapper:
         fecha_evento_iso=fecha_iso,
         publicado=getattr(request, "publicado", False),
         evento_id_organizacion_externa=getattr(request, "evento_id_organizacion_externa", "") or "",
+        organizacion_id=getattr(request, "organizacion_id", "") or "",
         miembros_ids=list(getattr(request, "miembros_ids", [])) or [],
         pasado=datetime.fromisoformat(fecha_iso) < datetime.now() if fecha_iso else False
         )
@@ -232,6 +233,7 @@ class SchemaMapper:
             fecha_evento_iso=evento.fecha_evento.isoformat() if evento.fecha_evento else "",
             publicado=evento.publicado,
             evento_id_organizacion_externa=evento.evento_id_organizacion_externa,
+            organizacion_id=evento.origen_organizacion_id,
             miembros_ids=miembros_ids,
             mensaje=mensaje
         )    

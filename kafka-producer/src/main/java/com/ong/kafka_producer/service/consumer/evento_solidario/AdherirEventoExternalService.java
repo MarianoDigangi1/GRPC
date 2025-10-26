@@ -2,7 +2,9 @@ package com.ong.kafka_producer.service.consumer.evento_solidario;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.kafka_producer.dto.evento_solidario.AdhesionEventoDto;
+import com.ong.kafka_producer.entity.evento_solidario.AdhesionEventoExterno;
 import com.ong.kafka_producer.entity.evento_solidario.Evento;
+import com.ong.kafka_producer.repository.evento_solidario.AdhesionEventoRepository;
 import com.ong.kafka_producer.repository.evento_solidario.EventoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +20,12 @@ public class AdherirEventoExternalService {
     @Autowired
     private EventoRepository eventoRepository;
     @Autowired
-    private EventoRepository eventoVoluntarioRepository;
-
+    private AdhesionEventoRepository adhesionEventoRepository;
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String idOrganizacion;
-
     public void procesarAdherirUsuario(String mensaje) {
         try {
-/*
             AdhesionEventoDto eventoSolidarioDto = objectMapper.readValue(mensaje, AdhesionEventoDto.class);
 
             Optional<Evento> evento = eventoRepository.findById(Integer.valueOf(eventoSolidarioDto.getIdEvento()));
@@ -43,11 +41,11 @@ public class AdherirEventoExternalService {
                 log.error("El evento con id {} no está activo o el campo 'vigente' es null", eventoSolidarioDto.getIdEvento());
                 return;
             }
-
-            EventoVoluntario eventoVoluntario = EventoVoluntario.builder()
-                    .idEvento(eventoSolidarioDto.getIdEvento())
-                    .idOrganizacionVoluntario(eventoSolidarioDto.getVoluntario().getIdOrganizacion())
-                    .idVoluntario(eventoSolidarioDto.getVoluntario().getIdVoluntario())
+            AdhesionEventoExterno adhesion = AdhesionEventoExterno.builder()
+                    .eventoId(eventoSolidarioDto.getIdEvento())
+                    .organizacionEventoId(evento.get().getOrigenOrganizacionId())
+                    .organizacionParticipanteId(eventoSolidarioDto.getVoluntario().getIdOrganizacion())
+                    .idVoluntarioExterno(eventoSolidarioDto.getVoluntario().getIdVoluntario())
                     .nombre(eventoSolidarioDto.getVoluntario().getNombre())
                     .apellido(eventoSolidarioDto.getVoluntario().getApellido())
                     .telefono(eventoSolidarioDto.getVoluntario().getTelefono())
@@ -55,20 +53,7 @@ public class AdherirEventoExternalService {
                     .fechaAdhesion(LocalDateTime.now())
                     .build();
 
-            eventoVoluntarioRepository.save(eventoVoluntario);
-            /*
-            *
-            *  TransferenciaDonacion transferenciaExterna = TransferenciaDonacion.builder()
-                    .idTransferencia(transferenciaDto.getIdTransferencia())
-                    .idOrganizacionOrigen(transferenciaDto.getIdOrganizacionOrigen())
-                    .idOrganizacionDestino(transferenciaDto.getIdOrganizacionDestino())
-                    .fechaTransferencia(LocalDateTime.now())
-                    .build();*/
-
-            //boolean vigente = eventoSolidarioDto.getFechaEvento().isAfter(LocalDateTime.now()); // ajusta según tu DTO
-
-           // log.info("solicitud externa guardada: {}", eventoSolidarioDto.getIdEvento());*/
-
+            adhesionEventoRepository.save(adhesion);
         } catch (Exception e) {
             log.error("error al procesar solicitud externa: {}", e.getMessage(), e);
         }

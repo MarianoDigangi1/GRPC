@@ -674,8 +674,51 @@ public String aplicarFiltro(@PathVariable int id, Model model) {
     }
 }
 
+    @PostMapping("/adherir-evento-externo")
+    public String adherirEventoExterno(@RequestParam("idEvento") String idEvento,
+                                       @RequestParam("organizacionId") String organizacionId,
+                                       @AuthenticationPrincipal CustomUserPrincipal user,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            // Traer datos completos del voluntario (usuario actual)
+            UserResponseDto u = usuarioService.traerUsuarioPorId(user.getId());
 
+            // Enviar payload como AdhesionEventoDto hacia el producer
+            eventosRestService.adherirEvento(
+                    idEvento,
+                    String.valueOf(user.getId()),
+                    u.getNombre(),
+                    u.getApellido(),
+                    u.getTelefono(),
+                    u.getEmail(),
+                    organizacionId
+            );
 
+            redirectAttributes.addFlashAttribute("exitoMessage", "Te adheriste al evento externo correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "No se pudo adherir al evento externo: " + e.getMessage());
+        }
+        return "redirect:/eventos";
+    }
+
+    // Vista de confirmación para adherirse a un evento externo
+    @GetMapping("/adherirEventoExterno/{id}")
+    public String mostrarAdherirEventoExterno(@PathVariable int id, Model model) {
+        EventoDto evento = eventosService.buscarEventoPorId(id);
+        if (evento == null) {
+            model.addAttribute("error", "Evento no encontrado");
+            return "redirect:/eventos";
+        }
+
+        // Opcional: evitar adhesión a eventos pasados
+//        if (evento.getFechaEventoIso() != null && evento.getFechaEventoIso().isBefore(java.time.LocalDateTime.now())) {
+//            model.addAttribute("error", "Solo se puede adherir a eventos a futuro");
+//            return "redirect:/eventos";
+//        }
+
+        model.addAttribute("evento", evento);
+        return "eventos/externos/adherir_evento";
+    }
 
 
 

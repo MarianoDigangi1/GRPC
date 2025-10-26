@@ -105,6 +105,7 @@ class EventoResponse(BaseModel):
     mensaje: Optional[str] = None
     publicado: bool
     evento_id_organizacion_externa: Optional[str] = None
+    organizacion_id: Optional[str] = None
 
     class Config:
         orm_mode = True

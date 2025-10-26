@@ -120,6 +120,7 @@ public class EventoConverter {
                                 .fechaEventoIso(!response.getFechaEventoIso().isEmpty()
                                                 ? LocalDateTime.parse(response.getFechaEventoIso(), FORMATTER)
                                                 : null)
+                                .organizacionId(response.getOrganizacionId())
                                 .miembrosIds(response.getMiembrosIdsList())
                                 .build();
         }

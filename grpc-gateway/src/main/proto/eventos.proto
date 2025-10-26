@@ -82,6 +82,7 @@ message EventoResponse {
   bool pasado = 6;
   bool publicado = 7;
   string evento_id_organizacion_externa = 8;
+  string organizacion_id = 9;
 }
 
 message ListarEventosResponse {
