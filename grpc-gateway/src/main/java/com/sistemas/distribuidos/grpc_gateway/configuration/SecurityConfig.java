@@ -28,6 +28,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                     .requestMatchers("/api/usuarios/eliminar/**").hasRole("PRESIDENTE")
                     .requestMatchers("/api/eventos/crear").hasAnyRole("PRESIDENTE", "COORDINADOR")
                     .requestMatchers("/inventario/**").hasAnyRole("PRESIDENTE", "VOCAL")
+                    .requestMatchers("/informes/**").hasAnyRole("PRESIDENTE", "VOCAL")
                     .anyRequest().authenticated()
             )
             // ✅ Mantiene protección CSRF (obligatoria para logout POST)
