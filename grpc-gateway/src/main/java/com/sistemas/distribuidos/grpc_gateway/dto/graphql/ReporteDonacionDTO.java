@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 public class ReporteDonacionDTO {
     private String categoria;
     private Boolean eliminado;
-
     @JsonProperty("total_cantidad")
     private Long totalCantidad;
 }

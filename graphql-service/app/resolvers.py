@@ -10,12 +10,13 @@ class Query(graphene.ObjectType):
         DonacionInformeType,
         categoria=graphene.String(),
         fechaInicio=graphene.String(),
-        fechaFin=graphene.String()
+        fechaFin=graphene.String(),
+        eliminado=graphene.String()  # "si", "no", "ambos"
     )
 
     mis_filtros = graphene.List(FiltroGuardadoType)
 
-    def resolve_informe_donaciones(self, info, categoria=None, fechaInicio=None, fechaFin=None):
+    def resolve_informe_donaciones(self, info, categoria=None, fechaInicio=None, fechaFin=None, eliminado=None):
         session = SessionLocal()
         resultados = {}
         try:
@@ -24,6 +25,10 @@ class Query(graphene.ObjectType):
                 query = query.filter(TransferenciaDonacionExterna.fecha_transferencia >= fechaInicio)
             if fechaFin:
                 query = query.filter(TransferenciaDonacionExterna.fecha_transferencia <= fechaFin)
+            if eliminado == "si":
+                query = query.filter(TransferenciaDonacionExterna.vigente == True)
+            if eliminado == "no":
+                query = query.filter(TransferenciaDonacionExterna.vigente == False)
 
             registros = query.all()
             for r in registros:
@@ -39,16 +44,37 @@ class Query(graphene.ObjectType):
                             continue
                         if categoria and cat != categoria:
                             continue
-                        resultados[cat] = resultados.get(cat, 0) + cant
+                        # Agrupar por (categoria, eliminado)
+                        key = (cat, r.vigente)
+                        if key not in resultados:
+                            resultados[key] = 0
+                        resultados[key] += cant
                 except Exception:
-                    continue
+                    continue 
+#                       resultados.setdefault(cat, {"total": 0, "eliminado": r.vigente})
+#                        resultados[cat]["total"] += cant
+#                        resultados[cat]["eliminado"] = r.vigente
+#                except Exception:
+#                    continue
+
+            print("Resultado informe_donaciones:", [
+                DonacionInformeType(
+                    categoria=cat,
+                    eliminado=eliminado_val,
+                    total_cantidad=total
+                )
+            #for cat, info in resultados.items()
+                for (cat, eliminado_val), total in resultados.items()
+            ])
+
             return [
                 DonacionInformeType(
                     categoria=cat,
-                    eliminado=False,
-                    total_cantidad=cant
+                    eliminado=eliminado_val,
+                    total_cantidad=total
                 )
-                for cat, cant in resultados.items()
+                #for cat, info in resultados.items()
+                for (cat, eliminado_val), total in resultados.items()
             ]
         finally:
             session.close()

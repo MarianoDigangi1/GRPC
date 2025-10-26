@@ -69,7 +69,7 @@ public class InformeDonacionesController {
         try {
             CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
             List<ReporteDonacionDTO> resultados = graphqlClientService
-                    .getInformeDonaciones(categoria, fechaInicio, fechaFin, null)
+                    .getInformeDonaciones(categoria, fechaInicio, fechaFin, eliminado)
                     .block();
 
             List<Map<String, Object>> filtrosGuardados = graphqlClientService

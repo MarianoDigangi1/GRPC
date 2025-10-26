@@ -56,9 +56,9 @@
             <div class="mb-3">
               <label for="eliminado" class="form-label">Eliminado</label>
               <select class="form-select bg-dark text-light border-secondary" id="eliminado" name="eliminado">
-                <option value="">-- Ambos --</option>
-                <option value="true" th:selected="${param.eliminado == 'true'}">Sí</option>
-                <option value="false" th:selected="${param.eliminado == 'false'}">No</option>
+                <option value="" th:selected="${param.eliminado == ''}">-- Ambos --</option>
+                <option value="si" th:selected="${param.eliminado == 'si'}">Sí</option>
+                <option value="no" th:selected="${param.eliminado == 'no'}">No</option>
               </select>
             </div>
 

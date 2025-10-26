@@ -27,11 +27,11 @@ public class GraphqlClientService {
     /**
      * Consulta los informes de donaciones agrupados por categoría.
      */
-    public Mono<List<ReporteDonacionDTO>> getInformeDonaciones(String categoria, String fechaInicio, String fechaFin, Boolean eliminado) {
+    public Mono<List<ReporteDonacionDTO>> getInformeDonaciones(String categoria, String fechaInicio, String fechaFin, String eliminado) {
 
         String query = """
-                query($categoria: String, $fechaInicio: String, $fechaFin: String) {
-                    informeDonaciones(categoria: $categoria, fechaInicio: $fechaInicio, fechaFin: $fechaFin) {
+                query($categoria: String, $fechaInicio: String, $fechaFin: String, $eliminado: String) {
+                    informeDonaciones(categoria: $categoria, fechaInicio: $fechaInicio, fechaFin: $fechaFin, eliminado: $eliminado){
                         categoria
                         totalCantidad
                         eliminado
@@ -43,6 +43,7 @@ public class GraphqlClientService {
         variables.put("categoria", (categoria != null && !categoria.isBlank()) ? categoria : null);
         variables.put("fechaInicio", (fechaInicio != null && !fechaInicio.isBlank()) ? fechaInicio : null);
         variables.put("fechaFin", (fechaFin != null && !fechaFin.isBlank()) ? fechaFin : null);
+        variables.put("eliminado", (eliminado != null && !eliminado.isBlank()) ? eliminado : null);
 
         return webClient.post()
                 .uri("/graphql")

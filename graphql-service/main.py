@@ -3,7 +3,7 @@ import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
 
 from flask import Flask, request
-from graphql_server.flask import GraphQLView
+from flask_graphql import GraphQLView
 from app.resolvers import Query, Mutation
 import graphene
 
@@ -24,5 +24,4 @@ app.add_url_rule(
     ),
 )
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == "__main__":    app.run(debug=True)
