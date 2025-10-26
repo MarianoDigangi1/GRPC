@@ -2,8 +2,10 @@ package com.sistemas.distribuidos.grpc_gateway.controller;
 
 import com.sistemas.distribuidos.grpc_gateway.dto.soap_externo.OngDTO;
 import com.sistemas.distribuidos.grpc_gateway.dto.soap_externo.PresidenteDTO;
+import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.OngSoapService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,8 +30,10 @@ public class OngExternasController {
     @GetMapping("/consultar")
     public String mostrarPaginaDeConsulta(
             @RequestParam(value = "ids", required = false) String idsCsv,
-            Model model) {
-
+            Model model, Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserPrincipal user) {
+        model.addAttribute("usuarioActual", user);
+    }        
         List<PresidenteDTO> presidentes = Collections.emptyList();
         List<OngDTO> asociaciones = Collections.emptyList();
         String error = null;
