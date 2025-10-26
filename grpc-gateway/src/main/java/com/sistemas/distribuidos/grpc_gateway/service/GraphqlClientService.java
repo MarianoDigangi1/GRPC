@@ -134,4 +134,36 @@ public class GraphqlClientService {
                 .map(response -> (List<Map<String, Object>>)
                         ((Map<String, Object>) response.get("data")).get("misFiltros"));
     }
+    public Mono<List<Map<String, Object>>> getInformeParticipacion(int usuarioId, String fechaInicio, String fechaFin) {
+
+        String query = """
+        query($usuarioId: Int!, $fechaInicio: String, $fechaFin: String) {
+            informeParticipacion(
+                usuarioId: $usuarioId,
+                fechaInicio: $fechaInicio,
+                fechaFin: $fechaFin
+            ) {
+                mes
+                eventos {
+                    dia
+                    nombre
+                    descripcion
+                }
+            }
+        }
+        """;
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("usuarioId", usuarioId);
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+
+        return webClient.post()
+                .uri("/graphql")
+                .bodyValue(Map.of("query", query, "variables", variables))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> (List<Map<String, Object>>)
+                        ((Map<String, Object>) response.get("data")).get("informeParticipacion"));
+    }
 }

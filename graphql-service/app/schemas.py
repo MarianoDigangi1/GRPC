@@ -25,6 +25,13 @@ class DonacionInformeType(graphene.ObjectType):
     total_cantidad = graphene.Int()
 
 
+class EventoPropioInformeType(graphene.ObjectType):
+    mes = graphene.String()
+    dia = graphene.String()
+    nombre_evento = graphene.String()
+    descripcion = graphene.String()
+    #donaciones = graphene.String()  # O el tipo adecuado
+
 # ==========================================================
 #  INPUTS
 # ==========================================================

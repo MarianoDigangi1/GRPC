@@ -1,9 +1,9 @@
 import graphene
 import json
 from sqlalchemy import func
-from .models import TransferenciaDonacionExterna, FiltroGuardado
+from .models import TransferenciaDonacionExterna, FiltroGuardado, Usuario, Evento, EventoUsuario
 from .database import SessionLocal
-from .schemas import DonacionInformeType, FiltroGuardadoType, FiltroGuardadoInput
+from .schemas import DonacionInformeType, EventoPropioInformeType, FiltroGuardadoType, FiltroGuardadoInput, EventoPropioInformeType
 
 class Query(graphene.ObjectType):
     informe_donaciones = graphene.List(
@@ -12,6 +12,14 @@ class Query(graphene.ObjectType):
         fechaInicio=graphene.String(),
         fechaFin=graphene.String(),
         eliminado=graphene.String()  # "si", "no", "ambos"
+    )
+    
+    informe_participacion_eventos = graphene.List(
+        EventoPropioInformeType,
+        usuario_id=graphene.Int(required=True),
+        fechaInicio=graphene.String(),
+        fechaFin=graphene.String(),
+        #reparto_donaciones=graphene.String()  # "si", "no", "ambos"
     )
 
     mis_filtros = graphene.List(FiltroGuardadoType)
@@ -44,26 +52,20 @@ class Query(graphene.ObjectType):
                             continue
                         if categoria and cat != categoria:
                             continue
-                        # Agrupar por (categoria, eliminado)
                         key = (cat, r.vigente)
                         if key not in resultados:
                             resultados[key] = 0
                         resultados[key] += cant
                 except Exception:
                     continue 
-#                       resultados.setdefault(cat, {"total": 0, "eliminado": r.vigente})
-#                        resultados[cat]["total"] += cant
-#                        resultados[cat]["eliminado"] = r.vigente
-#                except Exception:
-#                    continue
+
 
             print("Resultado informe_donaciones:", [
                 DonacionInformeType(
                     categoria=cat,
                     eliminado=eliminado_val,
                     total_cantidad=total
-                )
-            #for cat, info in resultados.items()
+                )           
                 for (cat, eliminado_val), total in resultados.items()
             ])
 
@@ -89,6 +91,45 @@ class Query(graphene.ObjectType):
                 FiltroGuardado.id_usuario == current_user_id
             ).all()
             return filtros
+        finally:
+            session.close()
+
+    def resolve_informe_eventos_propios(self, info, usuario_id, fechaInicio=None, fechaFin=None, reparto_donaciones=None):
+        session = SessionLocal()
+        try:
+            current_user_id = info.context.get("user_id")
+            usuario = session.query(Usuario).filter_by(id=current_user_id).first()
+            # Validar acceso
+            if usuario.rol not in ["Presidente", "Coordinador"] and usuario_id != current_user_id:
+                raise Exception("No tienes permiso para ver otros usuarios.")
+            # Query base
+            query = session.query(Evento).join(EventoUsuario).filter(
+                EventoUsuario.usuario_id == usuario_id,
+                Evento.vigente == True
+            )
+            # Filtros
+            if fechaInicio:
+                query = query.filter(Evento.fecha_evento >= fechaInicio)
+            if fechaFin:
+                query = query.filter(Evento.fecha_evento <= fechaFin)
+            # Si tienes campo reparto_donaciones en Evento, agrega filtro aquí
+            if reparto_donaciones == "si":
+                query = query.filter(Evento.reparto_donaciones == True)
+            elif reparto_donaciones == "no":
+                query = query.filter(Evento.reparto_donaciones == False)
+            # Agrupar y formatear
+            eventos = query.all()
+            resultado = []
+            for evento in eventos:
+                mes = evento.fecha_evento.strftime("%B")
+                dia = evento.fecha_evento.strftime("%d")
+                resultado.append(EventoPropioInformeType(
+                    mes=mes,
+                    dia=dia,
+                    nombre_evento=evento.nombre,
+                    descripcion=evento.descripcion
+                ))
+            return resultado
         finally:
             session.close()
 

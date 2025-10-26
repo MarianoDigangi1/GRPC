@@ -21,7 +21,6 @@ class Evento(Base):
 
 
 
-
 # ==========================================================
 #  TRANSFERENCIA_DONACION_EXTERNA 
 # ==========================================================
@@ -64,3 +63,15 @@ class FiltroGuardado(Base):
     id_usuario = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
 
     usuario = relationship("Usuario")
+
+# ==========================================================
+#  FILTROS GUARDADOS
+# ==========================================================
+class EventoUsuario(Base):
+    __tablename__ = "evento_usuario"
+
+    evento_id = Column(Integer, ForeignKey("evento.id", ondelete="CASCADE"), primary_key=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+
+    evento = relationship("Evento", backref="participaciones")
+    usuario = relationship("Usuario", backref="eventos_participados")
