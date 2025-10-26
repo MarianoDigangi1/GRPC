@@ -15,7 +15,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Component
 public class SoapClient {
 
@@ -24,47 +23,38 @@ public class SoapClient {
 
     public SoapClient() {
         try {
-            // 1. Crear la instancia del servicio
             SoapApi service = new SoapApi(new URL(WSDL_URL));
             this.port = service.getApplication();
 
-            // 2. OBTENER LA CADENA DE HANDLERS E INYECTAR EL NUESTRO
             Binding binding = ((BindingProvider) this.port).getBinding();
             List<Handler> handlerChain = new ArrayList<>();
-            handlerChain.add(new HeaderAuthHandler()); // <-- ¡La magia está aquí!
+            handlerChain.add(new HeaderAuthHandler());
             binding.setHandlerChain(handlerChain);
 
         } catch (MalformedURLException e) {
-            System.err.println("Error: URL del WSDL mal formada: " + WSDL_URL);
-            e.printStackTrace();
             throw new RuntimeException("No se pudo inicializar el cliente SOAP", e);
         }
     }
 
-
     public PresidentTypeArray listarPresidentes(List<String> ids) {
-        System.out.println("SOAP Client: Enviando solicitud para listar presidentes...");
-        
-
         StringArray orgIds = new StringArray();
-        if (ids != null) {
-            orgIds.getString().addAll(ids);
-        }
-        
-        return port.listPresidents(orgIds);
-    }
+        if (ids != null) orgIds.getString().addAll(ids);
 
+        try {
+            return port.listPresidents(orgIds);
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo obtener los presidentes desde el servicio SOAP.", e);
+        }
+    }
 
     public OrganizationTypeArray listarAsociaciones(List<String> ids) {
-        System.out.println("SOAP Client: Enviando solicitud para listar asociaciones...");
-        
-
         StringArray orgIds = new StringArray();
-        if (ids != null) {
-            orgIds.getString().addAll(ids);
-        }
+        if (ids != null) orgIds.getString().addAll(ids);
 
-        return port.listAssociations(orgIds);
+        try {
+            return port.listAssociations(orgIds);
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo obtener las asociaciones desde el servicio SOAP.", e);
+        }
     }
 }
-

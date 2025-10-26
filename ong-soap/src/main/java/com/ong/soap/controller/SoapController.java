@@ -24,48 +24,46 @@ public class SoapController {
         this.soapClient = soapClient;
     }
 
-
     @GetMapping("/presidentes")
     public ResponseEntity<?> listarPresidentes(@RequestParam(value = "ids") List<String> ids) {
-        System.out.println("Controller: Recibida solicitud para /presidentes con IDs: " + ids);
         try {
             PresidentTypeArray respuesta = soapClient.listarPresidentes(ids);
-            return ResponseEntity.ok(respuesta);
+            List<Map<String, Object>> presidentes = respuesta.getPresidentType().stream()
+                    .map(p -> Map.<String, Object>of(
+                            "id", p.getId().getValue(),
+                            "name", p.getName().getValue(),
+                            "address", p.getAddress().getValue(),
+                            "phone", p.getPhone().getValue(),
+                            "organizationId", p.getOrganizationId().getValue()
+                    ))
+                    .toList();
+            return ResponseEntity.ok(presidentes);
         } catch (Exception e) {
-            System.err.println("Controller: Error al llamar a listarPresidentes: " + e.getMessage());
-            e.printStackTrace();
-
-            // Devolver JSON con tipo application/json
-            return ResponseEntity
-                    .internalServerError()
-                    .header("Content-Type", "application/json")
-                    .body(Map.of(
-                            "error", "Error al obtener presidentes",
-                            "message", e.getMessage()
-                    ));
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", "Error al obtener presidentes",
+                    "message", e.getMessage()
+            ));
         }
     }
 
     @GetMapping("/asociaciones")
     public ResponseEntity<?> listarAsociaciones(@RequestParam(value = "ids") List<String> ids) {
-        System.out.println("Controller: Recibida solicitud para /asociaciones con IDs: " + ids);
         try {
             OrganizationTypeArray respuesta = soapClient.listarAsociaciones(ids);
-            return ResponseEntity.ok(respuesta);
+            List<Map<String, Object>> asociaciones = respuesta.getOrganizationType().stream()
+                    .map(o -> Map.<String, Object>of(
+                            "id", o.getId().getValue(),
+                            "name", o.getName().getValue(),
+                            "address", o.getAddress().getValue(),
+                            "phone", o.getPhone().getValue()
+                    ))
+                    .toList();
+            return ResponseEntity.ok(asociaciones);
         } catch (Exception e) {
-            System.err.println("Controller: Error al llamar a listarAsociaciones: " + e.getMessage());
-            e.printStackTrace();
-
-            return ResponseEntity
-                    .internalServerError()
-                    .header("Content-Type", "application/json")
-                    .body(Map.of(
-                            "error", "Error al obtener asociaciones",
-                            "message", e.getMessage()
-                    ));
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", "Error al obtener asociaciones",
+                    "message", e.getMessage()
+            ));
         }
     }
-
 }
-
-

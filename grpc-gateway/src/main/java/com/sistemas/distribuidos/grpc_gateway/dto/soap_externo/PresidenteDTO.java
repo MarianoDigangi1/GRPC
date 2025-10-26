@@ -4,18 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigInteger;
-
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PresidenteDTO {
-    private BigInteger id;
+    private Long id;
     private String name;
     private String address;
     private String phone;
-    private BigInteger organizationId;
+    private Long organizationId;
 }
-
