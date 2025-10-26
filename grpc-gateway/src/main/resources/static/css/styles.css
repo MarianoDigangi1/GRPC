@@ -12,10 +12,21 @@
 }
 
 html, body {
+  height: 100%;                 /* 🔹 Necesario para que Flexbox calcule la altura total */
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
+
+
+main {
+  flex: 1;
+}
+
 
 /* ===== Navbar ===== */
 .navbar-blur{
