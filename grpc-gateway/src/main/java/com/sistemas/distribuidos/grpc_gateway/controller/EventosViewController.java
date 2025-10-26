@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -77,24 +79,66 @@ public EventosViewController(
 }
 
 
-  @GetMapping("/eventos")
-public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Model model) {
+ @GetMapping("/eventos")
+public String vistaEventos(
+        @AuthenticationPrincipal CustomUserPrincipal user,
+        Model model,
+        @RequestParam(required = false) String fechaDesde,
+        @RequestParam(required = false) String fechaHasta,
+        @RequestParam(required = false, defaultValue = "todos") String estado
+) {
     // Listar todos los eventos
     List<EventoDto> eventos = eventosService.listarEventos();
+
+// Aplicar filtros si vienen
+if ((fechaDesde != null && !fechaDesde.isBlank()) || (fechaHasta != null && !fechaHasta.isBlank()) || (estado != null && !estado.equalsIgnoreCase("todos"))) {
+    LocalDate desde = null;
+    LocalDate hasta = null;
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // o el formato exacto que viene en el JSON
+
+    try {
+        if (fechaDesde != null && !fechaDesde.isBlank()) {
+            desde = LocalDate.parse(fechaDesde, formatter);
+        }
+    } catch (Exception e) {
+        desde = null;
+    }
+
+    try {
+        if (fechaHasta != null && !fechaHasta.isBlank()) {
+            hasta = LocalDate.parse(fechaHasta, formatter);
+        }
+    } catch (Exception e) {
+        hasta = null;
+    }
+
+    LocalDate finalDesde = desde;
+    LocalDate finalHasta = hasta;
+
+    eventos = eventos.stream()
+            .filter(ev -> finalDesde == null || !ev.getFechaEventoIso().toLocalDate().isBefore(finalDesde))
+            .filter(ev -> finalHasta == null || !ev.getFechaEventoIso().toLocalDate().isAfter(finalHasta))
+            /*.filter(ev -> {
+                //if ("propios".equalsIgnoreCase(estado)) return ev.getEventoIdOrganizacionExterna() == null || ev.getEventoIdOrganizacionExterna().isBlank();
+                //if ("externos".equalsIgnoreCase(estado)) return ev.getEventoIdOrganizacionExterna() != null && !ev.getEventoIdOrganizacionExterna().isBlank();
+                return true;
+            })*/
+            .collect(Collectors.toList());
+
+}
+      
+    
+
+    // Mapear nombres de miembros activos
     List<UserResponseDto> usuarios = usuarioService.listarUsuarios().getUsuarios();
-
-    // Map de nombres por ID
     Map<Integer, String> nombresPorId = usuarios.stream()
-            .collect(Collectors.toMap(UserResponseDto::getId,
-                    u -> u.getNombre() + " " + u.getApellido()));
-
-    // IDs de usuarios activos
+            .collect(Collectors.toMap(UserResponseDto::getId, u -> u.getNombre() + " " + u.getApellido()));
     Set<Integer> idsActivos = usuarios.stream()
             .filter(UserResponseDto::isActivo)
             .map(UserResponseDto::getId)
             .collect(Collectors.toSet());
 
-    // Filtrar miembros inactivos y reconstruir nombres
     for (EventoDto ev : eventos) {
         if (ev.getMiembrosIds() != null) {
             List<Integer> filtrados = ev.getMiembrosIds().stream()
@@ -102,7 +146,6 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
                     .collect(Collectors.toList());
             ev.setMiembrosIds(filtrados);
         }
-
         List<Integer> ids = ev.getMiembrosIds();
         if (ids != null && !ids.isEmpty()) {
             List<String> nombres = ids.stream()
@@ -119,7 +162,6 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
     List<EventoDto> eventosPropios = eventos.stream()
             .filter(ev -> ev.getEventoIdOrganizacionExterna() == null || ev.getEventoIdOrganizacionExterna().isBlank())
             .collect(Collectors.toList());
-
     List<EventoDto> eventosExternos = eventos.stream()
             .filter(ev -> ev.getEventoIdOrganizacionExterna() != null && !ev.getEventoIdOrganizacionExterna().isBlank())
             .collect(Collectors.toList());
@@ -138,9 +180,7 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
 
     // ==== CARGAR FILTROS DEL USUARIO ====
     try {
-        List<FiltroEventoDto> filtrosUsuario = (user != null)
-                ? filtroEventoService.obtenerFiltrosPorUsuario(user.getId())
-                : Collections.emptyList();
+        List<FiltroEventoDto> filtrosUsuario = (user != null) ? filtroEventoService.obtenerFiltrosPorUsuario(user.getId()) : Collections.emptyList();
         model.addAttribute("filtrosUsuario", filtrosUsuario);
     } catch (GrpcConnectionException e) {
         model.addAttribute("errorFiltros", "No se pudieron cargar los filtros del usuario.");
@@ -149,6 +189,7 @@ public String vistaEventos(@AuthenticationPrincipal CustomUserPrincipal user, Mo
 
     return "eventos/eventos";
 }
+
 
 
 
@@ -597,6 +638,42 @@ public String eliminarFiltroVista(@PathVariable int id, Model model) {
     }
     return "redirect:/eventos";
 }
+
+@GetMapping("/filtros-eventos/aplicar/{id}")
+public String aplicarFiltro(@PathVariable int id, Model model) {
+    try {
+        FiltroEventoDto filtro = filtroEventoService.obtenerFiltroPorId(id);
+        if (filtro == null || filtro.getParametros() == null || filtro.getParametros().isBlank()) {
+            model.addAttribute("errorMessage", "El filtro no tiene parámetros válidos.");
+            return "redirect:/eventos";
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> params = mapper.readValue(filtro.getParametros(), Map.class);
+
+        String fechaDesde = params.get("fechaDesde") != null ? params.get("fechaDesde").toString() : "";
+        String fechaHasta = params.get("fechaHasta") != null ? params.get("fechaHasta").toString() : "";
+        String estado = params.get("estado") != null ? params.get("estado").toString() : "todos";
+
+        // Construimos la URL solo con parámetros válidos
+        StringBuilder redirectUrl = new StringBuilder("redirect:/eventos?");
+        if (!fechaDesde.isBlank()) redirectUrl.append("fechaDesde=").append(fechaDesde).append("&");
+        if (!fechaHasta.isBlank()) redirectUrl.append("fechaHasta=").append(fechaHasta).append("&");
+        if (!estado.isBlank() && !estado.equalsIgnoreCase("todos")) redirectUrl.append("estado=").append(estado).append("&");
+
+        // Quitar el último "&" si existe
+        if (redirectUrl.charAt(redirectUrl.length() - 1) == '&') {
+            redirectUrl.deleteCharAt(redirectUrl.length() - 1);
+        }
+
+        return redirectUrl.toString();
+    } catch (Exception e) {
+        e.printStackTrace();
+        model.addAttribute("errorMessage", "Error al aplicar el filtro: " + e.getMessage());
+        return "redirect:/eventos";
+    }
+}
+
 
 
 

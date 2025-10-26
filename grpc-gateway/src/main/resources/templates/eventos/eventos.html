@@ -140,73 +140,52 @@
         </div>
       </div>
 
-      <!-- Columna derecha: Filtros -->
-      <div class="col-md-4">
-        <div class="card bg-dark border-0 shadow-lg p-3">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">Filtros de eventos</h2>
-            <a href="/filtros-eventos/nuevo" class="btn btn-sm btn-primary">➕ Crear filtro</a>
-          </div>
+<!-- Columna derecha: Filtros -->
+<div class="col-md-4">
+  <div class="card bg-dark border-0 shadow-lg p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 mb-0">Filtros de eventos</h2>
+      <a href="/filtros-eventos/nuevo" class="btn btn-sm btn-primary">➕ Crear filtro</a>
+    </div>
 
-          <!-- Mensaje de error al cargar filtros -->
-          <div th:if="${errorFiltros}" class="alert alert-danger text-center mb-2" th:text="${errorFiltros}"></div>
+    <!-- Mensaje de error al cargar filtros -->
+    <div th:if="${errorFiltros}" class="alert alert-danger text-center mb-2" th:text="${errorFiltros}"></div>
 
-          <!-- Formulario de filtrado -->
-          <form th:action="@{/eventos}" method="get" class="mb-3">
-            <div class="mb-2">
-              <label class="form-label fw-bold">Desde:</label>
-              <input type="date" name="fechaDesde" th:value="${fechaDesde}" class="form-control bg-dark text-light">
-            </div>
-            <div class="mb-2">
-              <label class="form-label fw-bold">Hasta:</label>
-              <input type="date" name="fechaHasta" th:value="${fechaHasta}" class="form-control bg-dark text-light">
-            </div>
-            <div class="mb-2">
-              <label class="form-label fw-bold">Estado:</label>
-              <select name="estado" class="form-select bg-dark text-light">
-                <option value="todos" th:selected="${estado == 'todos'}">Todos</option>
-                <option value="vigentes" th:selected="${estado == 'vigentes'}">Vigentes</option>
-                <option value="noVigentes" th:selected="${estado == 'noVigentes'}">No vigentes</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-success w-100">🔍 Filtrar</button>
-          </form>
-
-          <!-- Tabla de filtros guardados -->
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle text-center">
-              <thead class="table-secondary text-dark">
-                <tr>
-                  <th>Nombre del filtro</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:if="${filtrosUsuario == null or #lists.isEmpty(filtrosUsuario)}">
-                  <td colspan="2" class="text-muted">No hay filtros guardados.</td>
-                </tr>
-                <tr th:each="filtro : ${filtrosUsuario}">
-                  <td th:text="${filtro.nombre}">Nombre filtro</td>
-                  <td class="d-flex justify-content-center gap-2">
-                    <a th:href="@{'/filtros-eventos/ver/' + ${filtro.id}}" class="btn btn-sm btn-info">👁️ Ver</a>
-                    <form th:action="@{'/filtros-eventos/editar/' + ${filtro.id}}" method="get">
-                      <button type="submit" class="btn btn-sm btn-warning">✏️ Editar</button>
-                    </form>
-                    <form th:action="@{'/filtros-eventos/eliminar/' + ${filtro.id}}" method="post"
-                          onsubmit="return confirm('¿Seguro que quieres eliminar este filtro?');">
-                      <button type="submit" class="btn btn-sm btn-danger">🗑️ Eliminar</button>
-                    </form>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-      </div>
-
+    <!-- Tabla de filtros guardados -->
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle text-center">
+        <thead class="table-secondary text-dark">
+          <tr>
+            <th>Nombre del filtro</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${filtrosUsuario == null or #lists.isEmpty(filtrosUsuario)}">
+            <td colspan="2" class="text-muted">No hay filtros guardados.</td>
+          </tr>
+          <tr th:each="filtro : ${filtrosUsuario}">
+            <td th:text="${filtro.nombre}">Nombre filtro</td>
+            <td class="d-flex justify-content-center gap-2 flex-wrap">
+              <form th:action="@{'/filtros-eventos/aplicar/' + ${filtro.id}}" method="get">
+                <button type="submit" class="btn btn-sm btn-success">🔍 Filtrar</button>
+              </form>
+              <a th:href="@{'/filtros-eventos/ver/' + ${filtro.id}}" class="btn btn-sm btn-info">👁️ Ver</a>
+              <form th:action="@{'/filtros-eventos/editar/' + ${filtro.id}}" method="get">
+                <button type="submit" class="btn btn-sm btn-warning">✏️ Editar</button>
+              </form>
+              <form th:action="@{'/filtros-eventos/eliminar/' + ${filtro.id}}" method="post"
+                    onsubmit="return confirm('¿Seguro que quieres eliminar este filtro?');">
+                <button type="submit" class="btn btn-sm btn-danger">🗑️ Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
+
 
 </body>
 </html>
