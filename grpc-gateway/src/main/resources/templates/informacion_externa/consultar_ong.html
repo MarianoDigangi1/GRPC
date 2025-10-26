@@ -24,27 +24,19 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
-
           <li class="nav-item me-3" th:if="${usuarioActual != null}">
             <span class="navbar-text text-light">
               👋 Hola, <strong th:text="${usuarioActual.username}">Usuario</strong>
             </span>
           </li>
-
-          <li class="nav-item">
-            <a class="nav-link" href="/">Inicio</a>
-          </li>
-
+          <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
           <li class="nav-item" th:if="${usuarioActual == null}">
             <a class="nav-link" href="/login">Login</a>
           </li>
-
           <li class="nav-item" th:if="${usuarioActual != null}">
             <form th:action="@{/logout}" method="post" class="d-inline">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-              <button type="submit" class="btn btn-outline-danger btn-sm">
-                🚪 Cerrar sesión
-              </button>
+              <button type="submit" class="btn btn-outline-danger btn-sm">🚪 Cerrar sesión</button>
             </form>
           </li>
         </ul>
@@ -59,7 +51,7 @@
         Consultar Red de ONGs
       </h1>
 
-      <!-- Formulario de consulta -->
+      <!-- Formulario -->
       <form th:action="@{/ong-externas/consultar}" method="GET">
         <div class="mb-3">
           <label for="ids" class="form-label">IDs de Organizaciones</label>
@@ -84,18 +76,18 @@
       <!-- Resultados -->
       <div class="mt-5" id="resultados">
 
-        <!-- Error -->
-        <div th:if="${error != null}" class="alert alert-danger" role="alert">
-          <strong>Error:</strong> <span th:text="${error}">Ocurrió un problema.</span>
+        <!-- Error general -->
+        <div th:if="${error != null}" class="alert alert-danger text-center" role="alert">
+          <strong>⚠️</strong> <span th:text="${error}">Error desconocido.</span>
         </div>
 
-        <!-- Sin resultados -->
+        <!-- Mensaje si no hay resultados -->
         <div th:if="${idsEnviados != null and error == null and #lists.isEmpty(presidentes) and #lists.isEmpty(asociaciones)}"
-             class="alert alert-warning" role="alert">
+             class="alert alert-warning text-center" role="alert">
           No se encontraron resultados para los IDs proporcionados.
         </div>
 
-        <!-- Tabla de presidentes -->
+        <!-- Tabla Presidentes -->
         <div th:if="${not #lists.isEmpty(presidentes)}" class="mt-4">
           <h3 class="mb-3 text-info">Presidentes Encontrados</h3>
           <div class="table-responsive">
@@ -122,7 +114,7 @@
           </div>
         </div>
 
-        <!-- Tabla de asociaciones -->
+        <!-- Tabla ONGs -->
         <div th:if="${not #lists.isEmpty(asociaciones)}" class="mt-5">
           <h3 class="mb-3 text-info">Asociaciones Encontradas</h3>
           <div class="table-responsive">
@@ -157,6 +149,17 @@
       </div>
     </div>
   </div>
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const alerts = document.querySelectorAll(".alert");
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        alert.classList.add("fade");
+        setTimeout(() => alert.remove(), 700);
+      }, 5000);
+    });
+  });
+</script>
 
 </body>
 </html>

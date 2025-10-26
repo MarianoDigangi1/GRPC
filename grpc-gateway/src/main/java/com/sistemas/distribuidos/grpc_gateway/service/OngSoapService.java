@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,20 +35,17 @@ public class OngSoapService {
                 .path("/presidentes")
                 .queryParam("ids", String.join(",", ids))
                 .toUriString();
+
         try {
             ResponseEntity<List<PresidenteDTO>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<>() {}
-            );
+                    url, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
             return response.getBody() != null ? response.getBody() : Collections.emptyList();
-        } catch (HttpClientErrorException e) {
-            System.err.println("Error del microservicio SOAP: " + e.getResponseBodyAsString());
-            throw new RuntimeException("Error al consultar presidentes: " + e.getStatusCode(), e);
+
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            System.err.println("Error del servicio SOAP (Presidentes): " + e.getResponseBodyAsString());
+            return Collections.emptyList(); // No rompe la app
         } catch (RestClientException e) {
-            System.err.println("Error de conexión con ong-soap: " + e.getMessage());
-            throw new RuntimeException("Error de conexión con el servicio SOAP: " + e.getMessage(), e);
+            throw new RuntimeException("No se pudo conectar con el servicio SOAP.");
         }
     }
 
@@ -56,20 +54,30 @@ public class OngSoapService {
                 .path("/asociaciones")
                 .queryParam("ids", String.join(",", ids))
                 .toUriString();
+
         try {
             ResponseEntity<List<OngDTO>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<>() {}
-            );
+                    url, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
             return response.getBody() != null ? response.getBody() : Collections.emptyList();
-        } catch (HttpClientErrorException e) {
-            System.err.println("Error del microservicio SOAP: " + e.getResponseBodyAsString());
-            throw new RuntimeException("Error al consultar asociaciones: " + e.getStatusCode(), e);
+
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            System.err.println("Error del servicio SOAP (Asociaciones): " + e.getResponseBodyAsString());
+            return Collections.emptyList();
         } catch (RestClientException e) {
-            System.err.println("Error de conexión con ong-soap: " + e.getMessage());
-            throw new RuntimeException("Error de conexión con el servicio SOAP: " + e.getMessage(), e);
+            throw new RuntimeException("No se pudo conectar con el servicio SOAP.");
         }
+    }
+
+    public String buildErrorMessage(List<PresidenteDTO> presidentes, List<OngDTO> asociaciones) {
+        if (presidentes.isEmpty() && asociaciones.isEmpty()) {
+            return "No se encontraron presidentes ni asociaciones para los IDs ingresados.";
+        }
+        if (presidentes.isEmpty()) {
+            return "No se encontraron presidentes para los IDs ingresados.";
+        }
+        if (asociaciones.isEmpty()) {
+            return "No se encontraron asociaciones para los IDs ingresados.";
+        }
+        return null; // todo OK
     }
 }

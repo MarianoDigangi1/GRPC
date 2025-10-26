@@ -1,9 +1,7 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
-
 import com.sistemas.distribuidos.grpc_gateway.dto.soap_externo.OngDTO;
 import com.sistemas.distribuidos.grpc_gateway.dto.soap_externo.PresidenteDTO;
-
 import com.sistemas.distribuidos.grpc_gateway.service.OngSoapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Controller
-@RequestMapping("/ong-externas") // Ruta base para este controlador
+@RequestMapping("/ong-externas")
 public class OngExternasController {
 
     private final OngSoapService ongSoapService;
@@ -27,43 +25,41 @@ public class OngExternasController {
         this.ongSoapService = ongSoapService;
     }
 
-
     @GetMapping("/consultar")
     public String mostrarPaginaDeConsulta(
-            @RequestParam(value = "ids", required = false) String idsCsv, // Recibe "5,8,10"
+            @RequestParam(value = "ids", required = false) String idsCsv,
             Model model) {
 
-        // Valores por defecto para el Model
         List<PresidenteDTO> presidentes = Collections.emptyList();
         List<OngDTO> asociaciones = Collections.emptyList();
         String error = null;
 
         if (idsCsv != null && !idsCsv.isBlank()) {
             try {
-
                 List<String> idList = Arrays.asList(idsCsv.split(","));
-
-
                 presidentes = ongSoapService.getPresidentes(idList);
                 asociaciones = ongSoapService.getAsociaciones(idList);
 
-            } catch (Exception e) {
-                // 3. Manejar errores
-                System.err.println("Error al consultar servicios SOAP: " + e.getMessage());
-                error = "No se pudieron obtener los datos de la red de ONGs. " +
-                        "Asegúrese de que el microservicio 'ong-soap' esté funcionando. " +
-                        "Error: " + e.getMessage();
+                if (presidentes.isEmpty() && asociaciones.isEmpty()) {
+                    error = "No se encontraron presidentes ni ONGs para los IDs ingresados.";
+                } else if (presidentes.isEmpty()) {
+                    error = "Se encontraron las ONGs, pero no hay presidentes asociados a esos IDs.";
+                } else if (asociaciones.isEmpty()) {
+                    error = "Se encontraron presidentes, pero no se hallaron datos de sus ONGs asociadas.";
+                }
+
+            } catch (RuntimeException e) {
+                error = "No se pudieron obtener los datos de la red de ONGs. "
+                        + "Asegúrese de que el microservicio 'ong-soap' esté funcionando. "
+                        + "Error: " + e.getMessage();
             }
         }
-
 
         model.addAttribute("presidentes", presidentes);
         model.addAttribute("asociaciones", asociaciones);
         model.addAttribute("error", error);
         model.addAttribute("idsEnviados", idsCsv);
 
-        // Devuelve la vista que creamos (en la carpeta correcta)
         return "informacion_externa/consultar_ong";
     }
 }
-
