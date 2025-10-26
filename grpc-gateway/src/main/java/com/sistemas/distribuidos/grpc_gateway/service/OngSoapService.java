@@ -25,7 +25,7 @@ public class OngSoapService {
 
     @Autowired
     public OngSoapService(RestTemplate restTemplate,
-                          @Value("${soap.service.url:http://localhost:8081/soap}") String soapServiceBaseUrl) {
+                          @Value("${soap.service.url:http://localhost:8085/soap}") String soapServiceBaseUrl) {
         this.restTemplate = restTemplate;
         this.soapServiceBaseUrl = soapServiceBaseUrl;
     }
