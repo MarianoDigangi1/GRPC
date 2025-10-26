@@ -1,65 +1,312 @@
+/* ===== Base / Theme ===== */
 :root {
-  --bs-body-bg: #1b1e1f;   /* fondo general */
+  --bs-body-bg: #1b1e1f;
   --bs-body-color: #f5f6f7;
-  --bs-primary: #2e7dff;   /* azul custom */
-  --bs-secondary: #2a2d2f; /* gris oscuro inputs */
+  --bs-primary: #2e7dff;
+  --bs-secondary: #2a2d2f;
   --bs-border-radius: .75rem;
+
+  --surface: #1f2325;
+  --surface-2: #24282b;
+  --accent: var(--bs-primary);
 }
 
-body {
+html, body {
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
-.card {
+/* ===== Navbar ===== */
+.navbar-blur{
+  background: linear-gradient(180deg, rgba(20,22,24,.85) 0%, rgba(20,22,24,.65) 100%);
+  backdrop-filter: saturate(140%) blur(6px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+/* ===== Layout ===== */
+.page-wrap{ padding-block: 2.25rem; }
+
+.hero-card{
+  background: radial-gradient(1200px 400px at 10% -20%, rgba(46,125,255,.25), transparent 55%),
+              radial-gradient(1000px 300px at 110% -30%, rgba(46,125,255,.18), transparent 50%),
+              var(--surface);
+  border: 1px solid rgba(255,255,255,.06);
   border-radius: 1rem;
-  background: #25282a !important;
 }
 
-.form-control {
+/* ===== Cards de acción ===== */
+.action-card{
+  background: var(--surface-2) !important;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 1rem;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .2s ease;
+}
+.action-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+  border-color: rgba(46,125,255,.4);
+}
+.action-icon{
+  width: 2.75rem; height: 2.75rem;
+  display: grid; place-items: center;
+  border-radius: .8rem;
+  background: rgba(46,125,255,.12);
+  border: 1px solid rgba(46,125,255,.25);
+  margin-right: .75rem;
+  flex: 0 0 auto;
+}
+.action-title{
+  font-weight: 600;
+  letter-spacing:.2px;
+}
+.btn-action{
+  border-radius: .7rem;
+  font-weight: 600;
+}
+
+/* ===== Formularios ===== */
+.form-control{
   border-radius: .6rem;
-  transition: box-shadow 0.2s;
+  background-color: var(--bs-secondary);
+  color: var(--bs-body-color);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: box-shadow 0.2s, border-color .2s;
 }
-
-.form-control:focus {
+.form-control:focus{
   box-shadow: 0 0 0 3px rgba(46, 125, 255, 0.4);
+  border-color: rgba(46,125,255,.65);
 }
 
-.btn-primary {
+/* ===== Botones ===== */
+.btn-primary{
   background-color: var(--bs-primary);
   border: none;
   font-weight: 600;
 }
+.btn-primary:hover{ background-color: #1a5bcc; }
 
-.btn-primary:hover {
-  background-color: #1a5bcc;
+.btn-outline-danger{ font-weight: 600; }
+.btn-outline-light:hover{
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
 }
-.navbar-text strong {
-  color: var(--bs-primary);
-}
-.table thead {
-  border-radius: .5rem;
-}
+.btn-success{ background-color:#19c37d; border:none; }
+.btn-success:hover{ background-color:#0fa86a; }
+.btn-warning{ background-color:#ffc107; color:#000; border:none; }
+.btn-warning:hover{ filter: brightness(.95); }
+.btn-danger{ background-color:#ef4444; border:none; }
+.btn-danger:hover{ background-color:#dc2626; }
 
-.btn-warning {
-  background-color: #ffc107;
-  color: #000;
-  font-weight: 600;
-}
-
-.btn-danger {
-  font-weight: 600;
-}
-.btn-sm {
+.btn-sm{
   font-size: 0.85rem;
   padding: 0.35rem 0.75rem;
   border-radius: .5rem;
 }
-.navbar-brand {
-  color: var(--bs-primary) !important;
+
+/* ===== Tipografía / Accentos ===== */
+.navbar-brand { color: var(--bs-primary) !important; }
+.navbar-text strong { color: var(--bs-primary); }
+.badge-role{
+  background: rgba(46,125,255,.18);
+  border: 1px solid rgba(46,125,255,.4);
+  color: #cfe0ff;
+  padding: .35rem .6rem;
+  border-radius: .5rem;
+  font-size: .8rem;
 }
 
-.navbar .btn-outline-light:hover {
-  background-color: var(--bs-primary);
-  border-color: var(--bs-primary);
+/* ===== Tablas oscuras modernas ===== */
+.table-dark-modern {
+  --tbl-border: rgba(255,255,255,.08);
+  --tbl-row: #1f2325;
+  --tbl-row-alt: #22272a;
+  --tbl-hover: rgba(46,125,255,.08);
+  color: var(--bs-body-color);
+  border-color: var(--tbl-border);
+}
+.table-dark-modern thead th{
+  background: #262a2d;
+  border-bottom: 1px solid var(--tbl-border);
+  font-weight: 600;
+}
+.table-dark-modern tbody tr{
+  background: var(--tbl-row);
+  transition: background-color .15s ease;
+}
+.table-dark-modern tbody tr:nth-child(even){ background: var(--tbl-row-alt); }
+.table-dark-modern tbody tr:hover{ background: var(--tbl-hover); }
+
+/* ===== Alertas ===== */
+.alert-modern{
+  border: 1px solid rgba(255,255,255,.12);
+  background: #262a2d;
+  color: #f5f6f7;
+  border-radius: .9rem;
+}
+
+/* ===== Cards genéricas===== */
+.card{
+  border-radius: 1rem;
+  background: #25282a !important;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+/* ===== Accesibilidad: focus ===== */
+:focus-visible{
+  outline: 3px solid rgba(46,125,255,.45);
+  outline-offset: 2px;
+  border-radius: .5rem;
+}
+/* ===== LOGIN PAGE ===== */
+.login-body {
+  background: radial-gradient(circle at 20% 30%, rgba(46,125,255,.15) 0%, transparent 70%),
+              radial-gradient(circle at 90% 80%, rgba(46,125,255,.08) 0%, transparent 70%),
+              var(--bs-body-bg);
+}
+
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 1rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.login-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(46,125,255,.12);
+  border: 1px solid rgba(46,125,255,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--bs-primary);
+}
+
+.login-card .form-label {
+  font-weight: 500;
+}
+
+.login-card .btn-primary {
+  font-weight: 600;
+  transition: background-color .2s ease, transform .1s ease;
+}
+
+.login-card .btn-primary:hover {
+  background-color: #1a5bcc;
+  transform: translateY(-1px);
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ===== FIX: Enlace inferior de Login ===== */
+.login-card a.text-muted {
+  display: inline-block;
+  color: #a8b3c2 !important; /* más visible en fondo oscuro */
+  margin-top: .5rem;
+  text-decoration: none;
+  transition: color .2s ease, transform .1s ease;
+}
+
+.login-card a.text-muted:hover {
+  color: var(--bs-primary) !important;
+  transform: translateY(-1px);
+}
+
+/* separa visualmente del borde inferior */
+.login-card form {
+  padding-bottom: .5rem;
+}
+/* ===== ICONOS EN CARDS ===== */
+.action-icon i {
+  font-size: 1.5rem;
+  color: var(--bs-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.action-icon svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--bs-primary);
+  fill: var(--bs-primary);
+}
+/* ======== CONTRASTE Y LEGIBILIDAD MEJORADOS ======== */
+
+/* Formularios */
+.form-control.bg-secondary {
+  background-color: #2c3135 !important; /* un poco más claro que el fondo */
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+.form-control::placeholder {
+  color: #adb5bd !important; /* texto guía visible */
+  opacity: 1;
+}
+.form-label {
+  color: #e3e8ee !important;
+}
+.form-text {
+  color: #9ba3ae !important;
+}
+
+/* Botones secundarios */
+.btn-outline-light {
+  color: #e0e6ee !important;
+  border-color: #b0b7c1 !important;
+}
+.btn-outline-light:hover {
+  background-color: #3a4047 !important;
+  border-color: #5f6a78 !important;
+  color: #ffffff !important;
+}
+
+/* Tablas */
+.table-dark-modern th,
+.table-dark-modern td {
+  color: #f1f3f6 !important;
+}
+.table-dark-modern thead th {
+  background-color: #2c3135 !important;
+  color: #a9c9ff !important;
+  font-weight: 600;
+}
+.table-dark-modern tbody tr:nth-child(even) {
+  background-color: #262b2f !important;
+}
+.table-dark-modern tbody tr:nth-child(odd) {
+  background-color: #202427 !important;
+}
+.table-dark-modern tbody tr:hover {
+  background-color: rgba(46, 125, 255, 0.15) !important;
+}
+
+/* Textos generales */
+.text-info,
+h1.text-info,
+h3.text-info,
+h3.text-primary {
+  color: #3b8cff !important; /* azul más brillante */
+}
+.text-muted {
+  color: #a0a7b0 !important;
+}
+.text-secondary {
+  color: #c1c6cc !important;
+}
+
+/* Alertas */
+.alert-modern {
+  background-color: #2b2f33 !important;
+  color: #f1f3f6 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
