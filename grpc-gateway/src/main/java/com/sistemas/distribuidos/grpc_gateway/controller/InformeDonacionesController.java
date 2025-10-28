@@ -1,5 +1,6 @@
 package com.sistemas.distribuidos.grpc_gateway.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sistemas.distribuidos.grpc_gateway.dto.graphql.ReporteDonacionDTO;
 import com.sistemas.distribuidos.grpc_gateway.filter.CustomUserPrincipal;
 import com.sistemas.distribuidos.grpc_gateway.service.GraphqlClientService;
@@ -94,48 +95,150 @@ public class InformeDonacionesController {
      * Guarda un filtro de búsqueda.
      */
     @PostMapping("/filtros/guardar")
-    public String guardarFiltro(
-            @RequestParam String nombreFiltro,
-            @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) String fechaInicio,
-            @RequestParam(required = false) String fechaFin,
-            @RequestParam(required = false) String eliminado,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes
-    ) {
-        try {
-            CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
-            long userId = user.getId();
+public String guardarFiltro(
+        @RequestParam String nombreFiltro,
+        @RequestParam(required = false) String categoria,
+        @RequestParam(required = false) String fechaInicio,
+        @RequestParam(required = false) String fechaFin,
+        @RequestParam(required = false) String eliminado,
+        Authentication authentication,
+        RedirectAttributes redirectAttributes
+) {
+    try {
+        CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
+        long userId = user.getId();
 
-            Boolean eliminadoBool = null;
-            if (eliminado != null && !eliminado.isBlank()) {
-                eliminadoBool = eliminado.equalsIgnoreCase("true");
-            }
-
-            graphqlClientService.guardarFiltro(
-                    userId,
-                    nombreFiltro,
-                    categoria,
-                    fechaInicio,
-                    fechaFin,
-                    eliminadoBool
-            ).block();
-
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Filtro '" + nombreFiltro + "' guardado exitosamente.");
-
-        } catch (WebClientResponseException.BadRequest e) {
-            System.err.println("Error 400 de GraphQL al guardar el filtro:");
-            System.err.println(e.getResponseBodyAsString());
-
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error al guardar el filtro: " + e.getResponseBodyAsString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error al guardar el filtro: " + e.getMessage());
+        Boolean eliminadoBool = null;
+        if (eliminado != null && !eliminado.isBlank()) {
+            if (eliminado.equalsIgnoreCase("si")) eliminadoBool = true;
+            else if (eliminado.equalsIgnoreCase("no")) eliminadoBool = false;
         }
 
-        return "redirect:/informes/donaciones";
+        graphqlClientService.guardarFiltro(
+                userId,
+                nombreFiltro,
+                categoria,
+                fechaInicio,
+                fechaFin,
+                eliminadoBool
+        ).block();
+
+        redirectAttributes.addFlashAttribute("successMessage", "Filtro '" + nombreFiltro + "' guardado exitosamente.");
+    } catch (Exception e) {
+        e.printStackTrace();
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al guardar el filtro: " + e.getMessage());
     }
+    return "redirect:/informes/donaciones";
+}
+
+
+
+    @GetMapping("/filtros/aplicar")
+public String aplicarFiltro(
+        @RequestParam("id") long filtroId,
+        Authentication authentication,
+        Model model
+) {
+    CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
+
+    List<Map<String, Object>> filtrosGuardados = graphqlClientService
+            .getMisFiltros(user.getId())
+            .block();
+
+    if (filtrosGuardados == null || filtrosGuardados.isEmpty()) {
+        model.addAttribute("errorMessage", "No se encontraron filtros guardados.");
+        model.addAttribute("resultados", null);
+        return "informe_donaciones/informe_donaciones";
+    }
+
+    Map<String, Object> filtroSeleccionado = filtrosGuardados.stream()
+            .filter(f -> {
+                Object idObj = f.get("id");
+                if (idObj == null) return false;
+                try {
+                    return Long.parseLong(idObj.toString()) == filtroId;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            })
+            .findFirst()
+            .orElse(null);
+
+    if (filtroSeleccionado == null) {
+        model.addAttribute("errorMessage", "No se encontró el filtro seleccionado.");
+        model.addAttribute("filtrosGuardados", filtrosGuardados);
+        model.addAttribute("resultados", null);
+        return "informe_donaciones/informe_donaciones";
+    }
+
+    try {
+        String filtrosJson = (String) filtroSeleccionado.get("filtrosJson");
+        Map<String, Object> map = new ObjectMapper().readValue(filtrosJson, Map.class);
+
+        String categoria = (String) map.getOrDefault("categoria", "");
+        String fechaInicio = (String) map.getOrDefault("fechaInicio", "");
+        String fechaFin = (String) map.getOrDefault("fechaFin", "");
+        Object eliminadoObj = map.get("eliminado");
+        String eliminado = eliminadoObj == null ? "" : (Boolean.TRUE.equals(eliminadoObj) ? "si" : "no");
+
+        List<ReporteDonacionDTO> resultados = graphqlClientService
+                .getInformeDonaciones(categoria, fechaInicio, fechaFin, eliminado)
+                .block();
+
+        model.addAttribute("resultados", resultados != null ? resultados : Collections.emptyList());
+        model.addAttribute("filtrosGuardados", filtrosGuardados);
+        model.addAttribute("param", Map.of(
+                "categoria", categoria,
+                "fechaInicio", fechaInicio,
+                "fechaFin", fechaFin,
+                "eliminado", eliminado
+        ));
+        model.addAttribute("usuario", user.getUsername());
+    } catch (Exception e) {
+        e.printStackTrace();
+        model.addAttribute("errorMessage", "Error al aplicar el filtro: " + e.getMessage());
+        model.addAttribute("resultados", Collections.emptyList());
+    }
+
+    return "informe_donaciones/informe_donaciones";
+}
+
+@PostMapping("/filtros/eliminar")
+public String eliminarFiltro(
+        @RequestParam("id") long filtroId,
+        Authentication authentication,
+        RedirectAttributes redirectAttributes
+) {
+    try {
+        CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
+        graphqlClientService.eliminarFiltro(user.getId(), filtroId).block();
+        redirectAttributes.addFlashAttribute("successMessage", "Filtro eliminado correctamente.");
+    } catch (Exception e) {
+        e.printStackTrace();
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar el filtro: " + e.getMessage());
+    }
+
+    return "redirect:/informes/donaciones";
+}
+
+@PostMapping("/filtros/editar")
+public String editarFiltro(
+        @RequestParam("id") long filtroId,
+        @RequestParam("nuevoNombre") String nuevoNombre,
+        Authentication authentication,
+        RedirectAttributes redirectAttributes
+) {
+    try {
+        CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
+        graphqlClientService.editarFiltro(user.getId(), filtroId, nuevoNombre).block();
+        redirectAttributes.addFlashAttribute("successMessage", "Filtro editado correctamente.");
+    } catch (Exception e) {
+        e.printStackTrace();
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al editar el filtro: " + e.getMessage());
+    }
+
+    return "redirect:/informes/donaciones";
+}
+
+
 }
