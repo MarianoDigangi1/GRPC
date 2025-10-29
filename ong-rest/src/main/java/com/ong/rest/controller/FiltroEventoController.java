@@ -7,6 +7,8 @@ import com.ong.rest.dto.EventoDto;
 import com.ong.rest.repository.UsuarioRepository;
 import com.ong.rest.service.FiltroEventoService;
 import com.ong.rest.service.EventoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -24,7 +26,11 @@ import java.util.List;
 import java.time.LocalDate;
 import java.util.List;
 
-@Controller
+@Tag(
+        name = "Filtros",
+        description = "Operaciones disponibles para gestionar los filtros"
+)
+@RestController
 @RequestMapping("/filtros-eventos")
 @CrossOrigin(origins = "*")
 public class FiltroEventoController {
@@ -40,6 +46,7 @@ public class FiltroEventoController {
         this.eventoService = eventoService;
     }
 
+    @Operation(summary = "Crear filtro por usuario", description = "Creacion de filtro de acuerdo a las caracteristicas elegidas por el usuario")
     @PostMapping("/usuario/{usuarioId}")
     public ResponseEntity<FiltroEvento> crearFiltro(
             @PathVariable Integer usuarioId,
@@ -52,12 +59,14 @@ public class FiltroEventoController {
         return ResponseEntity.status(201).body(nuevo);
     }
 
+    @Operation(summary = "Obtener filtro por usuario", description = "Obtener filtro de acuerdo al id del usuario")
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<FiltroEvento>> obtenerFiltrosPorUsuario(@PathVariable Integer usuarioId) {
         List<FiltroEvento> filtros = filtroEventoService.obtenerFiltrosPorUsuario(usuarioId);
         return ResponseEntity.ok(filtros);
     }
 
+    @Operation(summary = "Actualizar filtro", description = "Actualiza un filtro de acuerdo al id, y los datos ingresados")
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarFiltro(
             @PathVariable Integer id,
@@ -71,6 +80,7 @@ public class FiltroEventoController {
         }
     }
 
+    @Operation(summary = "Eliminar filtro", description = "Elimina un filtro determinado de acuerdo al id")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarFiltro(@PathVariable Integer id) {
         try {
@@ -81,6 +91,7 @@ public class FiltroEventoController {
         }
     }
 
+    @Operation(summary = "Obtener filtro por id", description = "Retorna un filtro de acuerdo al id ingresado")
     @GetMapping("/{id}")
     public ResponseEntity<FiltroEvento> obtenerFiltroPorId(@PathVariable Integer id) {
         try {
@@ -94,6 +105,7 @@ public class FiltroEventoController {
     // =========================
     // FILTRADO DE EVENTOS
     // =========================
+    @Operation(summary = "Filtrar eventos", description = "Filtra eventos entre fechas o de acuerdo al estado")
     @GetMapping("/eventos/filtrar")
     public String filtrarEventos(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
