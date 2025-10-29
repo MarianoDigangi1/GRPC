@@ -32,9 +32,6 @@ public class InformeParticipacionController {
         CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
 
 
-        model.addAttribute("usuario", user.getUsername());
-        model.addAttribute("resultados", null);
-        model.addAttribute("param", Collections.emptyMap());
         return "informe_donaciones/informe_donaciones";
     }
 }
